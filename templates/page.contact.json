@@ -1,7 +1,7 @@
 {
   "sections": {
-    "contact_hero": { "type": "page-hero" },
+    "page_hero": { "type": "page-hero" },
     "contact_form": { "type": "contact-form" }
   },
-  "order": ["contact_hero", "contact_form"]
+  "order": ["page_hero", "contact_form"]
 }

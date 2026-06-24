@@ -22,12 +22,5 @@
     "how_it_works": { "type": "how-it-works" },
     "trust_badges": { "type": "trust-badges" }
   },
-  "order": [
-    "announcement_bar",
-    "hero",
-    "featured_properties",
-    "destinations_grid",
-    "how_it_works",
-    "trust_badges"
-  ]
+  "order": ["announcement_bar", "hero", "featured_properties", "destinations_grid", "how_it_works", "trust_badges"]
 }

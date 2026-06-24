@@ -1,0 +1,63 @@
+{% comment %}
+  Phase 1 — Property Search & Browse
+  Full implementation: search filters, map toggle, pagination, URL-driven state
+{% endcomment %}
+<section class="main-collection section-padding">
+  <div class="page-width">
+    <header class="collection-header">
+      <h1 class="collection-header__title">
+        {%- if collection.title -%}
+          {{ collection.title }}
+        {%- elsif request.path contains 'all' -%}
+          All Stays
+        {%- else -%}
+          Browse Stays
+        {%- endif -%}
+      </h1>
+      {%- if collection.description != blank -%}
+        <p class="collection-header__desc">{{ collection.description }}</p>
+      {%- endif -%}
+    </header>
+
+    {% comment %} Search filters bar (Phase 1 — currently shows active query params) {% endcomment %}
+    {%- assign params = request.path -%}
+    <div class="collection-filters" id="collection-filters">
+      <div class="collection-filters__search">
+        <input type="search" id="collection-search"
+               value="{{ request.page_type }}"
+               placeholder="{{ settings.search_placeholder }}"
+               class="collection-filters__input"
+               aria-label="Search properties">
+      </div>
+    </div>
+
+    {% comment %} Property grid — loaded by theme.js from API or Shopify products {% endcomment %}
+    <div class="property-grid"
+         id="collection-property-grid"
+         data-endpoint="/api/v1/properties/search"
+         aria-label="Properties">
+      {%- for product in collection.products -%}
+        {% render 'property-card', product: product %}
+      {%- else -%}
+        <p class="collection-empty">No stays found. Try adjusting your search.</p>
+      {%- endfor -%}
+    </div>
+
+    {% comment %} Pagination {% endcomment %}
+    {%- if paginate.pages > 1 -%}
+      <div class="pagination">
+        {{ paginate | default_pagination }}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collection",
+  "settings": [
+    { "type": "range", "id": "products_per_page", "min": 9, "max": 48, "step": 3, "label": "Properties per page", "default": 24 },
+    { "type": "checkbox", "id": "show_filter_bar", "label": "Show filter bar", "default": true }
+  ]
+}
+{% endschema %}

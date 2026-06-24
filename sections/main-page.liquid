@@ -1,0 +1,14 @@
+<div class="main-page page-width section-padding">
+  <div class="main-page__content rte">
+    <h1 class="main-page__title">{{ page.title }}</h1>
+    {{ page.content }}
+  </div>
+</div>
+{% schema %}
+{
+  "name": "Page",
+  "settings": [
+    { "type": "checkbox", "id": "narrow_content", "label": "Narrow content width", "default": true }
+  ]
+}
+{% endschema %}

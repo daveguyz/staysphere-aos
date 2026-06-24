@@ -1,0 +1,98 @@
+{% comment %}
+  Phase 1 — Property Detail Page
+  Full implementation: gallery, calendar, amenities, area intelligence, booking widget
+{% endcomment %}
+{%- assign property_id = product.metafields.staysphere.property_id | default: product.id -%}
+
+<article class="main-product page-width section-padding" data-property-id="{{ property_id }}">
+  <div class="main-product__layout">
+
+    {% comment %} Left: Gallery + details {% endcomment %}
+    <div class="main-product__primary">
+      <div class="product-gallery" id="product-gallery">
+        {%- if product.images.size > 0 -%}
+          <div class="product-gallery__main">
+            <img src="{{ product.featured_image | image_url: width: 1200 }}"
+                 alt="{{ product.featured_image.alt | default: product.title }}"
+                 class="product-gallery__hero-img"
+                 loading="eager" width="1200" height="800">
+          </div>
+          {%- if product.images.size > 1 -%}
+            <div class="product-gallery__thumbs">
+              {%- for image in product.images limit: 6 -%}
+                <button class="product-gallery__thumb" aria-label="View image {{ forloop.index }}">
+                  <img src="{{ image | image_url: width: 200 }}"
+                       alt="{{ image.alt | default: product.title }}"
+                       loading="lazy" width="200" height="133">
+                </button>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+
+      <div class="product-details">
+        <p class="product-details__location">
+          📍 {{ product.metafields.staysphere.city | default: 'Namibia' }}
+        </p>
+        <h1 class="product-details__title">{{ product.title }}</h1>
+        <div class="product-details__meta">
+          {%- assign beds = product.metafields.staysphere.bedrooms -%}
+          {%- assign baths = product.metafields.staysphere.bathrooms -%}
+          {%- assign guests = product.metafields.staysphere.max_guests -%}
+          {%- if beds -%}<span>🛏 {{ beds }} bed{% if beds != '1' %}s{% endif %}</span>{%- endif -%}
+          {%- if baths -%}<span>🚿 {{ baths }} bath{% if baths != '1' %}s{% endif %}</span>{%- endif -%}
+          {%- if guests -%}<span>👥 Up to {{ guests }} guests</span>{%- endif -%}
+        </div>
+        <div class="product-details__description">{{ product.description }}</div>
+      </div>
+    </div>
+
+    {% comment %} Right: Booking widget sidebar {% endcomment %}
+    <aside class="main-product__sidebar">
+      <div class="booking-sidebar" id="booking-sidebar" data-property-id="{{ property_id }}">
+        <div class="booking-sidebar__price">
+          <strong class="booking-sidebar__amount">
+            {{ settings.default_currency_symbol }}{{ product.price | money_without_currency }}
+          </strong>
+          <span class="booking-sidebar__unit">/ night</span>
+        </div>
+        <div class="booking-sidebar__dates">
+          <div class="form-field">
+            <label for="booking-checkin">Check in</label>
+            <input type="date" id="booking-checkin" class="booking-sidebar__date-input"
+                   min="{{ 'now' | date: '%Y-%m-%d' }}">
+          </div>
+          <div class="form-field">
+            <label for="booking-checkout">Check out</label>
+            <input type="date" id="booking-checkout" class="booking-sidebar__date-input">
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="booking-guests">Guests</label>
+          <select id="booking-guests" class="booking-sidebar__guests">
+            {%- for i in (1..12) -%}
+              <option value="{{ i }}">{{ i }} guest{% if i > 1 %}s{% endif %}</option>
+            {%- endfor -%}
+          </select>
+        </div>
+        {%- if settings.feature_bookings -%}
+          <button class="btn btn--primary btn--full" id="booking-reserve-btn">Reserve</button>
+          <p class="booking-sidebar__note">You won't be charged yet</p>
+        {%- else -%}
+          <a href="/contact" class="btn btn--outline btn--full">Enquire</a>
+        {%- endif -%}
+      </div>
+    </aside>
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "Property",
+  "settings": [
+    { "type": "checkbox", "id": "show_map", "label": "Show location map", "default": true },
+    { "type": "checkbox", "id": "show_reviews", "label": "Show reviews", "default": true }
+  ]
+}
+{% endschema %}

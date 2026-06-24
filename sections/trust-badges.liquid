@@ -1,0 +1,40 @@
+<section class="trust-badges section-padding">
+  <div class="page-width">
+    <div class="trust-badges__grid">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'badge' -%}
+          <div class="trust-badge" {{ block.shopify_attributes }}>
+            <span class="trust-badge__icon" aria-hidden="true">{{ block.settings.icon }}</span>
+            <h3 class="trust-badge__title">{{ block.settings.title }}</h3>
+            <p class="trust-badge__text">{{ block.settings.text }}</p>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Trust badges",
+  "blocks": [
+    {
+      "type": "badge", "name": "Badge",
+      "settings": [
+        { "type": "text", "id": "icon", "label": "Icon (emoji)", "default": "✓" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Verified hosts" },
+        { "type": "textarea", "id": "text", "label": "Description" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust badges",
+      "blocks": [
+        { "type": "badge", "settings": { "icon": "✓", "title": "Verified hosts", "text": "Every host is ID-verified before listing." } },
+        { "type": "badge", "settings": { "icon": "🔒", "title": "Secure payments", "text": "Payments held in escrow, released on check-in." } },
+        { "type": "badge", "settings": { "icon": "💬", "title": "24/7 support", "text": "Our team is available around the clock." } }
+      ]
+    }
+  ]
+}
+{% endschema %}
