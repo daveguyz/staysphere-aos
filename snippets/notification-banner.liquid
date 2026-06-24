@@ -1,0 +1,14 @@
+{% comment %}
+  Site-wide notification/announcement banner.
+  Controlled via metafield: shop.metafields.staysphere.banner_message
+  Leave blank to hide.
+{% endcomment %}
+{%- assign banner_msg = shop.metafields.staysphere.banner_message -%}
+{%- if banner_msg != blank -%}
+<div class="notification-banner" role="status" id="site-banner">
+  <div class="notification-banner__inner">
+    <span class="notification-banner__text">{{ banner_msg }}</span>
+    <button class="notification-banner__close" aria-label="Dismiss" onclick="this.closest('#site-banner').remove()">✕</button>
+  </div>
+</div>
+{%- endif -%}

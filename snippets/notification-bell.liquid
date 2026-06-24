@@ -1,0 +1,22 @@
+{% comment %}
+  In-app notification bell for logged-in users.
+  Unread count is fetched from /api/v1/messages/unread-count on page load.
+{% endcomment %}
+<div id="notification-bell-wrapper" class="notification-bell-wrapper" data-user-id="{{ customer.id }}">
+  <button class="notification-bell" id="notification-bell-btn" aria-label="Notifications" aria-expanded="false">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+    <span class="notification-bell__badge hidden" id="notification-badge" aria-label="unread notifications">0</span>
+  </button>
+  <div class="notification-dropdown hidden" id="notification-dropdown" role="listbox" aria-label="Notifications">
+    <div class="notification-dropdown__header">
+      <span>Notifications</span>
+      <button class="notification-dropdown__mark-all" id="mark-all-read">Mark all read</button>
+    </div>
+    <div class="notification-dropdown__list" id="notification-list">
+      <p class="notification-dropdown__empty">No notifications yet</p>
+    </div>
+  </div>
+</div>

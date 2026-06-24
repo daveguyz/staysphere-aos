@@ -1,0 +1,64 @@
+<section class="destinations-section section-padding">
+  <div class="page-width">
+    <div class="section-header">
+      <h2 class="section-header__title">{{ section.settings.heading | default: 'Explore destinations' }}</h2>
+    </div>
+    <div class="destinations-grid">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'destination' -%}
+          <a href="/collections/all?city={{ block.settings.city | url_encode }}"
+             class="destination-card destination-card--{{ forloop.index }}"
+             {{ block.shopify_attributes }}>
+            {%- if block.settings.image != blank -%}
+              <img src="{{ block.settings.image | image_url: width: 600 }}"
+                   alt="{{ block.settings.city }}"
+                   class="destination-card__img"
+                   loading="lazy" width="600" height="400">
+            {%- else -%}
+              <div class="destination-card__placeholder"></div>
+            {%- endif -%}
+            <div class="destination-card__overlay"></div>
+            <div class="destination-card__label">
+              <span class="destination-card__name">{{ block.settings.city }}</span>
+              {%- if block.settings.tagline != blank -%}
+                <span class="destination-card__tagline">{{ block.settings.tagline }}</span>
+              {%- endif -%}
+            </div>
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Destinations grid",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Explore Namibia" }
+  ],
+  "blocks": [
+    {
+      "type": "destination",
+      "name": "Destination",
+      "limit": 6,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "city", "label": "City / region name", "default": "Windhoek" },
+        { "type": "text", "id": "tagline", "label": "Tagline", "default": "Capital city" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Destinations grid",
+      "blocks": [
+        { "type": "destination", "settings": { "city": "Windhoek", "tagline": "Capital city" } },
+        { "type": "destination", "settings": { "city": "Swakopmund", "tagline": "Coastal adventure" } },
+        { "type": "destination", "settings": { "city": "Etosha", "tagline": "Wildlife haven" } },
+        { "type": "destination", "settings": { "city": "Sossusvlei", "tagline": "Dune country" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

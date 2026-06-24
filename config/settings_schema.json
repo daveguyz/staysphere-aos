@@ -1,0 +1,198 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "StaySphere AOS",
+    "theme_version": "1.0.0",
+    "theme_author": "StaySphere",
+    "theme_documentation_url": "https://docs.staysphere.com/theme",
+    "theme_support_url": "https://support.staysphere.com"
+  },
+  {
+    "name": "Brand",
+    "settings": [
+      { "type": "image_picker", "id": "logo", "label": "Logo" },
+      { "type": "image_picker", "id": "logo_dark", "label": "Dark mode logo" },
+      { "type": "range", "id": "logo_width", "min": 80, "max": 320, "step": 8, "unit": "px", "label": "Logo width", "default": 160 },
+      { "type": "text", "id": "brand_name", "label": "Brand name", "default": "StaySphere" },
+      { "type": "richtext", "id": "brand_tagline", "label": "Brand tagline" }
+    ]
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      { "type": "color", "id": "color_primary", "label": "Primary accent", "default": "#f0b429" },
+      { "type": "color", "id": "color_primary_text", "label": "Text on primary", "default": "#1a1a2e" },
+      { "type": "color", "id": "color_background", "label": "Page background", "default": "#ffffff" },
+      { "type": "color", "id": "color_surface", "label": "Card / surface", "default": "#f9fafb" },
+      { "type": "color", "id": "color_nav_bg", "label": "Navigation background", "default": "#1a1a2e" },
+      { "type": "color", "id": "color_nav_text", "label": "Navigation text", "default": "#ffffff" },
+      { "type": "color", "id": "color_footer_bg", "label": "Footer background", "default": "#111827" },
+      { "type": "color", "id": "color_footer_text", "label": "Footer text", "default": "#d1d5db" },
+      { "type": "color", "id": "color_text_primary", "label": "Body text", "default": "#1f2937" },
+      { "type": "color", "id": "color_text_muted", "label": "Muted text", "default": "#6b7280" },
+      { "type": "color", "id": "color_border", "label": "Border", "default": "#e5e7eb" },
+      { "type": "color", "id": "color_success", "label": "Success", "default": "#10b981" },
+      { "type": "color", "id": "color_error", "label": "Error", "default": "#ef4444" },
+      { "type": "color", "id": "color_warning", "label": "Warning", "default": "#f59e0b" }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      {
+        "type": "select", "id": "font_heading_family", "label": "Heading font family",
+        "options": [
+          { "value": "'Playfair Display', Georgia, serif", "label": "Playfair Display" },
+          { "value": "'Cormorant Garamond', Georgia, serif", "label": "Cormorant Garamond" },
+          { "value": "'Inter', sans-serif", "label": "Inter (sans)" },
+          { "value": "'DM Sans', sans-serif", "label": "DM Sans" },
+          { "value": "'Sora', sans-serif", "label": "Sora" },
+          { "value": "system-ui, sans-serif", "label": "System default" }
+        ],
+        "default": "'Playfair Display', Georgia, serif"
+      },
+      {
+        "type": "select", "id": "font_body_family", "label": "Body font family",
+        "options": [
+          { "value": "'Inter', system-ui, sans-serif", "label": "Inter" },
+          { "value": "'DM Sans', system-ui, sans-serif", "label": "DM Sans" },
+          { "value": "'Lato', system-ui, sans-serif", "label": "Lato" },
+          { "value": "system-ui, sans-serif", "label": "System default" }
+        ],
+        "default": "'Inter', system-ui, sans-serif"
+      },
+      { "type": "range", "id": "font_body_size", "min": 14, "max": 20, "step": 1, "unit": "px", "label": "Base font size", "default": 16 },
+      { "type": "range", "id": "font_heading_scale", "min": 80, "max": 150, "step": 5, "unit": "%", "label": "Heading scale", "default": 110 }
+    ]
+  },
+  {
+    "name": "Layout",
+    "settings": [
+      { "type": "range", "id": "page_max_width", "min": 960, "max": 1600, "step": 40, "unit": "px", "label": "Max page width", "default": 1280 },
+      { "type": "range", "id": "grid_gap", "min": 12, "max": 40, "step": 4, "unit": "px", "label": "Grid gap", "default": 24 },
+      { "type": "range", "id": "border_radius", "min": 0, "max": 24, "step": 2, "unit": "px", "label": "Card border radius", "default": 12 },
+      { "type": "range", "id": "section_padding", "min": 32, "max": 120, "step": 8, "unit": "px", "label": "Section vertical padding", "default": 64 },
+      { "type": "checkbox", "id": "show_breadcrumbs", "label": "Show breadcrumbs", "default": true },
+      { "type": "checkbox", "id": "sticky_header", "label": "Sticky header", "default": true }
+    ]
+  },
+  {
+    "name": "Buttons",
+    "settings": [
+      { "type": "range", "id": "btn_border_radius", "min": 0, "max": 32, "step": 2, "unit": "px", "label": "Button border radius", "default": 8 },
+      { "type": "select", "id": "btn_size", "label": "Button size",
+        "options": [
+          { "value": "sm", "label": "Small" },
+          { "value": "md", "label": "Medium" },
+          { "value": "lg", "label": "Large" }
+        ],
+        "default": "md"
+      },
+      { "type": "checkbox", "id": "btn_uppercase", "label": "Uppercase button text", "default": false }
+    ]
+  },
+  {
+    "name": "Property Cards",
+    "settings": [
+      { "type": "range", "id": "card_columns_desktop", "min": 2, "max": 4, "step": 1, "label": "Columns on desktop", "default": 3 },
+      { "type": "range", "id": "card_columns_tablet", "min": 1, "max": 3, "step": 1, "label": "Columns on tablet", "default": 2 },
+      { "type": "checkbox", "id": "card_show_trust_score", "label": "Show trust score badge", "default": true },
+      { "type": "checkbox", "id": "card_show_rating", "label": "Show star rating", "default": true },
+      { "type": "checkbox", "id": "card_show_amenities", "label": "Show amenity icons", "default": true },
+      { "type": "select", "id": "card_image_ratio", "label": "Card image ratio",
+        "options": [
+          { "value": "3/2", "label": "3:2 (landscape)" },
+          { "value": "4/3", "label": "4:3 (standard)" },
+          { "value": "1/1", "label": "1:1 (square)" },
+          { "value": "16/9", "label": "16:9 (wide)" }
+        ],
+        "default": "3/2"
+      }
+    ]
+  },
+  {
+    "name": "AI Concierge",
+    "settings": [
+      { "type": "checkbox", "id": "concierge_enabled", "label": "Enable AI concierge widget", "default": true },
+      { "type": "text", "id": "concierge_greeting", "label": "Concierge greeting message", "default": "Hi! I'm your StaySphere AI concierge. Where would you like to stay in Namibia?" },
+      { "type": "color", "id": "concierge_fab_color", "label": "Concierge button color", "default": "#1a1a2e" },
+      { "type": "select", "id": "concierge_position", "label": "Concierge button position",
+        "options": [
+          { "value": "bottom-right", "label": "Bottom right" },
+          { "value": "bottom-left", "label": "Bottom left" }
+        ],
+        "default": "bottom-right"
+      }
+    ]
+  },
+  {
+    "name": "Search",
+    "settings": [
+      { "type": "checkbox", "id": "search_show_ai_bar", "label": "Show AI natural language search bar", "default": true },
+      { "type": "checkbox", "id": "search_show_map", "label": "Show map view toggle", "default": true },
+      { "type": "text", "id": "search_placeholder", "label": "Search input placeholder", "default": "Where to? Windhoek, Etosha, Swakopmund…" },
+      { "type": "range", "id": "search_results_per_page", "min": 9, "max": 48, "step": 3, "label": "Results per page", "default": 24 }
+    ]
+  },
+  {
+    "name": "Currency & Region",
+    "settings": [
+      { "type": "text", "id": "default_currency", "label": "Default currency code", "default": "NAD" },
+      { "type": "text", "id": "default_currency_symbol", "label": "Currency symbol", "default": "N$" },
+      { "type": "text", "id": "default_country", "label": "Default country", "default": "Namibia" },
+      { "type": "checkbox", "id": "show_currency_selector", "label": "Show currency selector", "default": false }
+    ]
+  },
+  {
+    "name": "Social Media",
+    "settings": [
+      { "type": "text", "id": "social_instagram", "label": "Instagram URL" },
+      { "type": "text", "id": "social_facebook", "label": "Facebook URL" },
+      { "type": "text", "id": "social_twitter", "label": "Twitter/X URL" },
+      { "type": "text", "id": "social_tiktok", "label": "TikTok URL" },
+      { "type": "text", "id": "social_youtube", "label": "YouTube URL" }
+    ]
+  },
+  {
+    "name": "API & Integration",
+    "settings": [
+      { "type": "text", "id": "api_gateway_url", "label": "API Gateway URL", "info": "Your deployed Spring Boot API gateway, e.g. https://api.staysphere.com" },
+      { "type": "text", "id": "analytics_endpoint", "label": "Analytics endpoint override", "info": "Leave blank to use API Gateway default" },
+      { "type": "checkbox", "id": "api_mock_mode", "label": "Mock mode (dev: use sample data when API is offline)", "default": true },
+      { "type": "text", "id": "google_maps_key", "label": "Google Maps API key" },
+      { "type": "text", "id": "google_tag_manager_id", "label": "Google Tag Manager ID" },
+      { "type": "text", "id": "facebook_pixel_id", "label": "Facebook Pixel ID" }
+    ]
+  },
+  {
+    "name": "Notifications & Chat",
+    "settings": [
+      { "type": "checkbox", "id": "notifications_enabled", "label": "Enable in-app notifications", "default": true },
+      { "type": "checkbox", "id": "messaging_enabled", "label": "Enable guest-host messaging", "default": true },
+      { "type": "text", "id": "websocket_url", "label": "WebSocket server URL", "info": "e.g. wss://api.staysphere.com/ws/messaging" }
+    ]
+  },
+  {
+    "name": "Feature Flags",
+    "settings": [
+      { "type": "checkbox", "id": "feature_bookings", "label": "Booking engine enabled", "default": true },
+      { "type": "checkbox", "id": "feature_payments", "label": "Payments enabled", "default": false, "info": "Enable once Stripe Connect is configured" },
+      { "type": "checkbox", "id": "feature_reviews", "label": "Reviews enabled", "default": false },
+      { "type": "checkbox", "id": "feature_host_dashboard", "label": "Host dashboard enabled", "default": false },
+      { "type": "checkbox", "id": "feature_ai_concierge", "label": "AI concierge enabled", "default": false, "info": "Enable once Anthropic API key is configured" },
+      { "type": "checkbox", "id": "feature_dynamic_pricing", "label": "Dynamic pricing enabled", "default": false },
+      { "type": "checkbox", "id": "feature_negotiations", "label": "Price negotiation enabled", "default": false },
+      { "type": "checkbox", "id": "feature_trip_builder", "label": "Trip builder enabled", "default": false },
+      { "type": "checkbox", "id": "feature_analytics_dashboard", "label": "Analytics dashboard enabled", "default": false }
+    ]
+  },
+  {
+    "name": "SEO & Performance",
+    "settings": [
+      { "type": "checkbox", "id": "seo_structured_data", "label": "Add structured data (JSON-LD)", "default": true },
+      { "type": "checkbox", "id": "perf_lazy_images", "label": "Lazy load images", "default": true },
+      { "type": "checkbox", "id": "perf_preload_fonts", "label": "Preload heading font", "default": true },
+      { "type": "textarea", "id": "seo_meta_description", "label": "Default meta description" }
+    ]
+  }
+]

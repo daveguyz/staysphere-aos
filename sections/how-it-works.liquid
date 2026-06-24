@@ -1,0 +1,47 @@
+<section class="how-it-works section-padding">
+  <div class="page-width">
+    <h2 class="section-header__title text-center">{{ section.settings.heading | default: 'How StaySphere works' }}</h2>
+    <div class="how-it-works__steps">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'step' -%}
+          <div class="hiw-step" {{ block.shopify_attributes }}>
+            <div class="hiw-step__icon" aria-hidden="true">{{ block.settings.icon | default: '✦' }}</div>
+            <h3 class="hiw-step__title">{{ block.settings.title }}</h3>
+            <p class="hiw-step__text">{{ block.settings.text }}</p>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "How it works",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "How StaySphere works" }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Step",
+      "limit": 5,
+      "settings": [
+        { "type": "text", "id": "icon", "label": "Icon (emoji)", "default": "🔍" },
+        { "type": "text", "id": "title", "label": "Step title", "default": "Search" },
+        { "type": "textarea", "id": "text", "label": "Description" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "How it works",
+      "blocks": [
+        { "type": "step", "settings": { "icon": "🔍", "title": "Search", "text": "Tell our AI where you want to go and when. It instantly finds the best-matched properties." } },
+        { "type": "step", "settings": { "icon": "📅", "title": "Book", "text": "Pick your dates, review the pricing breakdown, and secure your stay in minutes." } },
+        { "type": "step", "settings": { "icon": "🔑", "title": "Stay", "text": "Receive your digital access code 24 hours before arrival. Arrive, unlock, and enjoy." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}" data-theme-version="1.0.0">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="{{ settings.color_nav_bg }}">
+
+  {% if settings.seo_structured_data %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": {{ shop.name | json }},
+      "url": {{ shop.url | json }},
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ shop.url }}/collections/all?city={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+  {% endif %}
+
+  <title>
+    {%- if page_title == blank -%}{{ shop.name }}{%- else -%}{{ page_title }} — {{ shop.name }}{%- endif -%}
+  </title>
+
+  {%- if page_description -%}
+    <meta name="description" content="{{ page_description | escape }}">
+  {%- elsif settings.seo_meta_description != blank -%}
+    <meta name="description" content="{{ settings.seo_meta_description | escape }}">
+  {%- endif -%}
+
+  <link rel="canonical" href="{{ canonical_url }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="dns-prefetch" href="{{ settings.api_gateway_url }}">
+
+  {% if settings.perf_preload_fonts %}
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap">
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap"
+      media="print" onload="this.media='all'">
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap">
+    </noscript>
+  {% endif %}
+
+  {% comment %} Inject CSS custom properties from theme settings {% endcomment %}
+  <style>
+    :root {
+      --color-primary: {{ settings.color_primary }};
+      --color-primary-text: {{ settings.color_primary_text }};
+      --color-bg: {{ settings.color_background }};
+      --color-surface: {{ settings.color_surface }};
+      --color-nav-bg: {{ settings.color_nav_bg }};
+      --color-nav-text: {{ settings.color_nav_text }};
+      --color-footer-bg: {{ settings.color_footer_bg }};
+      --color-footer-text: {{ settings.color_footer_text }};
+      --color-text: {{ settings.color_text_primary }};
+      --color-text-muted: {{ settings.color_text_muted }};
+      --color-border: {{ settings.color_border }};
+      --color-success: {{ settings.color_success | default: '#10b981' }};
+      --color-error: {{ settings.color_error | default: '#ef4444' }};
+      --font-heading: {{ settings.font_heading_family }};
+      --font-body: {{ settings.font_body_family }};
+      --font-size-base: {{ settings.font_body_size }}px;
+      --heading-scale: {{ settings.font_heading_scale | divided_by: 100.0 }};
+      --page-max-width: {{ settings.page_max_width }}px;
+      --grid-gap: {{ settings.grid_gap }}px;
+      --radius: {{ settings.border_radius }}px;
+      --btn-radius: {{ settings.btn_border_radius }}px;
+      --section-padding: {{ settings.section_padding }}px;
+      --card-cols-desktop: {{ settings.card_columns_desktop }};
+      --card-cols-tablet: {{ settings.card_columns_tablet }};
+      --card-ratio: {{ settings.card_image_ratio }};
+      --concierge-fab-color: {{ settings.concierge_fab_color | default: settings.color_nav_bg }};
+    }
+  </style>
+
+  {{ content_for_header }}
+  {{ 'base.css' | asset_url | stylesheet_tag }}
+  {{ 'theme.css' | asset_url | stylesheet_tag }}
+
+  {% comment %} GTM / Pixel {% endcomment %}
+  {% if settings.google_tag_manager_id != blank %}
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','{{ settings.google_tag_manager_id }}');</script>
+  {% endif %}
+</head>
+
+<body class="template-{{ template.name }}{% if customer %} customer-logged-in{% endif %}"
+      data-api="{{ settings.api_gateway_url | default: '' }}"
+      data-currency="{{ settings.default_currency }}"
+      data-currency-symbol="{{ settings.default_currency_symbol }}"
+      data-mock="{{ settings.api_mock_mode }}"
+      data-feature-bookings="{{ settings.feature_bookings }}"
+      data-feature-payments="{{ settings.feature_payments }}"
+      data-feature-ai="{{ settings.feature_ai_concierge }}"
+      data-feature-messaging="{{ settings.messaging_enabled }}"
+      data-feature-reviews="{{ settings.feature_reviews }}"
+      data-feature-host-dashboard="{{ settings.feature_host_dashboard }}"
+      data-feature-pricing="{{ settings.feature_dynamic_pricing }}"
+      data-feature-trip-builder="{{ settings.feature_trip_builder }}"
+      data-customer-id="{{ customer.id | default: '' }}"
+      data-customer-email="{{ customer.email | default: '' }}">
+
+  {% if settings.google_tag_manager_id != blank %}
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ settings.google_tag_manager_id }}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  {% endif %}
+
+  {% render 'skip-to-content' %}
+
+  {% section 'announcement-bar' %}
+
+  <div id="site-header-wrapper" class="{% if settings.sticky_header %}site-header--sticky{% endif %}">
+    {% section 'header' %}
+  </div>
+
+  {% render 'notification-banner' %}
+
+  <main id="main-content" role="main" tabindex="-1">
+    {{ content_for_layout }}
+  </main>
+
+  {% section 'footer' %}
+
+  {% comment %} AI Concierge — only rendered if feature flag is on {% endcomment %}
+  {% if settings.feature_ai_concierge and settings.concierge_enabled %}
+    {% render 'ai-concierge' %}
+  {% endif %}
+
+  {% comment %} Real-time notification bell — shown to logged-in users {% endcomment %}
+  {% if customer and settings.notifications_enabled %}
+    {% render 'notification-bell' %}
+  {% endif %}
+
+  {% comment %} Messaging badge — shown to logged-in users {% endcomment %}
+  {% if customer and settings.messaging_enabled and settings.feature_host_dashboard %}
+    {% render 'messaging-badge' %}
+  {% endif %}
+
+  {% comment %} Cookie consent {% endcomment %}
+  {% render 'cookie-consent' %}
+
+  {% comment %} Global modals {% endcomment %}
+  {% render 'modal-backdrop' %}
+  <div id="global-toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  {{ 'theme.js' | asset_url | script_tag }}
+</body>
+</html>

@@ -1,0 +1,47 @@
+<div class="auth-page">
+  <div class="auth-page__card">
+    <h1 class="auth-page__title">Create your account</h1>
+    <p class="auth-page__sub">Already have one? <a href="/account/login">Sign in</a></p>
+
+    <div id="auth-error" class="auth-page__error hidden" role="alert"></div>
+
+    <form class="auth-form" id="register-form" novalidate>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="reg-first-name">First name</label>
+          <input type="text" id="reg-first-name" name="firstName" autocomplete="given-name" required>
+        </div>
+        <div class="form-field">
+          <label for="reg-last-name">Last name</label>
+          <input type="text" id="reg-last-name" name="lastName" autocomplete="family-name" required>
+        </div>
+      </div>
+      <div class="form-field">
+        <label for="reg-email">Email</label>
+        <input type="email" id="reg-email" name="email" autocomplete="email" required>
+      </div>
+      <div class="form-field">
+        <label for="reg-phone">Phone (optional)</label>
+        <input type="tel" id="reg-phone" name="phone" autocomplete="tel" placeholder="+264 XX XXX XXXX">
+      </div>
+      <div class="form-field">
+        <label for="reg-password">Password</label>
+        <input type="password" id="reg-password" name="password" autocomplete="new-password"
+               required minlength="8">
+        <div class="password-strength" id="password-strength" aria-live="polite"></div>
+      </div>
+      <div class="form-field form-field--checkbox">
+        <input type="checkbox" id="reg-terms" name="terms" required>
+        <label for="reg-terms">I agree to the <a href="{{ shop.terms_of_service.url }}" target="_blank">Terms of Service</a> and <a href="{{ shop.privacy_policy.url }}" target="_blank">Privacy Policy</a></label>
+      </div>
+      <div class="form-field form-field--checkbox">
+        <input type="checkbox" id="reg-host" name="becomeHost">
+        <label for="reg-host">I also want to list my property as a host</label>
+      </div>
+      <button type="submit" class="btn btn--primary btn--full" id="register-btn">
+        <span class="btn-label">Create account</span>
+        <span class="btn-spinner hidden" aria-hidden="true"></span>
+      </button>
+    </form>
+  </div>
+</div>

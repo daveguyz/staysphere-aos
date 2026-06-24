@@ -1,0 +1,94 @@
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__main page-width">
+    <div class="site-footer__brand">
+      {%- if settings.logo != blank -%}
+        <img src="{{ settings.logo | image_url: width: 140 }}" alt="{{ shop.name }}" width="140" height="auto" loading="lazy">
+      {%- else -%}
+        <span class="site-footer__brand-name">{{ settings.brand_name | default: shop.name }}</span>
+      {%- endif -%}
+      {%- if section.settings.tagline != blank -%}
+        <p class="site-footer__tagline">{{ section.settings.tagline }}</p>
+      {%- endif -%}
+      <div class="site-footer__social">
+        {%- if settings.social_instagram != blank -%}
+          <a href="{{ settings.social_instagram }}" class="site-footer__social-link" aria-label="Instagram" target="_blank" rel="noopener">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+          </a>
+        {%- endif -%}
+        {%- if settings.social_facebook != blank -%}
+          <a href="{{ settings.social_facebook }}" class="site-footer__social-link" aria-label="Facebook" target="_blank" rel="noopener">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+        {%- endif -%}
+        {%- if settings.social_twitter != blank -%}
+          <a href="{{ settings.social_twitter }}" class="site-footer__social-link" aria-label="Twitter" target="_blank" rel="noopener">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'link_list' -%}
+        <div class="site-footer__nav-col" {{ block.shopify_attributes }}>
+          {%- if block.settings.heading != blank -%}
+            <h3 class="site-footer__nav-heading">{{ block.settings.heading }}</h3>
+          {%- endif -%}
+          <ul class="site-footer__nav-list" role="list">
+            {%- for link in block.settings.menu.links -%}
+              <li><a href="{{ link.url }}" class="site-footer__nav-link">{{ link.title }}</a></li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- elsif block.type == 'text' -%}
+        <div class="site-footer__text-col" {{ block.shopify_attributes }}>
+          {%- if block.settings.heading != blank -%}
+            <h3 class="site-footer__nav-heading">{{ block.settings.heading }}</h3>
+          {%- endif -%}
+          <div class="site-footer__richtext">{{ block.settings.text }}</div>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+
+  <div class="site-footer__bottom page-width">
+    <p class="site-footer__legal">
+      &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.
+      {%- if shop.privacy_policy.url != blank -%} · <a href="{{ shop.privacy_policy.url }}">Privacy</a>{%- endif -%}
+      {%- if shop.terms_of_service.url != blank -%} · <a href="{{ shop.terms_of_service.url }}">Terms</a>{%- endif -%}
+    </p>
+    {%- if settings.show_currency_selector -%}
+      <div class="site-footer__currency">
+        <span>{{ settings.default_currency }}</span>
+      </div>
+    {%- endif -%}
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    { "type": "text", "id": "tagline", "label": "Brand tagline" }
+  ],
+  "blocks": [
+    {
+      "type": "link_list",
+      "name": "Navigation column",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Column heading" },
+        { "type": "link_list", "id": "menu", "label": "Menu" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text column",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Column heading" },
+        { "type": "richtext", "id": "text", "label": "Content" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Footer" }]
+}
+{% endschema %}

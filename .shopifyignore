@@ -1,0 +1,12 @@
+# Development files
+*.map
+*.min.js.map
+.DS_Store
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Build artifacts
+dist/
+.cache/

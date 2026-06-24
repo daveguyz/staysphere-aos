@@ -1,0 +1,56 @@
+<section class="featured-section section-padding">
+  <div class="page-width">
+    <div class="section-header">
+      <h2 class="section-header__title">{{ section.settings.heading | default: 'Featured stays' }}</h2>
+      {%- if section.settings.subheading != blank -%}
+        <p class="section-header__sub">{{ section.settings.subheading }}</p>
+      {%- endif -%}
+      <a href="{{ section.settings.cta_url | default: '/collections/all' }}" class="section-header__cta btn btn--ghost btn--sm">
+        {{ section.settings.cta_label | default: 'View all' }}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+
+    {% comment %} Skeleton cards shown while JS loads real data {% endcomment %}
+    <div class="property-grid" id="featured-properties-grid"
+         data-endpoint="/api/v1/properties/search"
+         data-params='{"size":{{ section.settings.count }}, "sortBy":"averageRating"}'
+         aria-label="Featured properties">
+      {% for i in (1..section.settings.count) %}
+        <div class="property-card property-card--skeleton" aria-hidden="true">
+          <div class="property-card__image-wrap skeleton-block"></div>
+          <div class="property-card__body">
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line skeleton-line--short"></div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% comment %} Shopify collection fallback (used when API is offline / mock mode) {% endcomment %}
+    {% if settings.api_mock_mode %}
+      <div class="property-grid property-grid--shopify" id="featured-shopify-fallback" hidden>
+        {%- assign collection = collections[section.settings.collection] | default: collections.all -%}
+        {%- for product in collection.products limit: section.settings.count -%}
+          {% render 'property-card', product: product %}
+        {%- endfor -%}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Featured properties",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Featured stays" },
+    { "type": "text", "id": "subheading", "label": "Subheading" },
+    { "type": "text", "id": "cta_label", "label": "View all label", "default": "View all stays" },
+    { "type": "url", "id": "cta_url", "label": "View all link" },
+    { "type": "range", "id": "count", "min": 3, "max": 12, "step": 3, "label": "Number of properties", "default": 6 },
+    { "type": "collection", "id": "collection", "label": "Fallback Shopify collection (mock mode)" }
+  ],
+  "presets": [{ "name": "Featured properties" }]
+}
+{% endschema %}

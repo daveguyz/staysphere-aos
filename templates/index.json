@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "announcement_bar": { "type": "announcement-bar", "disabled": true },
+    "hero": {
+      "type": "hero",
+      "blocks": {
+        "pill_1": { "type": "filter_pill", "settings": { "label": "Pet-friendly", "emoji": "🐾", "filter_type": "petFriendly", "filter_value": "true" } },
+        "pill_2": { "type": "filter_pill", "settings": { "label": "Pool", "emoji": "🏊", "filter_type": "hasPool", "filter_value": "true" } },
+        "pill_3": { "type": "filter_pill", "settings": { "label": "Etosha", "emoji": "🦁", "filter_type": "city", "filter_value": "Etosha" } },
+        "pill_4": { "type": "filter_pill", "settings": { "label": "Swakopmund", "emoji": "🌊", "filter_type": "city", "filter_value": "Swakopmund" } }
+      },
+      "block_order": ["pill_1", "pill_2", "pill_3", "pill_4"],
+      "settings": {
+        "heading": "Find your perfect stay in Namibia",
+        "subheading": "Curated lodges, guesthouses and self-catering across Southern Africa",
+        "overlay_opacity": 45,
+        "min_height": 640
+      }
+    },
+    "featured_properties": { "type": "featured-properties" },
+    "destinations_grid": { "type": "destinations-grid" },
+    "how_it_works": { "type": "how-it-works" },
+    "trust_badges": { "type": "trust-badges" }
+  },
+  "order": [
+    "announcement_bar",
+    "hero",
+    "featured_properties",
+    "destinations_grid",
+    "how_it_works",
+    "trust_badges"
+  ]
+}

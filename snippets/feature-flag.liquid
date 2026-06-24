@@ -1,0 +1,20 @@
+{% comment %}
+  Usage: {% render 'feature-flag', flag: 'feature_payments', content: 'some content' %}
+  Or use as a block wrapper with capture.
+
+  Parameters:
+  - flag: settings key to check (e.g. 'feature_payments')
+  - fallback_message: optional message shown when flag is off
+  - show_fallback: whether to render the fallback (default true for admin, false for guests)
+{% endcomment %}
+{%- assign flag_value = settings[flag] -%}
+{%- if flag_value -%}
+  {{ content }}
+{%- elsif show_fallback and customer.tags contains 'admin' -%}
+  <div class="feature-flag--disabled" title="Feature '{{ flag }}' is disabled in theme settings">
+    <span class="feature-flag--badge">⚙ Disabled</span>
+    {% if fallback_message != blank %}
+      <p class="feature-flag--message">{{ fallback_message }}</p>
+    {% endif %}
+  </div>
+{%- endif -%}

@@ -1,0 +1,147 @@
+<header class="site-header" role="banner" id="site-header">
+  <div class="site-header__inner page-width">
+
+    {% comment %} Logo {% endcomment %}
+    <a href="/" class="site-header__logo" aria-label="{{ shop.name }} home">
+      {%- if settings.logo != blank -%}
+        <img src="{{ settings.logo | image_url: width: settings.logo_width }}"
+             alt="{{ shop.name }}"
+             width="{{ settings.logo_width }}"
+             height="auto"
+             loading="eager">
+      {%- else -%}
+        <span class="site-header__logo-text">
+          {{ settings.brand_name | default: shop.name }}
+        </span>
+      {%- endif -%}
+    </a>
+
+    {% comment %} Primary navigation {% endcomment %}
+    <nav class="site-header__nav" role="navigation" aria-label="Main navigation">
+      {% for link in section.settings.menu.links %}
+        {%- if link.links != blank -%}
+          <div class="nav-item nav-item--has-dropdown">
+            <button class="nav-link nav-link--parent" aria-expanded="false" aria-haspopup="true">
+              {{ link.title }}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="nav-dropdown">
+              {%- for child in link.links -%}
+                <a href="{{ child.url }}" class="nav-dropdown__link">{{ child.title }}</a>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- else -%}
+          <a href="{{ link.url }}"
+             class="nav-link{% if link.url == request.path %} nav-link--active{% endif %}"
+             {% if link.url == request.path %}aria-current="page"{% endif %}>
+            {{ link.title }}
+          </a>
+        {%- endif -%}
+      {% endfor %}
+    </nav>
+
+    {% comment %} Header actions {% endcomment %}
+    <div class="site-header__actions">
+
+      {% comment %} Search trigger {% endcomment %}
+      <button class="header-icon-btn" id="search-toggle-btn" aria-label="Search" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      </button>
+
+      {% comment %} Notification bell — logged-in users only {% endcomment %}
+      {% if customer and settings.notifications_enabled %}
+        {% render 'notification-bell' %}
+      {% endif %}
+
+      {% comment %} Messaging — logged-in users with feature on {% endcomment %}
+      {% if customer and settings.messaging_enabled %}
+        {% render 'messaging-badge' %}
+      {% endif %}
+
+      {% comment %} Account {% endcomment %}
+      {%- if customer -%}
+        <div class="header-account nav-item nav-item--has-dropdown">
+          <button class="header-icon-btn header-account__btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+            {%- if customer.metafields.staysphere.avatar != blank -%}
+              <img src="{{ customer.metafields.staysphere.avatar }}" alt="{{ customer.first_name }}" class="header-account__avatar" width="32" height="32">
+            {%- else -%}
+              <span class="header-account__initials" aria-hidden="true">{{ customer.first_name | slice: 0 }}{{ customer.last_name | slice: 0 }}</span>
+            {%- endif -%}
+          </button>
+          <div class="nav-dropdown nav-dropdown--account">
+            <div class="nav-dropdown__user">
+              <strong>{{ customer.first_name }} {{ customer.last_name }}</strong>
+              <span>{{ customer.email }}</span>
+            </div>
+            <a href="/account" class="nav-dropdown__link">My bookings</a>
+            <a href="/pages/messages" class="nav-dropdown__link">Messages</a>
+            <a href="/account/profile" class="nav-dropdown__link">Profile &amp; settings</a>
+            {% if settings.feature_host_dashboard and customer.tags contains 'host' %}
+              <a href="/pages/host-dashboard" class="nav-dropdown__link">Host dashboard</a>
+            {% endif %}
+            {% if customer.tags contains 'admin' or customer.tags contains 'superadmin' %}
+              <a href="/pages/admin" class="nav-dropdown__link nav-dropdown__link--admin">Admin panel</a>
+            {% endif %}
+            <a href="/account/logout" class="nav-dropdown__link nav-dropdown__link--signout">Sign out</a>
+          </div>
+        </div>
+      {%- else -%}
+        <a href="/account/login" class="btn btn--ghost btn--sm">Sign in</a>
+        <a href="/account/register" class="btn btn--primary btn--sm">Get started</a>
+      {%- endif -%}
+
+      {% comment %} Mobile hamburger {% endcomment %}
+      <button class="mobile-menu-toggle header-icon-btn" id="mobile-menu-toggle"
+              aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+        <svg class="icon-menu" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        <svg class="icon-close hidden" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  {% comment %} Inline search bar {% endcomment %}
+  <div class="header-search" id="header-search" aria-hidden="true">
+    <div class="header-search__inner page-width">
+      <input type="search" id="header-search-input" class="header-search__input"
+             placeholder="{{ settings.search_placeholder }}"
+             aria-label="Search properties" autocomplete="off">
+      <button class="header-search__submit btn btn--primary" aria-label="Search">Search</button>
+      <button class="header-search__close header-icon-btn" id="search-close-btn" aria-label="Close search">✕</button>
+    </div>
+  </div>
+
+  {% comment %} Mobile menu {% endcomment %}
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true" aria-label="Mobile navigation">
+    <nav>
+      {% for link in section.settings.menu.links %}
+        <a href="{{ link.url }}" class="mobile-menu__link">{{ link.title }}</a>
+      {% endfor %}
+      <div class="mobile-menu__divider"></div>
+      {%- if customer -%}
+        <a href="/account" class="mobile-menu__link">My bookings</a>
+        <a href="/pages/messages" class="mobile-menu__link">Messages</a>
+        {% if settings.feature_host_dashboard and customer.tags contains 'host' %}
+          <a href="/pages/host-dashboard" class="mobile-menu__link">Host dashboard</a>
+        {% endif %}
+        <a href="/account/logout" class="mobile-menu__link">Sign out</a>
+      {%- else -%}
+        <a href="/account/login" class="mobile-menu__link mobile-menu__link--cta">Sign in</a>
+        <a href="/account/register" class="mobile-menu__link mobile-menu__link--cta mobile-menu__link--primary">Create account</a>
+      {%- endif -%}
+    </nav>
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "link_list", "id": "menu", "label": "Navigation menu", "default": "main-menu" }
+  ]
+}
+{% endschema %}

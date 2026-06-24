@@ -1,0 +1,34 @@
+{% comment %}
+  AI Concierge Widget
+  Rendered only when settings.feature_ai_concierge = true
+  Full implementation wired to /api/v1/ai/concierge once the AI service is deployed
+{% endcomment %}
+<div id="concierge-widget"
+     class="concierge-widget concierge-widget--{{ settings.concierge_position }} hidden"
+     data-greeting="{{ settings.concierge_greeting | escape }}"
+     aria-label="AI travel concierge chat">
+  <div class="concierge-widget__header">
+    <div class="concierge-widget__title">
+      <span class="concierge-widget__avatar">✦</span>
+      <span>AI Concierge</span>
+    </div>
+    <button class="concierge-widget__close" aria-label="Close concierge">✕</button>
+  </div>
+  <div class="concierge-widget__messages" id="concierge-messages" aria-live="polite"></div>
+  <form class="concierge-widget__input-row" id="concierge-form" autocomplete="off">
+    <input type="text" id="concierge-input"
+           placeholder="Ask anything about Namibia stays…"
+           aria-label="Message AI concierge"
+           maxlength="500" autocomplete="off">
+    <button type="submit" class="concierge-widget__send" aria-label="Send">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+    </button>
+  </form>
+</div>
+<button id="concierge-fab"
+        class="concierge-fab concierge-fab--{{ settings.concierge_position }}"
+        aria-label="Open AI travel concierge"
+        aria-expanded="false">
+  <span class="concierge-fab__icon" aria-hidden="true">✦</span>
+  <span class="concierge-fab__label">Ask AI</span>
+</button>

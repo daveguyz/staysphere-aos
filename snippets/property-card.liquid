@@ -1,0 +1,86 @@
+{% comment %}
+  Renders a property card. Accepts either:
+  - product: a Shopify product object (fallback / mock mode)
+  - property: a PropertyDTO JSON object (injected by JS after API call)
+  Call: {% render 'property-card', product: product %}
+  Or build the same HTML structure from JS using window.StaySphere.renderPropertyCard(dto)
+{% endcomment %}
+
+{%- assign img_ratio = settings.card_image_ratio | default: '3/2' -%}
+{%- assign prop_id = product.metafields.staysphere.property_id | default: product.id -%}
+
+<article class="property-card" data-property-id="{{ prop_id }}">
+  <a href="{{ product.url }}" class="property-card__image-link" tabindex="-1" aria-hidden="true">
+    <div class="property-card__image-wrap" style="aspect-ratio:{{ img_ratio }}">
+      {%- if product.featured_image -%}
+        <img src="{{ product.featured_image | image_url: width: 600 }}"
+             srcset="{{ product.featured_image | image_url: width: 400 }} 400w,
+                     {{ product.featured_image | image_url: width: 600 }} 600w,
+                     {{ product.featured_image | image_url: width: 900 }} 900w"
+             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+             alt="{{ product.featured_image.alt | default: product.title }}"
+             class="property-card__image"
+             {% if settings.perf_lazy_images %}loading="lazy"{% endif %}
+             width="600" height="400">
+      {%- else -%}
+        <div class="property-card__image-placeholder" aria-hidden="true">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+      {%- endif -%}
+      <div class="property-card__badges">
+        {%- if settings.card_show_trust_score -%}
+          {%- assign trust = product.metafields.staysphere.trust_score | plus: 0 -%}
+          {%- if trust >= 80 -%}
+            <span class="property-badge property-badge--trusted">✓ Trusted</span>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+      <button class="property-card__wishlist" data-property-id="{{ prop_id }}"
+              aria-label="Save {{ product.title | escape }} to wishlist"
+              aria-pressed="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+    </div>
+  </a>
+
+  <div class="property-card__body">
+    <p class="property-card__location">
+      📍 {{ product.metafields.staysphere.city | default: 'Namibia' }}
+    </p>
+    <h3 class="property-card__title">
+      <a href="{{ product.url }}">{{ product.title | truncate: 56 }}</a>
+    </h3>
+
+    <div class="property-card__meta">
+      {%- assign beds = product.metafields.staysphere.bedrooms | default: '' -%}
+      {%- if beds != '' -%}
+        <span class="property-card__meta-item">🛏 {{ beds }} bed{% if beds != '1' %}s{% endif %}</span>
+      {%- endif -%}
+      {%- assign guests = product.metafields.staysphere.max_guests | default: '' -%}
+      {%- if guests != '' -%}
+        <span class="property-card__meta-item">👥 Up to {{ guests }}</span>
+      {%- endif -%}
+    </div>
+
+    {%- if settings.card_show_rating -%}
+      <div class="property-card__rating">
+        {%- assign rating = product.metafields.staysphere.average_rating | plus: 0 -%}
+        {%- if rating > 0 -%}
+          <span class="property-card__stars" aria-label="{{ rating }} out of 5 stars">
+            ⭐ {{ rating | round: 1 }}
+          </span>
+          <span class="property-card__review-count">({{ product.metafields.staysphere.review_count | default: 0 }})</span>
+        {%- else -%}
+          <span class="property-card__new">New listing</span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="property-card__price">
+      <strong class="property-card__price-amount">
+        {{ settings.default_currency_symbol }}{{ product.price | money_without_currency }}
+      </strong>
+      <span class="property-card__price-unit">/ night</span>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,33 @@
+{% comment %} Auth is handled by auth-service; this page bridges Shopify account + JWT {% endcomment %}
+<div class="auth-page">
+  <div class="auth-page__card">
+    <h1 class="auth-page__title">Sign in</h1>
+    <p class="auth-page__sub">New here? <a href="/account/register">Create an account</a></p>
+
+    <div id="auth-error" class="auth-page__error hidden" role="alert"></div>
+
+    <form class="auth-form" id="login-form" novalidate>
+      <div class="form-field">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" name="email" autocomplete="email"
+               required placeholder="you@email.com">
+      </div>
+      <div class="form-field">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" name="password" autocomplete="current-password"
+               required minlength="8">
+        <button type="button" class="form-field__toggle-password" aria-label="Show password">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <a href="/account/forgot-password" class="auth-form__forgot-link">Forgot password?</a>
+      <button type="submit" class="btn btn--primary btn--full" id="login-btn">
+        <span class="btn-label">Sign in</span>
+        <span class="btn-spinner hidden" aria-hidden="true"></span>
+      </button>
+    </form>
+
+    <div class="auth-page__divider"><span>or</span></div>
+    <p class="auth-page__alt">Continue as a <a href="/collections/all">guest</a></p>
+  </div>
+</div>

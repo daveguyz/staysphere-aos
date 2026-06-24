@@ -1,0 +1,94 @@
+{
+  "general": {
+    "search": "Search",
+    "close": "Close",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "view_all": "View all",
+    "sign_in": "Sign in",
+    "sign_out": "Sign out",
+    "create_account": "Create account"
+  },
+  "hero": {
+    "search_where": "Where",
+    "search_checkin": "Check in",
+    "search_checkout": "Check out",
+    "search_guests": "Guests",
+    "search_button": "Search",
+    "ai_placeholder": "Or describe your perfect trip…",
+    "ai_button": "Ask AI"
+  },
+  "property": {
+    "nights": "night",
+    "nights_plural": "nights",
+    "guests": "guest",
+    "guests_plural": "guests",
+    "bedrooms": "bedroom",
+    "bedrooms_plural": "bedrooms",
+    "bathrooms": "bathroom",
+    "bathrooms_plural": "bathrooms",
+    "save_to_wishlist": "Save to wishlist",
+    "remove_from_wishlist": "Remove from wishlist",
+    "book_now": "Reserve",
+    "make_offer": "Make an offer",
+    "check_availability": "Check availability",
+    "new_listing": "New listing",
+    "per_night": "/ night",
+    "trusted_badge": "Trusted",
+    "cleaning_fee": "Cleaning fee",
+    "service_fee": "Service fee",
+    "taxes": "Taxes",
+    "total": "Total",
+    "not_yet_charged": "You won't be charged yet"
+  },
+  "booking": {
+    "confirm": "Confirm booking",
+    "cancelled": "Booking cancelled",
+    "pending_payment": "Awaiting payment",
+    "confirmed": "Confirmed",
+    "checked_in": "Checked in",
+    "checked_out": "Checked out"
+  },
+  "auth": {
+    "login_heading": "Sign in",
+    "register_heading": "Create your account",
+    "email": "Email",
+    "password": "Password",
+    "forgot_password": "Forgot password?",
+    "no_account": "New here?",
+    "have_account": "Already have one?",
+    "submit_login": "Sign in",
+    "submit_register": "Create account",
+    "terms_agreement": "I agree to the Terms of Service and Privacy Policy",
+    "become_host": "I also want to list my property as a host"
+  },
+  "errors": {
+    "api_offline": "Our servers are taking a moment. Showing cached results.",
+    "no_results": "No stays found for your search. Try adjusting your dates or location.",
+    "required_field": "This field is required",
+    "invalid_email": "Please enter a valid email address",
+    "password_too_short": "Password must be at least 8 characters",
+    "dates_required": "Please select check-in and check-out dates",
+    "dates_invalid": "Check-out must be after check-in"
+  },
+  "feature_disabled": {
+    "payments": "Payments are not yet active. Configure Stripe to enable bookings.",
+    "ai": "AI concierge coming soon.",
+    "reviews": "Reviews are not yet active.",
+    "messaging": "Messaging coming soon."
+  },
+  "accessibility": {
+    "skip_to_content": "Skip to content",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu",
+    "open_search": "Open search",
+    "close_search": "Close search",
+    "loading_properties": "Loading properties…",
+    "property_card": "Property: {{ title }}"
+  }
+}
