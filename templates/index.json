@@ -14,7 +14,7 @@
         "heading": "Find your perfect stay in Namibia",
         "subheading": "Curated lodges, guesthouses and self-catering across Southern Africa",
         "overlay_opacity": 45,
-        "min_height": 640
+        "min_height": 600
       }
     },
     "featured_properties": { "type": "featured-properties" },
