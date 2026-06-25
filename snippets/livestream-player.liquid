@@ -1,0 +1,68 @@
+{% comment %}
+  Livestream player embed — supports Mux HLS and YouTube.
+  Parameters:
+  - provider:    'MUX' | 'YOUTUBE' | 'NONE'
+  - stream_url:  HLS .m3u8 URL (Mux) or YouTube embed URL
+  - playback_id: Mux playback ID (alternative to stream_url)
+  - is_live:     boolean — whether stream is currently active
+  - lot_id:      string
+{% endcomment %}
+
+{%- assign has_stream = false -%}
+{%- if provider == 'MUX' and playback_id != blank -%}
+  {%- assign has_stream = true -%}
+{%- elsif provider == 'YOUTUBE' and stream_url != blank -%}
+  {%- assign has_stream = true -%}
+{%- endif -%}
+
+<div class="livestream-player{% unless has_stream %} livestream-player--empty{% endunless %}"
+     id="livestream-{{ lot_id }}"
+     data-provider="{{ provider }}"
+     data-playback-id="{{ playback_id }}"
+     data-stream-url="{{ stream_url }}"
+     data-lot-id="{{ lot_id }}"
+     data-is-live="{{ is_live }}"
+     aria-label="Auction livestream">
+
+  {%- if has_stream and is_live -%}
+    <div class="livestream-player__live-badge">
+      <span class="live-dot" aria-hidden="true"></span>
+      LIVE
+    </div>
+
+    {%- if provider == 'MUX' -%}
+      {%- comment -%} Mux HLS via hls.js — injected by plugin-auction-room.js {%- endcomment -%}
+      <div class="livestream-player__mux" id="mux-player-{{ lot_id }}">
+        <video id="mux-video-{{ lot_id }}"
+               class="livestream-player__video"
+               controls playsinline muted autoplay
+               aria-label="Auction livestream">
+        </video>
+      </div>
+
+    {%- elsif provider == 'YOUTUBE' -%}
+      <div class="livestream-player__youtube">
+        <iframe class="livestream-player__iframe"
+                src="{{ stream_url }}"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                loading="lazy"
+                title="Auction livestream">
+        </iframe>
+      </div>
+    {%- endif -%}
+
+  {%- elsif has_stream and is_live == false -%}
+    <div class="livestream-player__offline">
+      <span class="livestream-player__offline-icon" aria-hidden="true">📡</span>
+      <p class="livestream-player__offline-text">Stream not started yet</p>
+      <p class="livestream-player__offline-sub">The seller will go live when the auction opens</p>
+    </div>
+
+  {%- else -%}
+    <div class="livestream-player__none">
+      <span aria-hidden="true">🎥</span>
+      <p>No livestream for this auction</p>
+    </div>
+  {%- endif -%}
+</div>

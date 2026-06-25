@@ -1,0 +1,46 @@
+{% comment %}
+  Server-rendered countdown that hydrates to a live JS timer.
+  Parameters:
+  - ends_at: ISO datetime string (e.g. lot.scheduledEndsAt)
+  - lot_id:  string — used to correlate with WebSocket updates
+  - status:  'OPEN' | 'EXTENDED' | 'SCHEDULED' | 'CLOSED'
+{% endcomment %}
+{%- assign is_extended = false -%}
+{%- if status == 'EXTENDED' -%}
+  {%- assign is_extended = true -%}
+{%- endif -%}
+<div class="countdown-timer{% if is_extended %} countdown-timer--extended{% endif %}"
+     id="countdown-{{ lot_id }}"
+     data-ends-at="{{ ends_at }}"
+     data-lot-id="{{ lot_id }}"
+     data-status="{{ status }}"
+     role="timer"
+     aria-live="polite"
+     aria-label="Time remaining">
+  <div class="countdown-timer__segments">
+    <div class="countdown-timer__seg">
+      <span class="countdown-timer__num" data-part="d">--</span>
+      <span class="countdown-timer__lbl">days</span>
+    </div>
+    <span class="countdown-timer__colon" aria-hidden="true">:</span>
+    <div class="countdown-timer__seg">
+      <span class="countdown-timer__num" data-part="h">--</span>
+      <span class="countdown-timer__lbl">hrs</span>
+    </div>
+    <span class="countdown-timer__colon" aria-hidden="true">:</span>
+    <div class="countdown-timer__seg">
+      <span class="countdown-timer__num" data-part="m">--</span>
+      <span class="countdown-timer__lbl">min</span>
+    </div>
+    <span class="countdown-timer__colon" aria-hidden="true">:</span>
+    <div class="countdown-timer__seg">
+      <span class="countdown-timer__num countdown-timer__num--secs" data-part="s">--</span>
+      <span class="countdown-timer__lbl">sec</span>
+    </div>
+  </div>
+  {%- if is_extended -%}
+    <p class="countdown-timer__extended-note" aria-label="Anti-snipe extension active">
+      ⚡ Extended — someone bid in the last {{ settings.auction_anti_snipe_minutes }} min
+    </p>
+  {%- endif -%}
+</div>

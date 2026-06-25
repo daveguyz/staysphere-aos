@@ -1,0 +1,34 @@
+{%- if settings.feature_auctions -%}
+<section class="auction-hero-strip" id="auction-hero-strip"
+         data-endpoint="/api/v1/auctions/live"
+         aria-label="Live auctions">
+  <div class="auction-hero-strip__inner page-width">
+    <div class="auction-hero-strip__label">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span>{{ section.settings.label | default: 'Live auctions' }}</span>
+    </div>
+
+    <div class="auction-hero-strip__lots" id="auction-strip-lots">
+      {%- comment -%} JS fills this from /api/v1/auctions/live {%- endcomment -%}
+      <div class="auction-strip-skeleton" aria-hidden="true">
+        <div class="skeleton-line" style="width:180px;display:inline-block;"></div>
+      </div>
+    </div>
+
+    <a href="/pages/auctions" class="auction-hero-strip__cta btn btn--primary btn--sm">
+      {{ section.settings.cta_label | default: 'View all auctions' }}
+    </a>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Auction hero strip",
+  "settings": [
+    { "type": "text", "id": "label", "label": "Strip label", "default": "Live auctions" },
+    { "type": "text", "id": "cta_label", "label": "CTA label", "default": "View all auctions" }
+  ],
+  "presets": [{ "name": "Auction hero strip" }]
+}
+{% endschema %}

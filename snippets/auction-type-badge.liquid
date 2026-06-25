@@ -1,0 +1,34 @@
+{% comment %}
+  Renders an auction type badge pill.
+  Parameters:
+  - type: 'ENGLISH' | 'DUTCH' | 'REVERSE' | 'SEALED_BID'
+  - size: 'sm' | 'md' (default 'md')
+{% endcomment %}
+{%- assign badge_size = size | default: 'md' -%}
+{%- case type -%}
+  {%- when 'ENGLISH' -%}
+    {%- assign type_label = 'English' -%}
+    {%- assign type_icon  = '📈' -%}
+    {%- assign type_class = 'auction-type--english' -%}
+  {%- when 'DUTCH' -%}
+    {%- assign type_label = 'Dutch' -%}
+    {%- assign type_icon  = '📉' -%}
+    {%- assign type_class = 'auction-type--dutch' -%}
+  {%- when 'REVERSE' -%}
+    {%- assign type_label = 'Reverse' -%}
+    {%- assign type_icon  = '🔄' -%}
+    {%- assign type_class = 'auction-type--reverse' -%}
+  {%- when 'SEALED_BID' -%}
+    {%- assign type_label = 'Sealed Bid' -%}
+    {%- assign type_icon  = '🔒' -%}
+    {%- assign type_class = 'auction-type--sealed' -%}
+  {%- else -%}
+    {%- assign type_label = type -%}
+    {%- assign type_icon  = '🏷' -%}
+    {%- assign type_class = '' -%}
+{%- endcase -%}
+<span class="auction-type-badge auction-type-badge--{{ badge_size }} {{ type_class }}"
+      title="{{ type_label }} auction">
+  <span aria-hidden="true">{{ type_icon }}</span>
+  {{ type_label }}
+</span>

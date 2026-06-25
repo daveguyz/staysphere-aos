@@ -1,0 +1,64 @@
+{% comment %}
+  Sealed bid submission form.
+  Parameters:
+  - lot_id:          string
+  - currency_symbol: e.g. 'N$'
+  - starting_price:  number
+  - already_bid:     boolean — has this user already submitted a sealed bid?
+  - ends_at:         ISO datetime
+{% endcomment %}
+<div class="sealed-bid-form" id="sealed-bid-{{ lot_id }}" data-lot-id="{{ lot_id }}">
+  {%- if already_bid -%}
+    <div class="sealed-bid-form__submitted">
+      <span class="sealed-bid-form__submitted-icon" aria-hidden="true">✉</span>
+      <p class="sealed-bid-form__submitted-text">Your sealed bid has been received.</p>
+      <p class="sealed-bid-form__submitted-sub">
+        Bids are revealed when the auction closes.
+        {%- render 'countdown-timer', ends_at: ends_at, lot_id: lot_id, status: 'OPEN' -%}
+      </p>
+    </div>
+  {%- else -%}
+    <div class="sealed-bid-form__instructions">
+      <span class="sealed-bid-form__icon" aria-hidden="true">🔒</span>
+      <div>
+        <p class="sealed-bid-form__title">Submit your sealed bid</p>
+        <p class="sealed-bid-form__sub">
+          You can only bid once. All bids are revealed when the auction closes.
+          Highest sealed bid wins.
+        </p>
+      </div>
+    </div>
+
+    <div class="sealed-bid-form__input-group">
+      <label for="sealed-amount-{{ lot_id }}" class="sealed-bid-form__label">
+        Your bid ({{ currency_symbol }})
+      </label>
+      <div class="sealed-bid-form__input-wrap">
+        <span class="sealed-bid-form__currency">{{ currency_symbol }}</span>
+        <input type="number"
+               id="sealed-amount-{{ lot_id }}"
+               class="sealed-bid-form__input"
+               min="{{ starting_price }}"
+               step="1"
+               placeholder="{{ starting_price | times: 1.1 | round }}"
+               aria-label="Sealed bid amount"
+               autocomplete="off">
+      </div>
+    </div>
+
+    <div class="sealed-bid-form__confirm">
+      <label class="filter-checkbox">
+        <input type="checkbox" id="sealed-confirm-{{ lot_id }}" required>
+        <span>I understand my bid is final and cannot be changed after submission</span>
+      </label>
+    </div>
+
+    <button type="button"
+            class="btn btn--primary btn--full sealed-bid-submit"
+            id="sealed-submit-{{ lot_id }}"
+            data-lot-id="{{ lot_id }}">
+      <span class="btn-label">Submit sealed bid</span>
+      <span class="btn-spinner hidden" aria-hidden="true"></span>
+    </button>
+  {%- endif -%}
+</div>

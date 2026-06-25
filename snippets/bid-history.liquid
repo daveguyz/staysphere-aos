@@ -1,0 +1,34 @@
+{% comment %}
+  Real-time bid history feed.
+  Skeleton rendered server-side; JS fills from API + WebSocket stream.
+  Parameters:
+  - lot_id: string
+  - auction_type: 'ENGLISH' | 'DUTCH' | 'REVERSE' | 'SEALED_BID'
+{% endcomment %}
+<div class="bid-history"
+     id="bid-history-{{ lot_id }}"
+     data-lot-id="{{ lot_id }}"
+     data-type="{{ auction_type }}"
+     aria-label="Bid history" aria-live="polite">
+
+  <div class="bid-history__header">
+    <h3 class="bid-history__title">
+      {%- if auction_type == 'SEALED_BID' -%}
+        Sealed bids received
+      {%- else -%}
+        Bid history
+      {%- endif -%}
+    </h3>
+    <span class="bid-history__count" id="bid-count-{{ lot_id }}">0 bids</span>
+  </div>
+
+  <div class="bid-history__list" id="bid-list-{{ lot_id }}" role="log">
+    {%- comment -%} Skeleton placeholders {%- endcomment -%}
+    {%- for i in (1..4) -%}
+      <div class="bid-history__item bid-history__item--skeleton" aria-hidden="true">
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-line"></div>
+      </div>
+    {%- endfor -%}
+  </div>
+</div>

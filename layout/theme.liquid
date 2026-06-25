@@ -169,6 +169,12 @@
   {% if template.name == 'product' %}
     {{ 'plugin-product.js' | asset_url | script_tag }}
   {% endif %}
+  {% if template.name == 'page' and page.handle contains 'auction' %}
+    {{ 'plugin-auction.js' | asset_url | script_tag }}
+    {% if page.handle contains 'auction-room' %}
+      {{ 'plugin-auction-room.js' | asset_url | script_tag }}
+    {% endif %}
+  {% endif %}
 
   {{ 'theme.js' | asset_url | script_tag }}
 </body>

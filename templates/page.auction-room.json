@@ -1,0 +1,6 @@
+{
+  "sections": {
+    "auction_room": { "type": "auction-room" }
+  },
+  "order": ["auction_room"]
+}

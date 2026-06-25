@@ -1,0 +1,41 @@
+{% comment %}
+  Proxy bid ceiling input — shown on English auctions below the main bid form.
+  Parameters:
+  - lot_id:     string
+  - currency_symbol: e.g. 'N$'
+  - current_bid: current highest bid amount
+  - min_increment: minimum bid increment
+{% endcomment %}
+<details class="proxy-bid-details" id="proxy-bid-{{ lot_id }}">
+  <summary class="proxy-bid-summary">
+    <span class="proxy-bid-summary__icon" aria-hidden="true">🤖</span>
+    Set proxy (auto-bid) ceiling
+    <span class="proxy-bid-summary__caret" aria-hidden="true">›</span>
+  </summary>
+  <div class="proxy-bid-body">
+    <p class="proxy-bid-body__explain">
+      Set the maximum you're willing to pay. The system will automatically
+      outbid competitors on your behalf up to this ceiling — you only pay
+      what's needed to stay ahead.
+    </p>
+    <div class="proxy-bid-input-row">
+      <span class="proxy-bid-currency">{{ currency_symbol }}</span>
+      <input type="number"
+             id="proxy-ceiling-{{ lot_id }}"
+             class="proxy-bid-input"
+             min="{{ current_bid | plus: min_increment }}"
+             step="{{ min_increment }}"
+             placeholder="Your max (e.g. {{ currency_symbol }}{{ current_bid | plus: min_increment | times: 3 }})"
+             aria-label="Proxy bid ceiling">
+      <button type="button"
+              class="btn btn--ghost btn--sm proxy-bid-set"
+              data-lot-id="{{ lot_id }}"
+              aria-label="Set proxy ceiling">
+        Set ceiling
+      </button>
+    </div>
+    <p class="proxy-bid-body__note">
+      Your ceiling is private — other bidders never see it.
+    </p>
+  </div>
+</details>

@@ -1,0 +1,276 @@
+{%- comment -%}
+  Live auction room — the core Phase D UI.
+  Lot ID comes from URL: /pages/auction-room?lot=xxx
+  All live data (current bid, countdown, bid feed, presence) is loaded by plugin-auction-room.js.
+{%- endcomment -%}
+
+{%- assign lot_id       = request.query_string | split: 'lot=' | last | split: '&' | first -%}
+{%- assign sym          = settings.auction_currency_symbol | default: 'N$' -%}
+{%- assign ws_url       = settings.auction_websocket_url -%}
+{%- assign feature_live = settings.feature_live_bidding -%}
+{%- assign anti_snipe_m = settings.auction_anti_snipe_minutes | default: 5 -%}
+
+{%- if lot_id == blank -%}
+  <div class="page-width" style="padding:80px 0;text-align:center;">
+    <h1>No auction lot specified</h1>
+    <p>Please go back to <a href="/pages/auctions">all auctions</a>.</p>
+  </div>
+{%- else -%}
+
+<div class="auction-room"
+     id="auction-room"
+     data-lot-id="{{ lot_id }}"
+     data-ws-url="{{ ws_url }}"
+     data-api="{{ settings.api_gateway_url }}/api/v1"
+     data-currency="{{ settings.default_currency }}"
+     data-currency-symbol="{{ sym }}"
+     data-anti-snipe-minutes="{{ anti_snipe_m }}"
+     data-feature-deposits="{{ settings.feature_auction_deposits }}"
+     data-feature-kyc="{{ settings.feature_auction_kyc }}"
+     data-feature-proxy="{{ settings.feature_proxy_bidding }}"
+     data-feature-live="{{ feature_live }}"
+     data-show-viewers="{{ settings.auction_show_viewer_count }}"
+     data-show-bid-history="{{ settings.auction_show_bid_history_realtime }}">
+
+  {%- comment -%} ── ROOM HEADER (breadcrumb + status bar) ── {%- endcomment -%}
+  <div class="auction-room__topbar page-width">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/" class="breadcrumb__link">Home</a>
+      <span class="breadcrumb__sep" aria-hidden="true">›</span>
+      <a href="/pages/auctions" class="breadcrumb__link">Auctions</a>
+      <span class="breadcrumb__sep" aria-hidden="true">›</span>
+      <span class="breadcrumb__current" id="room-lot-title" aria-current="page">Loading…</span>
+    </nav>
+    <div class="auction-room__status-bar">
+      <span class="auction-room__status-badge" id="room-status-badge">
+        <span class="skeleton-inline" aria-hidden="true"></span>
+      </span>
+      {%- if settings.auction_show_viewer_count -%}
+        <span class="auction-room__viewers" id="room-viewers" aria-label="Viewers">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span id="viewer-count">–</span>
+        </span>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- comment -%} ── MAIN ROOM LAYOUT ── {%- endcomment -%}
+  <div class="auction-room__body page-width">
+
+    {%- comment -%} ── LEFT: media + lot detail ── {%- endcomment -%}
+    <div class="auction-room__left">
+
+      {%- comment -%} Livestream player / gallery — filled by JS {%- endcomment -%}
+      <div class="auction-room__media" id="room-media">
+        <div class="auction-room__media-skeleton skeleton-block" aria-hidden="true"></div>
+      </div>
+
+      {%- comment -%} Lot info ── {%- endcomment -%}
+      <div class="auction-room__lot-info" id="room-lot-info">
+        <div class="auction-room__lot-meta">
+          <span class="auction-room__lot-type" id="room-lot-type">
+            <span class="skeleton-inline" aria-hidden="true"></span>
+          </span>
+          <p class="auction-room__lot-location" id="room-lot-location">
+            <span class="skeleton-line skeleton-line--short" aria-hidden="true"></span>
+          </p>
+        </div>
+        <h1 class="auction-room__lot-title" id="room-lot-title-h1">
+          <span class="skeleton-line" aria-hidden="true"></span>
+        </h1>
+        <div class="auction-room__lot-description rte" id="room-lot-description">
+          <span class="skeleton-line" aria-hidden="true"></span>
+          <span class="skeleton-line" aria-hidden="true"></span>
+          <span class="skeleton-line skeleton-line--short" aria-hidden="true"></span>
+        </div>
+        <button class="btn btn--ghost btn--sm" id="room-view-property-btn" hidden>
+          View property details →
+        </button>
+      </div>
+
+      {%- comment -%} Bid history feed ── {%- endcomment -%}
+      {%- if settings.auction_show_bid_history_realtime -%}
+        {% render 'bid-history', lot_id: lot_id, auction_type: '' %}
+      {%- endif -%}
+
+    </div>
+
+    {%- comment -%} ── RIGHT: countdown + bidding panel ── {%- endcomment -%}
+    <div class="auction-room__right">
+
+      {%- comment -%} Countdown timer ── {%- endcomment -%}
+      <div class="auction-room__countdown-wrap" id="room-countdown-wrap">
+        {% render 'countdown-timer', ends_at: '', lot_id: lot_id, status: 'SCHEDULED' %}
+      </div>
+
+      {%- comment -%} Current bid display ── {%- endcomment -%}
+      <div class="auction-room__current-bid" id="room-current-bid-panel"
+           aria-live="polite" aria-atomic="true">
+        <p class="auction-room__bid-label" id="room-bid-label">Current bid</p>
+        <p class="auction-room__bid-amount" id="room-bid-amount">
+          <span class="skeleton-inline" aria-hidden="true"></span>
+        </p>
+        <p class="auction-room__bid-meta" id="room-bid-meta"></p>
+      </div>
+
+      {%- comment -%} ── BIDDING PANEL ── state-managed by JS {%- endcomment -%}
+      <div class="auction-room__bid-panel" id="room-bid-panel">
+
+        {%- comment -%} State: LOADING {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--loading" id="bid-state-loading">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line skeleton-line--short"></div>
+        </div>
+
+        {%- comment -%} State: NOT_STARTED (lot is SCHEDULED) {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--scheduled hidden" id="bid-state-scheduled">
+          <div class="bid-panel-state__icon" aria-hidden="true">⏳</div>
+          <p class="bid-panel-state__title">Auction not yet open</p>
+          <p class="bid-panel-state__sub" id="bid-state-scheduled-msg">Check back when the auction starts.</p>
+        </div>
+
+        {%- comment -%} State: DEPOSIT REQUIRED {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--deposit hidden" id="bid-state-deposit">
+          <div class="bid-panel-state__icon" aria-hidden="true">💳</div>
+          <p class="bid-panel-state__title">Deposit required to bid</p>
+          <p class="bid-panel-state__sub">A refundable deposit of <strong id="deposit-amount-display">{{ sym }}—</strong> is required to participate in this auction.</p>
+          <a href="/pages/deposit?lot={{ lot_id }}"
+             class="btn btn--primary btn--full" id="bid-deposit-btn">
+            Pay deposit &amp; bid
+          </a>
+        </div>
+
+        {%- comment -%} State: KYC REQUIRED {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--kyc hidden" id="bid-state-kyc">
+          <div class="bid-panel-state__icon" aria-hidden="true">🪪</div>
+          <p class="bid-panel-state__title">Identity verification required</p>
+          <p class="bid-panel-state__sub">This lot requires identity verification before bidding.</p>
+          <a href="/pages/kyc?lot={{ lot_id }}&return_to=/pages/auction-room?lot={{ lot_id }}"
+             class="btn btn--primary btn--full" id="bid-kyc-btn">
+            Verify identity
+          </a>
+        </div>
+
+        {%- comment -%} State: NOT LOGGED IN {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--auth hidden" id="bid-state-auth">
+          <div class="bid-panel-state__icon" aria-hidden="true">🔐</div>
+          <p class="bid-panel-state__title">Sign in to place bids</p>
+          <a href="/account/login?return_to=/pages/auction-room?lot={{ lot_id }}"
+             class="btn btn--primary btn--full">Sign in</a>
+          <a href="/account/register?return_to=/pages/auction-room?lot={{ lot_id }}"
+             class="btn btn--ghost btn--full" style="margin-top:8px;">Create account</a>
+        </div>
+
+        {%- comment -%} State: ENGLISH auction — live bidding {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--english hidden" id="bid-state-english">
+          <div class="auction-room__bid-form">
+            <label for="bid-amount-input" class="auction-room__bid-form-label">
+              Your bid ({{ sym }})
+            </label>
+            <div class="auction-room__bid-input-row">
+              <span class="auction-room__bid-currency">{{ sym }}</span>
+              <input type="number"
+                     id="bid-amount-input"
+                     class="auction-room__bid-input"
+                     step="1"
+                     aria-label="Bid amount"
+                     autocomplete="off">
+              <button class="btn btn--primary auction-room__bid-submit"
+                      id="bid-submit-btn"
+                      aria-label="Place bid">
+                <span class="btn-label">Bid</span>
+                <span class="btn-spinner hidden" aria-hidden="true"></span>
+              </button>
+            </div>
+            <p class="auction-room__bid-hint" id="bid-minimum-hint"></p>
+          </div>
+
+          {%- if settings.feature_proxy_bidding -%}
+            {% render 'proxy-bid-form',
+               lot_id: lot_id,
+               currency_symbol: sym,
+               current_bid: 0,
+               min_increment: 100 %}
+          {%- endif -%}
+        </div>
+
+        {%- comment -%} State: DUTCH auction — accept current price {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--dutch hidden" id="bid-state-dutch">
+          <div class="auction-room__dutch-panel">
+            <p class="auction-room__dutch-label">Current price</p>
+            <p class="auction-room__dutch-price" id="dutch-current-price">
+              <span class="skeleton-inline" aria-hidden="true"></span>
+            </p>
+            <p class="auction-room__dutch-hint">Price drops every <span id="dutch-interval">–</span> seconds</p>
+            <button class="btn btn--primary btn--full auction-room__dutch-accept"
+                    id="dutch-accept-btn">
+              <span class="btn-label">Accept this price</span>
+              <span class="btn-spinner hidden" aria-hidden="true"></span>
+            </button>
+            <p class="auction-room__dutch-note">First to accept wins immediately</p>
+          </div>
+        </div>
+
+        {%- comment -%} State: SEALED BID {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--sealed hidden" id="bid-state-sealed">
+          {% render 'sealed-bid-envelope',
+             lot_id: lot_id,
+             currency_symbol: sym,
+             starting_price: 0,
+             already_bid: false,
+             ends_at: '' %}
+        </div>
+
+        {%- comment -%} State: REVERSE auction {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--reverse hidden" id="bid-state-reverse">
+          <p class="auction-room__reverse-explain">
+            <strong>Lowest unique bid wins.</strong> Submit the lowest amount you think no one else will bid.
+          </p>
+          <div class="auction-room__bid-form">
+            <label for="reverse-amount-input" class="auction-room__bid-form-label">
+              Your bid ({{ sym }}) — aim low and unique
+            </label>
+            <div class="auction-room__bid-input-row">
+              <span class="auction-room__bid-currency">{{ sym }}</span>
+              <input type="number"
+                     id="reverse-amount-input"
+                     class="auction-room__bid-input"
+                     step="1" min="1"
+                     aria-label="Reverse bid amount"
+                     autocomplete="off">
+              <button class="btn btn--primary auction-room__bid-submit"
+                      id="reverse-submit-btn">
+                <span class="btn-label">Submit</span>
+                <span class="btn-spinner hidden" aria-hidden="true"></span>
+              </button>
+            </div>
+            <p class="auction-room__bid-hint" id="reverse-bid-count"></p>
+          </div>
+        </div>
+
+        {%- comment -%} State: CLOSED / SETTLED {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--closed hidden" id="bid-state-closed">
+          <div class="bid-panel-state__icon" aria-hidden="true">🔨</div>
+          <p class="bid-panel-state__title" id="bid-closed-title">Auction closed</p>
+          <p class="bid-panel-state__sub" id="bid-closed-sub"></p>
+          <a href="/pages/auctions" class="btn btn--ghost btn--full" style="margin-top:16px;">
+            Browse more auctions
+          </a>
+        </div>
+
+      </div>{%- comment -%} end bid panel {%- endcomment -%}
+
+    </div>{%- comment -%} end right {%- endcomment -%}
+
+  </div>{%- comment -%} end body {%- endcomment -%}
+
+</div>{%- comment -%} end auction-room {%- endcomment -%}
+
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Auction room",
+  "settings": []
+}
+{% endschema %}

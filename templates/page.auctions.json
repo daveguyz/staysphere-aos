@@ -1,0 +1,6 @@
+{
+  "sections": {
+    "auction_listing": { "type": "auction-listing" }
+  },
+  "order": ["auction_listing"]
+}

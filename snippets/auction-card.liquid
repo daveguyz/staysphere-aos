@@ -1,0 +1,89 @@
+{% comment %}
+  Renders a single auction lot card for the listing grid.
+  Accepts a JS AuctionLotDTO object — built by plugin-auction.js renderAuctionCard().
+  This Liquid version is used only for the Shopify static fallback.
+  Parameters:
+  - lot: JS object or null (JS-injected cards bypass this)
+{% endcomment %}
+<article class="auction-card" data-lot-id="{{ lot.id }}">
+  <a href="/pages/auction-room?lot={{ lot.id }}" class="auction-card__image-link"
+     tabindex="-1" aria-hidden="true">
+    <div class="auction-card__image-wrap">
+      {%- if lot.firstImageUrl != blank -%}
+        <img src="{{ lot.firstImageUrl }}"
+             alt="{{ lot.title }}"
+             class="auction-card__image"
+             loading="lazy" width="600" height="400">
+      {%- else -%}
+        <div class="auction-card__image-placeholder" aria-hidden="true">🏠</div>
+      {%- endif -%}
+      <div class="auction-card__badges">
+        {%- render 'auction-type-badge', type: lot.auctionType, size: 'sm' -%}
+        {%- if lot.status == 'OPEN' or lot.status == 'EXTENDED' -%}
+          <span class="auction-card__live-badge">
+            <span class="live-dot" aria-hidden="true"></span> Live
+          </span>
+        {%- endif -%}
+        {%- if lot.livestreamActive -%}
+          <span class="auction-card__stream-badge">📡 Streaming</span>
+        {%- endif -%}
+      </div>
+    </div>
+  </a>
+
+  <div class="auction-card__body">
+    <p class="auction-card__location">📍 {{ lot.propertyCity | default: lot.city }}</p>
+    <h3 class="auction-card__title">
+      <a href="/pages/auction-room?lot={{ lot.id }}">{{ lot.title | truncate: 60 }}</a>
+    </h3>
+
+    <div class="auction-card__price-row">
+      <div>
+        {%- if lot.status == 'OPEN' or lot.status == 'EXTENDED' -%}
+          <span class="auction-card__price-label">Current bid</span>
+          <p class="auction-card__price">
+            {{ settings.auction_currency_symbol }}{{ lot.currentBidAmount | default: lot.startingPrice }}
+          </p>
+        {%- else -%}
+          <span class="auction-card__price-label">Starting</span>
+          <p class="auction-card__price">
+            {{ settings.auction_currency_symbol }}{{ lot.startingPrice }}
+          </p>
+        {%- endif -%}
+      </div>
+      <div class="auction-card__bids">
+        <span class="auction-card__bid-count">{{ lot.totalBids | default: 0 }}</span>
+        <span class="auction-card__bid-label">bids</span>
+      </div>
+    </div>
+
+    {%- if lot.status == 'SCHEDULED' -%}
+      <p class="auction-card__timing">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Starts {{ lot.startsAt }}
+      </p>
+    {%- else -%}
+      <div class="auction-card__countdown-wrap">
+        {%- render 'countdown-timer', ends_at: lot.scheduledEndsAt, lot_id: lot.id, status: lot.status -%}
+      </div>
+    {%- endif -%}
+
+    {%- if lot.depositRequired -%}
+      <p class="auction-card__deposit-notice">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Deposit required
+      </p>
+    {%- endif -%}
+
+    <a href="/pages/auction-room?lot={{ lot.id }}"
+       class="btn btn--primary btn--full auction-card__cta">
+      {%- if lot.status == 'OPEN' or lot.status == 'EXTENDED' -%}
+        Bid now
+      {%- elsif lot.status == 'SCHEDULED' -%}
+        View lot
+      {%- else -%}
+        View results
+      {%- endif -%}
+    </a>
+  </div>
+</article>

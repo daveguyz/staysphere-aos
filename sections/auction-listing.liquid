@@ -1,0 +1,175 @@
+<div class="auction-listing-page" id="auction-listing-page"
+     data-api="{{ settings.api_gateway_url }}/api/v1/auctions"
+     data-search-api="{{ settings.api_gateway_url }}/api/v1/search/auctions"
+     data-use-es="{{ settings.auction_search_elasticsearch }}">
+
+  {%- comment -%} ── PAGE HEADER ── {%- endcomment -%}
+  <div class="auction-listing-header page-width">
+    <div>
+      <h1 class="auction-listing-header__title">
+        {{ section.settings.heading | default: 'Auction OS' }}
+      </h1>
+      <p class="auction-listing-header__sub" id="auction-result-count" aria-live="polite">
+        <span class="skeleton-inline" aria-hidden="true">Loading</span>
+      </p>
+    </div>
+    <div class="auction-listing-header__controls">
+      <div class="sort-select-wrap">
+        <label for="auction-sort" class="visually-hidden">Sort by</label>
+        <select id="auction-sort" class="sort-select">
+          <option value="startsAt">Ending soonest</option>
+          <option value="currentBid">Highest bid</option>
+          <option value="startingPrice_asc">Starting price ↑</option>
+          <option value="startingPrice_desc">Starting price ↓</option>
+          <option value="totalBids">Most active</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  {%- comment -%} ── TABS: Live / Upcoming / Closed ── {%- endcomment -%}
+  <div class="auction-tabs page-width" role="tablist" aria-label="Auction status filter">
+    <button class="auction-tab auction-tab--active" role="tab"
+            data-statuses="OPEN,EXTENDED" id="tab-live" aria-selected="true"
+            aria-controls="auction-grid">
+      <span class="live-dot" aria-hidden="true"></span> Live
+      <span class="auction-tab__count" id="tab-live-count"></span>
+    </button>
+    <button class="auction-tab" role="tab"
+            data-statuses="SCHEDULED" id="tab-upcoming" aria-selected="false"
+            aria-controls="auction-grid">
+      Upcoming
+      <span class="auction-tab__count" id="tab-upcoming-count"></span>
+    </button>
+    {%- if settings.show_dutch_auction_tab -%}
+      <button class="auction-tab" role="tab"
+              data-statuses="OPEN,EXTENDED,SCHEDULED" data-type="DUTCH"
+              id="tab-dutch" aria-selected="false" aria-controls="auction-grid">
+        📉 Dutch
+      </button>
+    {%- endif -%}
+    {%- if settings.show_reverse_auction_tab -%}
+      <button class="auction-tab" role="tab"
+              data-statuses="OPEN,EXTENDED,SCHEDULED" data-type="REVERSE"
+              id="tab-reverse" aria-selected="false" aria-controls="auction-grid">
+        🔄 Reverse
+      </button>
+    {%- endif -%}
+    {%- if settings.show_sealed_bid_tab -%}
+      <button class="auction-tab" role="tab"
+              data-statuses="OPEN,EXTENDED,SCHEDULED" data-type="SEALED_BID"
+              id="tab-sealed" aria-selected="false" aria-controls="auction-grid">
+        🔒 Sealed
+      </button>
+    {%- endif -%}
+    <button class="auction-tab" role="tab"
+            data-statuses="CLOSED,SETTLED,NO_RESERVE" id="tab-closed" aria-selected="false"
+            aria-controls="auction-grid">
+      Closed
+    </button>
+  </div>
+
+  <div class="auction-listing-body page-width">
+
+    {%- comment -%} ── FILTER SIDEBAR ── {%- endcomment -%}
+    <aside class="filter-panel filter-panel--auction" id="auction-filter-panel"
+           aria-label="Filter auctions">
+      <div class="filter-panel__header">
+        <h2 class="filter-panel__title">Filters</h2>
+        <button class="filter-panel__close" id="auction-filter-close" aria-label="Close">✕</button>
+      </div>
+      <form id="auction-filter-form">
+        <div class="filter-group">
+          <h3 class="filter-group__label">Destination</h3>
+          <input type="text" name="city" id="auction-filter-city"
+                 class="filter-city-input" placeholder="Windhoek, Etosha…"
+                 autocomplete="off" list="auction-city-suggestions">
+          <datalist id="auction-city-suggestions">
+            <option value="Windhoek"><option value="Swakopmund">
+            <option value="Etosha"><option value="Sossusvlei">
+            <option value="Lüderitz"><option value="Walvis Bay">
+          </datalist>
+        </div>
+        <div class="filter-group">
+          <h3 class="filter-group__label">Starting price (N$)</h3>
+          <div class="filter-price-row">
+            <div class="form-field">
+              <label for="auction-min-price">Min</label>
+              <input type="number" id="auction-min-price" name="minPrice"
+                     min="0" step="1000" class="filter-price-input" placeholder="0">
+            </div>
+            <span class="filter-price-sep">–</span>
+            <div class="form-field">
+              <label for="auction-max-price">Max</label>
+              <input type="number" id="auction-max-price" name="maxPrice"
+                     min="0" step="1000" class="filter-price-input" placeholder="Any">
+            </div>
+          </div>
+        </div>
+        <div class="filter-group">
+          <h3 class="filter-group__label">Options</h3>
+          <div class="filter-checkbox-list">
+            <label class="filter-checkbox">
+              <input type="checkbox" name="hasLivestream" value="true">
+              <span>📡 With livestream</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" name="liveOnly" value="true">
+              <span><span class="live-dot" aria-hidden="true"></span> Live now only</span>
+            </label>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button type="submit" class="btn btn--primary btn--full">Apply filters</button>
+          <button type="reset" class="btn btn--ghost btn--full" id="auction-filter-reset">Reset</button>
+        </div>
+      </form>
+    </aside>
+
+    {%- comment -%} ── RESULTS GRID ── {%- endcomment -%}
+    <div class="auction-results">
+      <div class="property-grid property-grid--auctions"
+           id="auction-grid"
+           role="tabpanel" aria-labelledby="tab-live"
+           aria-live="polite">
+        {%- comment -%} Skeleton placeholders {%- endcomment -%}
+        {%- for i in (1..6) -%}
+          <div class="auction-card auction-card--skeleton" aria-hidden="true">
+            <div class="auction-card__image-wrap skeleton-block"></div>
+            <div class="auction-card__body">
+              <div class="skeleton-line skeleton-line--short"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line skeleton-line--short"></div>
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <div class="collection-empty-state hidden" id="auction-empty">
+        <div class="collection-empty-state__icon">🔨</div>
+        <h2 class="collection-empty-state__title">No auctions found</h2>
+        <p class="collection-empty-state__text">
+          Try a different tab or clear your filters.
+        </p>
+      </div>
+
+      <nav class="collection-pagination hidden" id="auction-pagination"
+           aria-label="Auction pages">
+        <button class="btn btn--ghost btn--sm pag-btn" id="auction-pag-prev" disabled>← Previous</button>
+        <span class="pag-info" id="auction-pag-info"></span>
+        <button class="btn btn--ghost btn--sm pag-btn" id="auction-pag-next">Next →</button>
+      </nav>
+    </div>
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Auction listing",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Page heading", "default": "Auction OS" },
+    { "type": "range", "id": "lots_per_page", "min": 6, "max": 48, "step": 6, "label": "Lots per page", "default": 24 }
+  ]
+}
+{% endschema %}
