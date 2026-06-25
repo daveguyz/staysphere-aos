@@ -180,6 +180,12 @@
      or page.handle == 'auction-success' %}
     {{ 'plugin-auth.js' | asset_url | script_tag }}
   {% endif %}
+  {% if page.handle == 'booking-checkout' or page.handle == 'booking-success' %}
+    {{ 'plugin-booking.js' | asset_url | script_tag }}
+  {% endif %}
+  {% if page.handle == 'host-dashboard' or page.handle == 'property-create' %}
+    {{ 'plugin-host.js' | asset_url | script_tag }}
+  {% endif %}
 
   {{ 'theme.js' | asset_url | script_tag }}
 </body>

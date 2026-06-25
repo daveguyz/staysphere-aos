@@ -1,0 +1,148 @@
+{%- assign sym = settings.default_currency_symbol | default: 'N$' -%}
+
+<div class="host-dashboard page-width section-padding"
+     id="host-dashboard"
+     data-api="{{ settings.api_gateway_url }}"
+     data-currency-symbol="{{ sym }}">
+
+  {%- comment -%} ── HEADER ── {%- endcomment -%}
+  <div class="host-dashboard__header">
+    <div>
+      <h1 class="host-dashboard__title">Host dashboard</h1>
+      <p class="host-dashboard__sub" id="host-welcome">
+        <span class="skeleton-line skeleton-line--short" aria-hidden="true"></span>
+      </p>
+    </div>
+    <a href="/pages/property-create" class="btn btn--primary">
+      + Add new property
+    </a>
+  </div>
+
+  {%- comment -%} ── STAT CARDS ── {%- endcomment -%}
+  <div class="host-stats-grid" id="host-stats-grid" aria-label="Revenue overview">
+    {%- for stat in section.settings.stat_labels -%}
+      <div class="host-stat-card">
+        <p class="host-stat-card__label">Loading…</p>
+        <p class="host-stat-card__value skeleton-inline" aria-hidden="true"></p>
+      </div>
+    {%- else -%}
+      {%- assign stat_defs = "Revenue this month,Bookings this month,Active listings,Avg rating" | split: "," -%}
+      {%- assign stat_ids  = "stat-revenue,stat-bookings,stat-listings,stat-rating"              | split: "," -%}
+      {%- for label in stat_defs -%}
+        <div class="host-stat-card host-stat-card--skeleton" id="{{ stat_ids[forloop.index0] }}">
+          <p class="host-stat-card__label">{{ label }}</p>
+          <p class="host-stat-card__value">
+            <span class="skeleton-inline" aria-hidden="true"></span>
+          </p>
+        </div>
+      {%- endfor -%}
+    {%- endfor -%}
+  </div>
+
+  {%- comment -%} ── TABS ── {%- endcomment -%}
+  <div class="account-tabs host-tabs" role="tablist" aria-label="Dashboard sections">
+    <button class="account-tab account-tab--active" role="tab"
+            data-panel="hpanel-listings" id="htab-listings"
+            aria-selected="true" aria-controls="hpanel-listings">
+      My listings
+    </button>
+    <button class="account-tab" role="tab"
+            data-panel="hpanel-bookings" id="htab-bookings"
+            aria-selected="false" aria-controls="hpanel-bookings">
+      Bookings
+    </button>
+    <button class="account-tab" role="tab"
+            data-panel="hpanel-revenue" id="htab-revenue"
+            aria-selected="false" aria-controls="hpanel-revenue">
+      Revenue
+    </button>
+    <button class="account-tab" role="tab"
+            data-panel="hpanel-calendar" id="htab-calendar"
+            aria-selected="false" aria-controls="hpanel-calendar">
+      Calendar
+    </button>
+  </div>
+
+  {%- comment -%} ── PANEL: LISTINGS ── {%- endcomment -%}
+  <div class="account-panel" id="hpanel-listings"
+       role="tabpanel" aria-labelledby="htab-listings">
+    <div class="host-listings-grid" id="host-listings-grid" aria-live="polite">
+      {%- for i in (1..3) -%}
+        <div class="host-listing-card host-listing-card--skeleton" aria-hidden="true">
+          <div class="skeleton-block host-listing-card__image"></div>
+          <div class="host-listing-card__body">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="host-listing-card__actions">
+              <div class="skeleton-line skeleton-line--short"></div>
+            </div>
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+    <div class="account-empty hidden" id="host-listings-empty">
+      <p>No listings yet.</p>
+      <a href="/pages/property-create" class="btn btn--primary" style="margin-top:12px;">
+        List your first property
+      </a>
+    </div>
+  </div>
+
+  {%- comment -%} ── PANEL: BOOKINGS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="hpanel-bookings"
+       role="tabpanel" aria-labelledby="htab-bookings">
+    <div class="host-bookings-table" id="host-bookings-table" aria-live="polite">
+      <div class="host-bookings-table__header">
+        <span>Property</span><span>Guest</span><span>Dates</span>
+        <span>Amount</span><span>Status</span><span>Action</span>
+      </div>
+      <div id="host-bookings-rows">
+        {%- for i in (1..4) -%}
+          <div class="host-bookings-table__row host-bookings-table__row--skeleton" aria-hidden="true">
+            {%- for j in (1..6) -%}<div class="skeleton-line"></div>{%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+    <div class="account-empty hidden" id="host-bookings-empty">
+      <p>No bookings yet.</p>
+    </div>
+  </div>
+
+  {%- comment -%} ── PANEL: REVENUE CHART ── {%- endcomment -%}
+  <div class="account-panel hidden" id="hpanel-revenue"
+       role="tabpanel" aria-labelledby="htab-revenue">
+    <div class="host-revenue-chart" id="host-revenue-chart" aria-label="Monthly revenue chart">
+      <div class="skeleton-block" style="height:240px;border-radius:var(--radius);"
+           id="revenue-chart-placeholder" aria-hidden="true"></div>
+    </div>
+    <div class="host-revenue-table" id="host-revenue-table">
+      <div class="host-revenue-table__header">
+        <span>Month</span><span>Bookings</span><span>Revenue</span><span>Payout</span>
+      </div>
+      <div id="host-revenue-rows"></div>
+    </div>
+  </div>
+
+  {%- comment -%} ── PANEL: CALENDAR (availability) ── {%- endcomment -%}
+  <div class="account-panel hidden" id="hpanel-calendar"
+       role="tabpanel" aria-labelledby="htab-calendar">
+    <div class="host-calendar-controls">
+      <label for="host-cal-property" class="visually-hidden">Select property</label>
+      <select id="host-cal-property" class="sort-select" aria-label="Select property">
+        <option value="">Select a property</option>
+      </select>
+    </div>
+    <div class="host-calendar-grid" id="host-calendar-grid" aria-label="Availability calendar">
+      <p class="host-calendar-empty">Select a property to view its availability calendar.</p>
+    </div>
+  </div>
+
+</div>
+
+{% schema %}
+{
+  "name": "Host dashboard",
+  "settings": []
+}
+{% endschema %}

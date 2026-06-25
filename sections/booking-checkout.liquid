@@ -1,0 +1,208 @@
+{%- comment -%}
+  Booking checkout page.
+  URL params: propertyId, checkIn, checkOut, guests (passed from booking widget)
+  Stripe Elements mounted here; plugin-booking.js drives the full flow.
+{%- endcomment -%}
+
+{%- assign prop_id   = request.query_string | split: 'propertyId=' | last | split: '&' | first -%}
+{%- assign check_in  = request.query_string | split: 'checkIn='    | last | split: '&' | first -%}
+{%- assign check_out = request.query_string | split: 'checkOut='   | last | split: '&' | first -%}
+{%- assign guests    = request.query_string | split: 'guests='     | last | split: '&' | first -%}
+{%- assign sym       = settings.default_currency_symbol | default: 'N$' -%}
+
+<div class="checkout-page page-width section-padding"
+     id="checkout-page"
+     data-property-id="{{ prop_id }}"
+     data-check-in="{{ check_in }}"
+     data-check-out="{{ check_out }}"
+     data-guests="{{ guests }}"
+     data-api="{{ settings.api_gateway_url }}"
+     data-stripe-key="{{ settings.stripe_publishable_key }}"
+     data-currency-symbol="{{ sym }}">
+
+  <h1 class="checkout-page__title">Confirm your booking</h1>
+
+  <div class="checkout-layout">
+
+    {%- comment -%} ── LEFT: Property summary + payment form ── {%- endcomment -%}
+    <div class="checkout-main">
+
+      {%- comment -%} Property card (JS-loaded) ── {%- endcomment -%}
+      <div class="checkout-property-card" id="checkout-property-card">
+        <div class="checkout-property-card__image skeleton-block"></div>
+        <div class="checkout-property-card__info">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line skeleton-line--short"></div>
+          <div class="checkout-property-card__dates">
+            <div class="skeleton-line skeleton-line--short"></div>
+          </div>
+        </div>
+      </div>
+
+      {%- comment -%} Guest details ── {%- endcomment -%}
+      <div class="checkout-section" id="checkout-guest-section">
+        <h2 class="checkout-section__title">Guest details</h2>
+        <div class="checkout-guest-form">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="checkout-first-name">First name</label>
+              <input type="text" id="checkout-first-name" class="checkout-input"
+                     autocomplete="given-name" required>
+            </div>
+            <div class="form-field">
+              <label for="checkout-last-name">Last name</label>
+              <input type="text" id="checkout-last-name" class="checkout-input"
+                     autocomplete="family-name" required>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="checkout-email">Email</label>
+            <input type="email" id="checkout-email" class="checkout-input"
+                   autocomplete="email" required>
+          </div>
+          <div class="form-field">
+            <label for="checkout-phone">Phone</label>
+            <input type="tel" id="checkout-phone" class="checkout-input"
+                   autocomplete="tel" placeholder="+264 XX XXX XXXX">
+          </div>
+          <div class="form-field">
+            <label for="checkout-requests">Special requests (optional)</label>
+            <textarea id="checkout-requests" class="checkout-input checkout-textarea"
+                      rows="3" placeholder="Early check-in, dietary needs, pets…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      {%- comment -%} Payment ── {%- endcomment -%}
+      {%- if settings.feature_payments -%}
+      <div class="checkout-section" id="checkout-payment-section">
+        <h2 class="checkout-section__title">Payment</h2>
+
+        <div class="checkout-payment-methods" id="checkout-payment-methods">
+          <label class="checkout-payment-option checkout-payment-option--active" id="pay-card-option">
+            <input type="radio" name="payment_method" value="card" checked>
+            <span class="checkout-payment-option__icon" aria-hidden="true">💳</span>
+            <span>Credit / Debit card</span>
+            <div class="checkout-payment-option__card-icons" aria-hidden="true">
+              <span>VISA</span><span>MC</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="form-field" id="checkout-card-name-field">
+          <label for="checkout-card-holder">Name on card</label>
+          <input type="text" id="checkout-card-holder" class="checkout-input"
+                 autocomplete="cc-name" required>
+        </div>
+
+        <div class="form-field">
+          <label for="stripe-checkout-card">Card details</label>
+          <div id="stripe-checkout-card" class="stripe-element-mount"
+               aria-label="Card details" role="group">
+            <div class="stripe-element-placeholder" id="checkout-card-placeholder">
+              <div class="skeleton-line" aria-hidden="true"></div>
+            </div>
+          </div>
+          <div id="checkout-card-errors" class="stripe-element-errors" role="alert" aria-live="polite"></div>
+        </div>
+      </div>
+      {%- endif -%}
+
+      {%- comment -%} Cancellation policy ── {%- endcomment -%}
+      <div class="checkout-section checkout-section--policy" id="checkout-policy">
+        <h2 class="checkout-section__title">Cancellation policy</h2>
+        <div id="checkout-policy-text" class="checkout-policy-text">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line skeleton-line--short"></div>
+        </div>
+      </div>
+
+      {%- comment -%} Confirmation checkbox ── {%- endcomment -%}
+      <label class="filter-checkbox checkout-confirm-check">
+        <input type="checkbox" id="checkout-confirm" required>
+        <span>I agree to the <a href="{{ shop.terms_of_service.url }}" target="_blank">House rules</a> and <a href="{{ shop.privacy_policy.url }}" target="_blank">Privacy policy</a></span>
+      </label>
+
+      <div id="checkout-error" class="auth-page__error hidden" role="alert"></div>
+
+      <button type="button" class="btn btn--primary btn--full checkout-pay-btn"
+              id="checkout-pay-btn" style="margin-top:20px;">
+        <span class="btn-label" id="checkout-pay-label">
+          {%- if settings.feature_payments -%}Confirm and pay{%- else -%}Request booking{%- endif -%}
+        </span>
+        <span class="btn-spinner hidden" aria-hidden="true"></span>
+      </button>
+
+      <p class="checkout-footer-note">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        {%- if settings.feature_payments -%}
+          Secured by Stripe · You won't be charged until confirmed
+        {%- else -%}
+          You won't be charged until the host confirms your booking
+        {%- endif -%}
+      </p>
+
+    </div>
+
+    {%- comment -%} ── RIGHT: Price breakdown sidebar ── {%- endcomment -%}
+    <aside class="checkout-sidebar">
+      <div class="checkout-price-card" id="checkout-price-card">
+        <div class="checkout-price-card__header">
+          <p class="checkout-price-card__rate" id="checkout-rate">
+            <span class="skeleton-inline" aria-hidden="true"></span>
+          </p>
+          <p class="checkout-price-card__dates" id="checkout-dates">
+            <span class="skeleton-line skeleton-line--short" aria-hidden="true"></span>
+          </p>
+        </div>
+
+        <div class="checkout-price-breakdown" id="checkout-breakdown">
+          <div class="bw-line">
+            <span id="checkout-nights-label">— × —</span>
+            <span id="checkout-nights-amt">–</span>
+          </div>
+          <div class="bw-line">
+            <span>Cleaning fee</span>
+            <span id="checkout-cleaning">–</span>
+          </div>
+          <div class="bw-line">
+            <span>Service fee</span>
+            <span id="checkout-service">–</span>
+          </div>
+          {%- if settings.feature_payments -%}
+          <div class="bw-line">
+            <span>Taxes</span>
+            <span id="checkout-taxes">–</span>
+          </div>
+          {%- endif -%}
+          <div class="bw-line bw-line--total">
+            <strong>Total</strong>
+            <strong id="checkout-total">–</strong>
+          </div>
+        </div>
+
+        {%- comment -%} Availability badge ── {%- endcomment -%}
+        <div class="checkout-availability" id="checkout-availability"
+             aria-live="polite"></div>
+      </div>
+
+      {%- comment -%} Host card (JS-loaded) ── {%- endcomment -%}
+      <div class="checkout-host-card hidden" id="checkout-host-card">
+        <div class="checkout-host-card__avatar" id="checkout-host-avatar" aria-hidden="true"></div>
+        <div class="checkout-host-card__info">
+          <p class="checkout-host-card__name" id="checkout-host-name"></p>
+          <p class="checkout-host-card__since" id="checkout-host-since"></p>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Booking checkout",
+  "settings": []
+}
+{% endschema %}

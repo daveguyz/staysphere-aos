@@ -1,0 +1,102 @@
+{%- assign booking_id = request.query_string | split: 'booking=' | last | split: '&' | first -%}
+{%- assign sym = settings.default_currency_symbol | default: 'N$' -%}
+
+<div class="booking-success-page page-width section-padding"
+     id="booking-success-page"
+     data-booking-id="{{ booking_id }}"
+     data-api="{{ settings.api_gateway_url }}"
+     data-currency-symbol="{{ sym }}">
+
+  {%- comment -%} ── SUCCESS CARD (default) ── {%- endcomment -%}
+  <div class="booking-success-card" id="booking-success-card">
+
+    <div class="booking-success-card__icon" aria-hidden="true">🎉</div>
+    <h1 class="booking-success-card__title">You're booked!</h1>
+    <p class="booking-success-card__sub">
+      Confirmation details have been sent to your email.
+    </p>
+
+    {%- comment -%} Booking summary (JS-loaded) ── {%- endcomment -%}
+    <div class="booking-success-card__summary" id="booking-summary">
+      <div class="booking-success-card__summary-row">
+        <div class="booking-success-card__summary-item">
+          <span class="booking-success-card__summary-label">Property</span>
+          <span class="booking-success-card__summary-value" id="bs-property">
+            <span class="skeleton-line skeleton-line--short" aria-hidden="true"></span>
+          </span>
+        </div>
+        <div class="booking-success-card__summary-item">
+          <span class="booking-success-card__summary-label">Check-in</span>
+          <span class="booking-success-card__summary-value" id="bs-checkin">–</span>
+        </div>
+        <div class="booking-success-card__summary-item">
+          <span class="booking-success-card__summary-label">Check-out</span>
+          <span class="booking-success-card__summary-value" id="bs-checkout">–</span>
+        </div>
+        <div class="booking-success-card__summary-item">
+          <span class="booking-success-card__summary-label">Guests</span>
+          <span class="booking-success-card__summary-value" id="bs-guests">–</span>
+        </div>
+        <div class="booking-success-card__summary-item">
+          <span class="booking-success-card__summary-label">Total</span>
+          <span class="booking-success-card__summary-value booking-success-card__summary-value--total"
+                id="bs-total">–</span>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Access code (shown when booking is CONFIRMED) ── {%- endcomment -%}
+    <div class="booking-success-card__access hidden" id="bs-access-section">
+      <div class="booking-access-code" id="bs-access-code-wrap">
+        <p class="booking-access-code__label">Your access code</p>
+        <p class="booking-access-code__code" id="bs-access-code"
+           aria-label="Access code">––––</p>
+        <button class="btn btn--ghost btn--sm" id="bs-copy-code-btn" aria-label="Copy access code">
+          Copy
+        </button>
+      </div>
+    </div>
+
+    {%- comment -%} What happens next ── {%- endcomment -%}
+    <div class="booking-success-card__next-steps">
+      <h2 class="booking-success-card__next-title">What's next</h2>
+      <ol class="booking-success-card__steps">
+        <li class="booking-success-card__step">
+          <span aria-hidden="true">📧</span>
+          <div>
+            <strong>Check your email</strong>
+            <p>Booking confirmation and property details sent to your inbox.</p>
+          </div>
+        </li>
+        <li class="booking-success-card__step">
+          <span aria-hidden="true">💬</span>
+          <div>
+            <strong>Message your host</strong>
+            <p>Introduce yourself and confirm arrival time.</p>
+          </div>
+        </li>
+        <li class="booking-success-card__step">
+          <span aria-hidden="true">🏠</span>
+          <div>
+            <strong>Enjoy your stay</strong>
+            <p>Your access code will be available 24 hours before check-in.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="booking-success-card__actions">
+      <a href="/account" class="btn btn--primary">View my bookings</a>
+      <a href="/collections/all" class="btn btn--ghost">Browse more stays</a>
+    </div>
+
+  </div>
+
+</div>
+
+{% schema %}
+{
+  "name": "Booking success",
+  "settings": []
+}
+{% endschema %}

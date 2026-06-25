@@ -5,7 +5,8 @@
     "theme_version": "1.0.0",
     "theme_author": "StaySphere",
     "theme_documentation_url": "https://docs.staysphere.com/theme",
-    "theme_support_url": "https://support.staysphere.com"
+    "theme_support_url": "https://support.staysphere.com",
+    "settings": []
   },
   {
     "name": "Brand",
@@ -575,6 +576,12 @@
         "id": "feature_bookings",
         "label": "Booking engine enabled",
         "default": true
+      },
+      {
+        "type": "text",
+        "id": "stripe_publishable_key",
+        "label": "Stripe publishable key",
+        "info": "Used by the booking checkout for card payments (pk_live_... or pk_test_...)"
       },
       {
         "type": "checkbox",

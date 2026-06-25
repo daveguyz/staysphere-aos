@@ -1,0 +1,304 @@
+{%- comment -%}
+  Multi-step property creation form.
+  Steps: 1 Basic info → 2 Location → 3 Details → 4 Pricing → 5 Photos → 6 Review
+  Plugin-host.js drives step transitions and API submission.
+{%- endcomment -%}
+
+<div class="property-create-page page-width section-padding"
+     id="property-create-page"
+     data-api="{{ settings.api_gateway_url }}"
+     data-mode="{{ request.query_string | split: 'mode=' | last | split: '&' | first | default: 'create' }}"
+     data-property-id="{{ request.query_string | split: 'propertyId=' | last | split: '&' | first }}">
+
+  {%- comment -%} ── STEP INDICATOR ── {%- endcomment -%}
+  <div class="property-create-steps" id="property-create-steps" role="list"
+       aria-label="Form steps">
+    {%- assign step_labels = "Basics,Location,Details,Pricing,Photos,Review" | split: "," -%}
+    {%- for label in step_labels -%}
+      <div class="property-create-step{% if forloop.first %} property-create-step--active{% endif %}"
+           id="step-indicator-{{ forloop.index }}"
+           role="listitem"
+           aria-label="Step {{ forloop.index }}: {{ label }}"
+           aria-current="{% if forloop.first %}step{% else %}false{% endif %}">
+        <span class="property-create-step__num">{{ forloop.index }}</span>
+        <span class="property-create-step__label">{{ label }}</span>
+      </div>
+    {%- endfor -%}
+  </div>
+
+  <div class="property-create-form" id="property-create-form">
+
+    {%- comment -%} ── STEP 1: Basic info ── {%- endcomment -%}
+    <div class="property-create-panel" id="pstep-1">
+      <h2 class="property-create-panel__title">Tell us about your property</h2>
+      <div class="property-create-panel__fields">
+        <div class="form-field">
+          <label for="pc-title">Property name *</label>
+          <input type="text" id="pc-title" name="title"
+                 class="checkout-input" required
+                 placeholder="e.g. Desert Dune Lodge, Sossusvlei">
+        </div>
+        <div class="form-field">
+          <label for="pc-type">Property type *</label>
+          <select id="pc-type" name="propertyType" class="sort-select" required>
+            <option value="">Select type</option>
+            <option value="LODGE">Lodge</option>
+            <option value="GUESTHOUSE">Guesthouse</option>
+            <option value="SELF_CATERING">Self-catering unit</option>
+            <option value="TENTED_CAMP">Tented camp</option>
+            <option value="BOUTIQUE_HOTEL">Boutique hotel</option>
+            <option value="FARM_STAY">Farm stay</option>
+            <option value="PRIVATE_VILLA">Private villa</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="pc-description">Description *</label>
+          <textarea id="pc-description" name="description"
+                    class="checkout-input checkout-textarea" rows="6" required
+                    placeholder="Describe the space, vibe, and what makes it special for guests…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="pc-bedrooms">Bedrooms *</label>
+            <input type="number" id="pc-bedrooms" name="bedrooms"
+                   class="checkout-input" min="1" max="50" required>
+          </div>
+          <div class="form-field">
+            <label for="pc-bathrooms">Bathrooms *</label>
+            <input type="number" id="pc-bathrooms" name="bathrooms"
+                   class="checkout-input" min="1" max="50" step="0.5" required>
+          </div>
+          <div class="form-field">
+            <label for="pc-max-guests">Max guests *</label>
+            <input type="number" id="pc-max-guests" name="maxGuests"
+                   class="checkout-input" min="1" max="100" required>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} ── STEP 2: Location ── {%- endcomment -%}
+    <div class="property-create-panel hidden" id="pstep-2">
+      <h2 class="property-create-panel__title">Where is it?</h2>
+      <div class="property-create-panel__fields">
+        <div class="form-field">
+          <label for="pc-address">Street address *</label>
+          <input type="text" id="pc-address" name="address"
+                 class="checkout-input" required
+                 placeholder="Farm No. 123, Gam Road">
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="pc-city">City / Town *</label>
+            <input type="text" id="pc-city" name="city"
+                   class="checkout-input" required
+                   list="pc-city-suggestions" placeholder="Windhoek">
+            <datalist id="pc-city-suggestions">
+              <option value="Windhoek"><option value="Swakopmund">
+              <option value="Walvis Bay"><option value="Lüderitz">
+              <option value="Keetmanshoop"><option value="Otjiwarongo">
+              <option value="Etosha"><option value="Sossusvlei">
+              <option value="Damaraland"><option value="Caprivi Strip">
+            </datalist>
+          </div>
+          <div class="form-field">
+            <label for="pc-region">Region</label>
+            <select id="pc-region" name="region" class="sort-select">
+              <option value="">Select region</option>
+              <option value="Khomas">Khomas</option>
+              <option value="Erongo">Erongo</option>
+              <option value="Oshana">Oshana</option>
+              <option value="Kavango">Kavango</option>
+              <option value="Kunene">Kunene</option>
+              <option value="Karas">Karas</option>
+              <option value="Hardap">Hardap</option>
+              <option value="Otjozondjupa">Otjozondjupa</option>
+              <option value="Omaheke">Omaheke</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="pc-lat">Latitude</label>
+            <input type="number" id="pc-lat" name="latitude"
+                   class="checkout-input" step="0.000001"
+                   placeholder="-22.5597">
+          </div>
+          <div class="form-field">
+            <label for="pc-lng">Longitude</label>
+            <input type="number" id="pc-lng" name="longitude"
+                   class="checkout-input" step="0.000001"
+                   placeholder="17.0832">
+          </div>
+        </div>
+        <p class="property-create-panel__help">
+          💡 You can get lat/lng from
+          <a href="https://maps.google.com" target="_blank" rel="noopener">Google Maps</a>
+          by right-clicking on your property location.
+        </p>
+      </div>
+    </div>
+
+    {%- comment -%} ── STEP 3: Details & amenities ── {%- endcomment -%}
+    <div class="property-create-panel hidden" id="pstep-3">
+      <h2 class="property-create-panel__title">Details & amenities</h2>
+      <div class="property-create-panel__fields">
+        <div class="form-field">
+          <label class="property-create-panel__label">What do you offer?</label>
+          <div class="amenity-picker" id="amenity-picker">
+            {%- assign amenities = "WiFi,Pool,Parking,Braai,Kitchen,AirConditioning,Fireplace,PetFriendly,GameDrives,BreakfastIncluded,Laundry,SelfCatering,HotTub,Gym,CampingAllowed" | split: "," -%}
+            {%- assign amenity_icons = "📶,🏊,🚗,🔥,🍳,❄,🔥,🐾,🦁,🥞,👗,🍳,🛁,💪,⛺" | split: "," -%}
+            {%- for amenity in amenities -%}
+              <label class="amenity-picker__item">
+                <input type="checkbox" name="amenities" value="{{ amenity }}">
+                <span class="amenity-picker__icon" aria-hidden="true">{{ amenity_icons[forloop.index0] }}</span>
+                <span>{{ amenity | replace: '_', ' ' }}</span>
+              </label>
+            {%- endfor -%}
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="pc-check-in-time">Check-in time</label>
+          <input type="time" id="pc-check-in-time" name="checkInTime"
+                 class="checkout-input" value="14:00">
+        </div>
+        <div class="form-field">
+          <label for="pc-check-out-time">Check-out time</label>
+          <input type="time" id="pc-check-out-time" name="checkOutTime"
+                 class="checkout-input" value="10:00">
+        </div>
+        <div class="form-field">
+          <label for="pc-cancellation">Cancellation policy</label>
+          <select id="pc-cancellation" name="cancellationPolicy" class="sort-select">
+            <option value="FLEXIBLE">Flexible — full refund up to 24h before</option>
+            <option value="MODERATE" selected>Moderate — full refund up to 5 days before</option>
+            <option value="STRICT">Strict — 50% refund up to 14 days before</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="pc-house-rules">House rules</label>
+          <textarea id="pc-house-rules" name="houseRules"
+                    class="checkout-input checkout-textarea" rows="4"
+                    placeholder="No smoking indoors | Quiet time after 10pm | No parties | Guests must supply own firewood…"></textarea>
+          <p class="form-field__hint">Separate rules with a pipe character ( | )</p>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} ── STEP 4: Pricing ── {%- endcomment -%}
+    <div class="property-create-panel hidden" id="pstep-4">
+      <h2 class="property-create-panel__title">Set your price</h2>
+      <div class="property-create-panel__fields">
+        <div class="form-field">
+          <label for="pc-base-rate">Nightly rate ({{ settings.default_currency | default: 'NAD' }}) *</label>
+          <div class="property-create-panel__currency-input">
+            <span class="property-create-panel__currency-sym">
+              {{ settings.default_currency_symbol | default: 'N$' }}
+            </span>
+            <input type="number" id="pc-base-rate" name="baseRate"
+                   class="checkout-input" min="1" step="50" required
+                   placeholder="1500">
+          </div>
+          <p class="form-field__hint">Average for Namibia: N$800–N$3,500/night</p>
+        </div>
+        <div class="form-field">
+          <label for="pc-cleaning-fee">Cleaning fee ({{ settings.default_currency | default: 'NAD' }})</label>
+          <div class="property-create-panel__currency-input">
+            <span class="property-create-panel__currency-sym">
+              {{ settings.default_currency_symbol | default: 'N$' }}
+            </span>
+            <input type="number" id="pc-cleaning-fee" name="cleaningFee"
+                   class="checkout-input" min="0" step="50" placeholder="0">
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="pc-min-nights">Minimum nights</label>
+          <input type="number" id="pc-min-nights" name="minimumNights"
+                 class="checkout-input" min="1" max="365" value="2">
+        </div>
+        <div class="form-field">
+          <label for="pc-max-nights">Maximum nights</label>
+          <input type="number" id="pc-max-nights" name="maximumNights"
+                 class="checkout-input" min="1" max="365" value="30">
+        </div>
+        <div class="form-field form-field--checkbox">
+          <input type="checkbox" id="pc-instant-book" name="instantBook" value="true">
+          <label for="pc-instant-book">Enable instant booking (no host approval needed)</label>
+        </div>
+        <div class="property-create-panel__price-preview" id="pc-price-preview" hidden>
+          <p class="property-create-panel__price-preview-label">Estimated earnings per booking (7 nights)</p>
+          <p class="property-create-panel__price-preview-amount" id="pc-earnings-preview">–</p>
+          <p class="property-create-panel__price-preview-note">After our 10% platform fee</p>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} ── STEP 5: Photos ── {%- endcomment -%}
+    <div class="property-create-panel hidden" id="pstep-5">
+      <h2 class="property-create-panel__title">Add photos</h2>
+      <p class="property-create-panel__sub">
+        Add at least 3 photos. The first photo will be your cover image.
+        Great photos get 3× more bookings.
+      </p>
+      <div class="photo-upload-zone" id="photo-upload-zone"
+           aria-label="Drop photos here or click to upload">
+        <input type="file" id="pc-photos" name="photos"
+               accept="image/jpeg,image/png,image/webp"
+               multiple class="photo-upload-zone__input"
+               aria-label="Upload property photos">
+        <div class="photo-upload-zone__inner">
+          <span class="photo-upload-zone__icon" aria-hidden="true">📷</span>
+          <p class="photo-upload-zone__text">
+            Drag photos here or <button type="button" class="photo-upload-zone__browse-btn"
+                                        id="pc-browse-btn">browse</button>
+          </p>
+          <p class="photo-upload-zone__hint">JPEG, PNG or WebP · Max 10MB per photo</p>
+        </div>
+      </div>
+      <div class="photo-preview-grid" id="photo-preview-grid" aria-live="polite"></div>
+      <p class="property-create-panel__photo-count" id="pc-photo-count" aria-live="polite"></p>
+    </div>
+
+    {%- comment -%} ── STEP 6: Review & submit ── {%- endcomment -%}
+    <div class="property-create-panel hidden" id="pstep-6">
+      <h2 class="property-create-panel__title">Review your listing</h2>
+      <div class="property-create-review" id="property-create-review"
+           aria-live="polite">
+        {%- comment -%} JS builds a preview card from collected form data {%- endcomment -%}
+      </div>
+      <div class="property-create-panel__fields">
+        <div class="form-field form-field--checkbox">
+          <input type="checkbox" id="pc-agree-terms" required>
+          <label for="pc-agree-terms">
+            I confirm all information is accurate and I agree to the
+            <a href="{{ shop.terms_of_service.url }}" target="_blank">Host Terms</a>
+          </label>
+        </div>
+      </div>
+
+      <div id="pc-submit-error" class="auth-page__error hidden" role="alert"></div>
+    </div>
+
+    {%- comment -%} ── NAVIGATION BUTTONS ── {%- endcomment -%}
+    <div class="property-create-nav" id="property-create-nav">
+      <button type="button" class="btn btn--ghost" id="pc-prev-btn" hidden>
+        ← Back
+      </button>
+      <button type="button" class="btn btn--primary" id="pc-next-btn">
+        Continue →
+      </button>
+      <button type="button" class="btn btn--primary hidden" id="pc-submit-btn">
+        <span class="btn-label">Publish listing</span>
+        <span class="btn-spinner hidden" aria-hidden="true"></span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Property create",
+  "settings": []
+}
+{% endschema %}
