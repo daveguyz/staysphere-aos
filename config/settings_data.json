@@ -64,7 +64,11 @@
     "feature_auction_kyc": false,
     "feature_auction_livestream": false,
     "auction_anti_snipe_minutes": 5,
-    "auction_currency_symbol": "N$"
+    "auction_currency_symbol": "N$",
+    "feature_fraud_ai": false,
+    "show_dutch_auction_tab": true,
+    "show_reverse_auction_tab": true,
+    "show_sealed_bid_tab": true
   },
   "presets": {}
 }

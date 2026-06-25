@@ -714,6 +714,45 @@
         "id": "auction_currency_symbol",
         "label": "Auction currency symbol",
         "default": "N$"
+      },
+      {
+        "type": "header",
+        "content": "KYC & Fraud"
+      },
+      {
+        "type": "text",
+        "id": "stripe_kyc_publishable_key",
+        "label": "Stripe publishable key (KYC)",
+        "info": "Used by the KYC form to init Stripe Identity"
+      },
+      {
+        "type": "checkbox",
+        "id": "feature_fraud_ai",
+        "label": "Enable AI fraud detection",
+        "default": false,
+        "info": "Requires ANTHROPIC_API_KEY configured on the server"
+      },
+      {
+        "type": "header",
+        "content": "Auction Types Visible on Storefront"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_dutch_auction_tab",
+        "label": "Show Dutch auction tab",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_reverse_auction_tab",
+        "label": "Show reverse auction tab",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_sealed_bid_tab",
+        "label": "Show sealed bid tab",
+        "default": true
       }
     ]
   },
