@@ -753,6 +753,53 @@
         "id": "show_sealed_bid_tab",
         "label": "Show sealed bid tab",
         "default": true
+      },
+      {
+        "type": "header",
+        "content": "Livestream"
+      },
+      {
+        "type": "select",
+        "id": "auction_livestream_provider",
+        "label": "Livestream provider",
+        "options": [
+          {
+            "value": "NONE",
+            "label": "No livestream"
+          },
+          {
+            "value": "MUX",
+            "label": "Mux (recommended \u2014 low latency)"
+          },
+          {
+            "value": "YOUTUBE",
+            "label": "YouTube Live"
+          }
+        ],
+        "default": "NONE"
+      },
+      {
+        "type": "checkbox",
+        "id": "auction_show_viewer_count",
+        "label": "Show live viewer count in auction room",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "auction_show_bid_history_realtime",
+        "label": "Show real-time bid history feed",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Search"
+      },
+      {
+        "type": "checkbox",
+        "id": "auction_search_elasticsearch",
+        "label": "Use Elasticsearch for auction search (faster)",
+        "default": false,
+        "info": "Enable once search-service is deployed with Elasticsearch"
       }
     ]
   },

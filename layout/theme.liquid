@@ -112,6 +112,10 @@
       data-feature-auction-kyc="{{ settings.feature_auction_kyc }}"
       data-feature-livestream="{{ settings.feature_auction_livestream }}"
       data-auction-ws="{{ settings.auction_websocket_url | default: '' }}"
+      data-auction-livestream-provider="{{ settings.auction_livestream_provider }}"
+      data-auction-show-viewers="{{ settings.auction_show_viewer_count }}"
+      data-auction-bid-history="{{ settings.auction_show_bid_history_realtime }}"
+      data-auction-use-es="{{ settings.auction_search_elasticsearch }}"
       data-customer-id="{{ customer.id | default: '' }}"
       data-customer-email="{{ customer.email | default: '' }}">
 

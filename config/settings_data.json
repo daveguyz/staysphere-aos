@@ -68,7 +68,11 @@
     "feature_fraud_ai": false,
     "show_dutch_auction_tab": true,
     "show_reverse_auction_tab": true,
-    "show_sealed_bid_tab": true
+    "show_sealed_bid_tab": true,
+    "auction_livestream_provider": "NONE",
+    "auction_show_viewer_count": true,
+    "auction_show_bid_history_realtime": true,
+    "auction_search_elasticsearch": false
   },
   "presets": {}
 }
