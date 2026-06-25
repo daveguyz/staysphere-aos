@@ -1,0 +1,194 @@
+{%- assign conv_id   = request.query_string | split: 'conv=' | last | split: '&' | first -%}
+{%- assign prop_id   = request.query_string | split: 'property=' | last | split: '&' | first -%}
+{%- assign booking_id = request.query_string | split: 'booking=' | last | split: '&' | first -%}
+
+<div class="messages-page page-width section-padding"
+     id="messages-page"
+     data-api="{{ settings.api_gateway_url }}"
+     data-initial-conv="{{ conv_id }}"
+     data-initial-property="{{ prop_id }}"
+     data-initial-booking="{{ booking_id }}">
+
+  <h1 class="messages-page__title">Messages</h1>
+
+  <div class="messages-layout">
+
+    {%- comment -%} ── CONVERSATION LIST (left panel) ── {%- endcomment -%}
+    <aside class="messages-sidebar" id="messages-sidebar" aria-label="Conversations">
+      <div class="messages-sidebar__header">
+        <div class="messages-sidebar__search-wrap">
+          <input type="search" id="conv-search"
+                 class="messages-sidebar__search"
+                 placeholder="Search messages…"
+                 aria-label="Search conversations">
+        </div>
+        <button class="btn btn--primary btn--sm" id="new-message-btn"
+                aria-label="New message">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New
+        </button>
+      </div>
+
+      <div class="messages-sidebar__list" id="conv-list" role="listbox"
+           aria-label="Conversations" aria-live="polite">
+        {%- for i in (1..5) -%}
+          <div class="conv-item conv-item--skeleton" aria-hidden="true">
+            <div class="conv-item__avatar skeleton-block"></div>
+            <div class="conv-item__info">
+              <div class="skeleton-line skeleton-line--short"></div>
+              <div class="skeleton-line"></div>
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <div class="messages-sidebar__empty hidden" id="conv-empty">
+        <p>No conversations yet.</p>
+        <p class="messages-sidebar__empty-sub">
+          Book a stay or contact a host to start messaging.
+        </p>
+      </div>
+    </aside>
+
+    {%- comment -%} ── MESSAGE THREAD (right panel) ── {%- endcomment -%}
+    <div class="messages-thread" id="messages-thread" aria-label="Message thread">
+
+      {%- comment -%} Idle state ── {%- endcomment -%}
+      <div class="messages-thread__idle" id="thread-idle">
+        <span class="messages-thread__idle-icon" aria-hidden="true">💬</span>
+        <p class="messages-thread__idle-title">Select a conversation</p>
+        <p class="messages-thread__idle-sub">
+          Choose a conversation from the list or start a new one.
+        </p>
+      </div>
+
+      {%- comment -%} Active thread ── {%- endcomment -%}
+      <div class="messages-thread__active hidden" id="thread-active">
+
+        {%- comment -%} Thread header ── {%- endcomment -%}
+        <div class="messages-thread__header" id="thread-header">
+          <button class="messages-thread__back-btn" id="thread-back-btn"
+                  aria-label="Back to conversations">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="messages-thread__header-avatar" id="thread-avatar"
+               aria-hidden="true"></div>
+          <div class="messages-thread__header-info">
+            <p class="messages-thread__header-name" id="thread-name"></p>
+            <p class="messages-thread__header-sub" id="thread-sub"></p>
+          </div>
+          <div class="messages-thread__header-actions">
+            <a href="#" class="btn btn--ghost btn--sm" id="thread-view-booking"
+               hidden>View booking</a>
+          </div>
+        </div>
+
+        {%- comment -%} Messages feed ── {%- endcomment -%}
+        <div class="messages-feed" id="messages-feed" role="log"
+             aria-live="polite" aria-label="Messages">
+          <div class="messages-feed__loading" id="feed-loading"
+               aria-hidden="true">
+            {%- for i in (1..4) -%}
+              <div class="message-bubble message-bubble--skeleton
+                          {% cycle 'message-bubble--incoming', '', 'message-bubble--incoming', '' %}"
+                   aria-hidden="true">
+                <div class="skeleton-block message-skeleton"></div>
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+
+        {%- comment -%} Compose area ── {%- endcomment -%}
+        <div class="messages-compose" id="messages-compose">
+          <div class="messages-compose__inner">
+            <textarea id="message-input"
+                      class="messages-compose__input"
+                      placeholder="Type a message…"
+                      rows="1"
+                      aria-label="Message text"
+                      maxlength="2000"></textarea>
+            <button class="messages-compose__send btn btn--primary"
+                    id="send-message-btn"
+                    aria-label="Send message">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+          <div class="messages-compose__typing hidden" id="typing-indicator"
+               aria-live="polite"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {%- comment -%} ── SUPPORT TICKETS TAB ── {%- endcomment -%}
+  <div class="support-section page-width" id="support-section"
+       style="margin-top:48px; border-top:1.5px solid var(--color-border); padding-top:32px;">
+    <div class="support-section__header">
+      <h2 class="support-section__title">Support tickets</h2>
+      <button class="btn btn--ghost btn--sm" id="new-ticket-btn">
+        + New ticket
+      </button>
+    </div>
+
+    <div class="support-tickets-list" id="support-tickets-list" aria-live="polite">
+      {%- for i in (1..2) -%}
+        <div class="support-ticket-row support-ticket-row--skeleton" aria-hidden="true">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line skeleton-line--short"></div>
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {%- comment -%} New ticket modal (hidden until + New ticket clicked) ── {%- endcomment -%}
+    <div class="new-ticket-form hidden" id="new-ticket-form">
+      <h3 class="new-ticket-form__title">Open a support ticket</h3>
+      <div class="form-field">
+        <label for="ticket-subject">Subject</label>
+        <input type="text" id="ticket-subject" class="checkout-input" required
+               placeholder="Brief description of the issue">
+      </div>
+      <div class="form-field">
+        <label for="ticket-category">Category</label>
+        <select id="ticket-category" class="sort-select">
+          <option value="BOOKING">Booking issue</option>
+          <option value="PAYMENT">Payment problem</option>
+          <option value="PROPERTY">Property complaint</option>
+          <option value="ACCOUNT">Account help</option>
+          <option value="AUCTION">Auction query</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="ticket-description">Description</label>
+        <textarea id="ticket-description" class="checkout-input checkout-textarea"
+                  rows="4" required
+                  placeholder="Describe the issue in detail…"></textarea>
+      </div>
+      <div class="form-field">
+        <label for="ticket-priority">Priority</label>
+        <select id="ticket-priority" class="sort-select">
+          <option value="LOW">Low</option>
+          <option value="MEDIUM" selected>Medium</option>
+          <option value="HIGH">High — urgent issue</option>
+        </select>
+      </div>
+      <div id="ticket-error" class="auth-page__error hidden" role="alert"></div>
+      <div class="new-ticket-form__actions">
+        <button class="btn btn--primary" id="submit-ticket-btn">
+          <span class="btn-label">Submit ticket</span>
+          <span class="btn-spinner hidden" aria-hidden="true"></span>
+        </button>
+        <button class="btn btn--ghost" id="cancel-ticket-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% schema %}
+{
+  "name": "Messages inbox",
+  "settings": []
+}
+{% endschema %}

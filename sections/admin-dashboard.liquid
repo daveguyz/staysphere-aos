@@ -1,0 +1,213 @@
+<div class="admin-dashboard page-width section-padding"
+     id="admin-dashboard"
+     data-api="{{ settings.api_gateway_url }}">
+
+  <div class="admin-dashboard__header">
+    <h1 class="admin-dashboard__title">Admin dashboard</h1>
+    <p class="admin-dashboard__sub">StaySphere AOS — platform control centre</p>
+  </div>
+
+  {%- comment -%} ── PLATFORM STATS ── {%- endcomment -%}
+  <div class="admin-stats-grid" id="admin-stats-grid">
+    {%- assign admin_stats = "Total users,Active bookings,Live auctions,Revenue today,Open tickets,Properties listed" | split: "," -%}
+    {%- assign admin_stat_ids = "as-users,as-bookings,as-live-auctions,as-revenue,as-tickets,as-properties" | split: "," -%}
+    {%- for label in admin_stats -%}
+      <div class="host-stat-card" id="{{ admin_stat_ids[forloop.index0] }}">
+        <p class="host-stat-card__label">{{ label }}</p>
+        <p class="host-stat-card__value">
+          <span class="skeleton-inline" aria-hidden="true"></span>
+        </p>
+      </div>
+    {%- endfor -%}
+  </div>
+
+  {%- comment -%} ── ADMIN TABS ── {%- endcomment -%}
+  <div class="account-tabs admin-tabs" role="tablist" aria-label="Admin sections">
+    {%- assign admin_tabs = "Auctions,Users,Properties,Bookings,Fraud queue,Support,Analytics" | split: "," -%}
+    {%- assign admin_panels = "ap-auctions,ap-users,ap-properties,ap-bookings,ap-fraud,ap-support,ap-analytics" | split: "," -%}
+    {%- for tab in admin_tabs -%}
+      <button class="account-tab{% if forloop.first %} account-tab--active{% endif %}"
+              role="tab"
+              data-panel="{{ admin_panels[forloop.index0] }}"
+              id="atab-{{ admin_panels[forloop.index0] }}"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              aria-controls="{{ admin_panels[forloop.index0] }}">
+        {{ tab }}
+      </button>
+    {%- endfor -%}
+  </div>
+
+  {%- comment -%} ── PANEL: AUCTIONS ── {%- endcomment -%}
+  <div class="account-panel" id="ap-auctions" role="tabpanel" aria-labelledby="atab-ap-auctions">
+    <div class="admin-panel-controls">
+      <input type="text" id="auction-search-input" class="checkout-input admin-search-input"
+             placeholder="Search lots by title or ID…" aria-label="Search auctions">
+      <select id="auction-status-filter" class="sort-select">
+        <option value="">All statuses</option>
+        <option value="SCHEDULED">Scheduled</option>
+        <option value="OPEN">Open</option>
+        <option value="EXTENDED">Extended</option>
+        <option value="CLOSED">Closed</option>
+        <option value="SETTLED">Settled</option>
+      </select>
+    </div>
+    <div class="admin-table" id="admin-auctions-table" aria-live="polite">
+      <div class="admin-table__header admin-table__row--auctions">
+        <span>Title</span><span>Type</span><span>Status</span>
+        <span>Current bid</span><span>Starts</span><span>Actions</span>
+      </div>
+      <div id="admin-auctions-rows">
+        {%- for i in (1..5) -%}
+          <div class="admin-table__row admin-table__row--skeleton" aria-hidden="true">
+            {%- for j in (1..6) -%}<span class="skeleton-line"></span>{%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+    <div class="account-empty hidden" id="admin-auctions-empty"><p>No lots found.</p></div>
+    <nav class="collection-pagination hidden" id="admin-auctions-pag" aria-label="Auction pages">
+      <button class="btn btn--ghost btn--sm" id="aap-prev" disabled>← Prev</button>
+      <span class="pag-info" id="aap-info"></span>
+      <button class="btn btn--ghost btn--sm" id="aap-next">Next →</button>
+    </nav>
+  </div>
+
+  {%- comment -%} ── PANEL: USERS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="ap-users" role="tabpanel" aria-labelledby="atab-ap-users">
+    <div class="admin-panel-controls">
+      <input type="text" id="user-search-input" class="checkout-input admin-search-input"
+             placeholder="Search by email or name…" aria-label="Search users">
+      <select id="user-role-filter" class="sort-select">
+        <option value="">All roles</option>
+        <option value="GUEST">Guests</option>
+        <option value="HOST">Hosts</option>
+        <option value="ADMIN">Admins</option>
+      </select>
+    </div>
+    <div class="admin-table" id="admin-users-table" aria-live="polite">
+      <div class="admin-table__header admin-table__row--users">
+        <span>Name</span><span>Email</span><span>Role</span>
+        <span>KYC</span><span>Joined</span><span>Actions</span>
+      </div>
+      <div id="admin-users-rows">
+        {%- for i in (1..5) -%}
+          <div class="admin-table__row admin-table__row--skeleton" aria-hidden="true">
+            {%- for j in (1..6) -%}<span class="skeleton-line"></span>{%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+    <div class="account-empty hidden" id="admin-users-empty"><p>No users found.</p></div>
+  </div>
+
+  {%- comment -%} ── PANEL: PROPERTIES ── {%- endcomment -%}
+  <div class="account-panel hidden" id="ap-properties" role="tabpanel" aria-labelledby="atab-ap-properties">
+    <div class="admin-table" id="admin-properties-table" aria-live="polite">
+      <div class="admin-table__header admin-table__row--properties">
+        <span>Title</span><span>Host</span><span>City</span>
+        <span>Rate</span><span>Status</span><span>Actions</span>
+      </div>
+      <div id="admin-properties-rows">
+        {%- for i in (1..5) -%}
+          <div class="admin-table__row admin-table__row--skeleton" aria-hidden="true">
+            {%- for j in (1..6) -%}<span class="skeleton-line"></span>{%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+    <div class="account-empty hidden" id="admin-properties-empty"><p>No properties found.</p></div>
+  </div>
+
+  {%- comment -%} ── PANEL: BOOKINGS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="ap-bookings" role="tabpanel" aria-labelledby="atab-ap-bookings">
+    <div class="admin-table" id="admin-bookings-table" aria-live="polite">
+      <div class="admin-table__header admin-table__row--bookings">
+        <span>ID</span><span>Property</span><span>Guest</span>
+        <span>Dates</span><span>Total</span><span>Status</span>
+      </div>
+      <div id="admin-bookings-rows">
+        {%- for i in (1..5) -%}
+          <div class="admin-table__row admin-table__row--skeleton" aria-hidden="true">
+            {%- for j in (1..6) -%}<span class="skeleton-line"></span>{%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+
+  {%- comment -%} ── PANEL: FRAUD QUEUE ── {%- endcomment -%}
+  <div class="account-panel hidden" id="ap-fraud" role="tabpanel" aria-labelledby="atab-ap-fraud">
+    <p class="admin-panel-intro">
+      Bids flagged by the AI fraud detection system. Review and clear false positives.
+    </p>
+    <div class="admin-table" id="admin-fraud-table" aria-live="polite">
+      <div class="admin-table__header admin-table__row--fraud">
+        <span>Bid ID</span><span>Lot</span><span>Bidder</span>
+        <span>Amount</span><span>Fraud score</span><span>Actions</span>
+      </div>
+      <div id="admin-fraud-rows">
+        {%- for i in (1..3) -%}
+          <div class="admin-table__row admin-table__row--skeleton" aria-hidden="true">
+            {%- for j in (1..6) -%}<span class="skeleton-line"></span>{%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+    <div class="account-empty hidden" id="admin-fraud-empty">
+      <p>✅ No flagged bids — fraud queue is clear.</p>
+    </div>
+  </div>
+
+  {%- comment -%} ── PANEL: SUPPORT TICKETS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="ap-support" role="tabpanel" aria-labelledby="atab-ap-support">
+    <div class="admin-panel-controls">
+      <select id="ticket-status-filter" class="sort-select">
+        <option value="OPEN">Open</option>
+        <option value="IN_PROGRESS">In progress</option>
+        <option value="RESOLVED">Resolved</option>
+        <option value="">All</option>
+      </select>
+    </div>
+    <div class="admin-table" id="admin-support-table" aria-live="polite">
+      <div class="admin-table__header admin-table__row--support">
+        <span>Subject</span><span>User</span><span>Category</span>
+        <span>Priority</span><span>Created</span><span>Actions</span>
+      </div>
+      <div id="admin-support-rows">
+        {%- for i in (1..4) -%}
+          <div class="admin-table__row admin-table__row--skeleton" aria-hidden="true">
+            {%- for j in (1..6) -%}<span class="skeleton-line"></span>{%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+    <div class="account-empty hidden" id="admin-support-empty"><p>No open tickets.</p></div>
+  </div>
+
+  {%- comment -%} ── PANEL: ANALYTICS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="ap-analytics" role="tabpanel" aria-labelledby="atab-ap-analytics">
+    <div class="admin-analytics-grid" id="admin-analytics-grid">
+      <div class="admin-analytics-chart" id="admin-revenue-chart"
+           aria-label="Platform revenue chart">
+        <h3 class="admin-analytics-chart__title">Platform revenue (last 6 months)</h3>
+        <div class="skeleton-block" style="height:220px;border-radius:var(--radius);"
+             id="admin-revenue-chart-placeholder" aria-hidden="true"></div>
+      </div>
+      <div class="admin-analytics-chart" id="admin-bookings-chart"
+           aria-label="Bookings chart">
+        <h3 class="admin-analytics-chart__title">Bookings vs Auctions (last 6 months)</h3>
+        <div class="skeleton-block" style="height:220px;border-radius:var(--radius);"
+             id="admin-bookings-chart-placeholder" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div class="admin-analytics-metrics" id="admin-analytics-metrics" aria-live="polite"></div>
+  </div>
+
+</div>
+
+{% schema %}
+{
+  "name": "Admin dashboard",
+  "settings": []
+}
+{% endschema %}

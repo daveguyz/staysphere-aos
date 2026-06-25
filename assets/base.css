@@ -1284,3 +1284,153 @@ details[open] .proxy-bid-summary__caret { transform: rotate(90deg); }
 .property-create-review__meta { display: flex; gap: 16px; font-size: .875rem; margin-bottom: 8px; }
 .property-create-review__rate { font-size: 1rem; font-weight: 700; color: var(--color-primary); margin: 0 0 4px; }
 .property-create-review__photos { font-size: .8125rem; color: var(--color-text-muted); margin: 0; }
+
+/* ================================================================
+   PHASE G — Messages inbox, Admin dashboard
+   ================================================================ */
+
+/* ── Messages page ─────────────────────────────────────────────── */
+.messages-page__title { font-size: clamp(22px,3vw,30px); font-weight: 800; margin: 0 0 24px; }
+.messages-layout { display: grid; grid-template-columns: 320px 1fr; height: 70vh; min-height: 480px; border: 1.5px solid var(--color-border); border-radius: calc(var(--radius)*1.5); overflow: hidden; }
+@media (max-width: 900px) { .messages-layout { grid-template-columns: 1fr; height: auto; min-height: 0; } }
+
+/* Sidebar */
+.messages-sidebar { border-right: 1.5px solid var(--color-border); display: flex; flex-direction: column; background: var(--color-bg); }
+.messages-sidebar__header { display: flex; align-items: center; gap: 8px; padding: 12px; border-bottom: 1px solid var(--color-border); }
+.messages-sidebar__search-wrap { flex: 1; }
+.messages-sidebar__search { width: 100%; padding: 8px 12px; border: 1.5px solid var(--color-border); border-radius: var(--radius); font-size: .875rem; font-family: inherit; background: var(--color-bg); }
+.messages-sidebar__search:focus { outline: none; border-color: var(--color-primary); }
+.messages-sidebar__list { flex: 1; overflow-y: auto; scrollbar-width: thin; }
+.messages-sidebar__empty { padding: 32px 16px; text-align: center; color: var(--color-text-muted); font-size: .9rem; }
+.messages-sidebar__empty-sub { font-size: .8125rem; margin: 6px 0 0; }
+
+/* Conversation item */
+.conv-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; cursor: pointer; border-bottom: 1px solid var(--color-border); transition: background .15s; position: relative; }
+.conv-item:hover { background: var(--color-surface); }
+.conv-item--active { background: color-mix(in srgb,var(--color-primary) 8%,var(--color-bg)); border-left: 3px solid var(--color-primary); }
+.conv-item--skeleton { pointer-events: none; }
+.conv-item__avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary); color: var(--color-primary-text); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .875rem; flex-shrink: 0; }
+.conv-item__info { flex: 1; min-width: 0; }
+.conv-item__name-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
+.conv-item__name { font-size: .9rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-item__time { font-size: .75rem; color: var(--color-text-muted); white-space: nowrap; flex-shrink: 0; }
+.conv-item__preview { font-size: .8125rem; color: var(--color-text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-item__preview--unread { color: var(--color-text); font-weight: 600; }
+.conv-item__unread { position: absolute; top: 12px; right: 12px; background: var(--color-primary); color: var(--color-primary-text); font-size: .75rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; }
+
+/* Thread */
+.messages-thread { display: flex; flex-direction: column; background: var(--color-bg); }
+.messages-thread__idle { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 40px; text-align: center; color: var(--color-text-muted); }
+.messages-thread__idle-icon { font-size: 3rem; margin-bottom: 12px; }
+.messages-thread__idle-title { font-size: 1rem; font-weight: 700; margin: 0 0 6px; }
+.messages-thread__idle-sub { font-size: .875rem; margin: 0; }
+.messages-thread__active { display: flex; flex-direction: column; height: 100%; }
+.messages-thread__header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--color-border); background: var(--color-surface); flex-shrink: 0; }
+.messages-thread__back-btn { background: none; border: none; cursor: pointer; color: var(--color-text-muted); padding: 4px; display: none; }
+@media (max-width: 900px) { .messages-thread__back-btn { display: block; } }
+.messages-thread__header-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary); color: var(--color-primary-text); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .8125rem; flex-shrink: 0; }
+.messages-thread__header-info { flex: 1; min-width: 0; }
+.messages-thread__header-name { font-size: .9375rem; font-weight: 700; margin: 0 0 2px; }
+.messages-thread__header-sub { font-size: .8rem; color: var(--color-text-muted); margin: 0; }
+.messages-thread__header-actions { flex-shrink: 0; }
+
+/* Feed */
+.messages-feed { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: thin; }
+.messages-feed__empty,.messages-feed__loading { display: flex; flex-direction: column; gap: 10px; }
+.messages-feed__empty { color: var(--color-text-muted); font-size: .9rem; text-align: center; padding: 32px 0; }
+
+/* Message bubbles */
+.message-bubble { display: flex; max-width: 72%; }
+.message-bubble--incoming { align-self: flex-start; }
+.message-bubble--outgoing { align-self: flex-end; flex-direction: row-reverse; }
+.message-bubble--skeleton { max-width: 55%; }
+.message-bubble__content { background: var(--color-surface); border-radius: 18px; padding: 10px 14px; }
+.message-bubble--outgoing .message-bubble__content { background: var(--color-primary); color: var(--color-primary-text); }
+.message-bubble--pending .message-bubble__content { opacity: .6; }
+.message-bubble--failed .message-bubble__content { background: #fef2f2; border: 1.5px solid #fca5a5; }
+.message-bubble__text { font-size: .9375rem; line-height: 1.5; margin: 0 0 3px; word-break: break-word; }
+.message-bubble__meta { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.message-bubble__time { font-size: .75rem; opacity: .7; }
+.message-bubble__status { font-size: .75rem; opacity: .8; }
+.message-skeleton { height: 42px; border-radius: 18px; width: 200px; }
+
+/* Compose */
+.messages-compose { border-top: 1px solid var(--color-border); padding: 12px; flex-shrink: 0; }
+.messages-compose__inner { display: flex; align-items: flex-end; gap: 10px; }
+.messages-compose__input { flex: 1; padding: 10px 14px; border: 1.5px solid var(--color-border); border-radius: 20px; font-size: .9375rem; font-family: inherit; resize: none; outline: none; max-height: 120px; overflow-y: auto; line-height: 1.4; }
+.messages-compose__input:focus { border-color: var(--color-primary); }
+.messages-compose__send { border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.messages-compose__typing { font-size: .8125rem; color: var(--color-text-muted); padding: 4px 14px; font-style: italic; }
+
+/* Support tickets */
+.support-section__header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.support-section__title { font-size: 1.125rem; font-weight: 700; margin: 0; }
+.support-ticket-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--color-border); }
+.support-ticket-row:last-child { border-bottom: none; }
+.support-ticket-row--skeleton { display: flex; flex-direction: column; gap: 6px; }
+.support-ticket-row__subject { font-size: .9375rem; font-weight: 700; margin: 0 0 3px; }
+.support-ticket-row__meta { font-size: .8125rem; color: var(--color-text-muted); margin: 0; }
+.support-ticket-row__badges { display: flex; gap: 8px; flex-shrink: 0; }
+.support-ticket-badge { font-size: .75rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: var(--color-surface); }
+.ticket-priority--high   { background: #fef2f2; color: #991b1b; }
+.ticket-priority--medium { background: #fffbeb; color: #92400e; }
+.ticket-priority--low    { background: var(--color-surface); color: var(--color-text-muted); }
+.ticket-status--open     { background: #eff6ff; color: #1e40af; }
+.ticket-status--progress { background: #fffbeb; color: #92400e; }
+.ticket-status--resolved { background: #ecfdf5; color: #065f46; }
+
+.new-ticket-form { background: var(--color-surface); border-radius: var(--radius); padding: 24px; margin-top: 16px; display: flex; flex-direction: column; gap: 16px; }
+.new-ticket-form__title { font-size: 1rem; font-weight: 700; margin: 0; }
+.new-ticket-form__actions { display: flex; gap: 10px; }
+
+/* ── Admin dashboard ────────────────────────────────────────────── */
+.admin-dashboard__header { margin-bottom: 24px; }
+.admin-dashboard__title { font-size: clamp(22px,3vw,30px); font-weight: 800; margin: 0 0 6px; }
+.admin-dashboard__sub { color: var(--color-text-muted); margin: 0; }
+.admin-stats-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); gap: 14px; margin-bottom: 28px; }
+.admin-tabs { margin-bottom: 24px; }
+.admin-panel-controls { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.admin-search-input { max-width: 320px; }
+.admin-panel-intro { color: var(--color-text-muted); font-size: .9rem; margin: 0 0 16px; }
+
+/* Admin tables */
+.admin-table { overflow-x: auto; }
+.admin-table__header { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--color-text-muted); border-bottom: 1.5px solid var(--color-border); padding-bottom: 8px; margin-bottom: 4px; }
+.admin-table__row { padding: 10px 0; border-bottom: 1px solid var(--color-border); font-size: .875rem; display: grid; align-items: center; gap: 12px; }
+.admin-table__row:last-child { border-bottom: none; }
+.admin-table__row--skeleton { display: flex; flex-direction: column; gap: 5px; }
+.admin-table__row--auctions,
+.admin-table__header.admin-table__row--auctions { grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; }
+.admin-table__row--users,
+.admin-table__header.admin-table__row--users { grid-template-columns: 1.5fr 2fr 1fr 1fr 1fr .8fr; }
+.admin-table__row--properties,
+.admin-table__header.admin-table__row--properties { grid-template-columns: 2fr 1fr 1fr 1fr 1fr .8fr; }
+.admin-table__row--bookings,
+.admin-table__header.admin-table__row--bookings { grid-template-columns: .8fr 2fr 1.5fr 2fr 1fr 1fr; }
+.admin-table__row--fraud,
+.admin-table__header.admin-table__row--fraud { grid-template-columns: 1fr 1fr 1fr 1fr 1fr .8fr; }
+.admin-table__row--support,
+.admin-table__header.admin-table__row--support { grid-template-columns: 2fr 1fr 1fr .8fr 1fr .8fr; }
+.admin-table__cell--wrap { word-break: break-word; }
+.admin-table__cell--mono { font-family: monospace; font-size: .8125rem; }
+.admin-table__cell--amount { font-weight: 700; }
+.admin-table__cell--actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* Fraud score badge */
+.fraud-score-badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: .8125rem; font-weight: 700; }
+.fraud-score--high   { background: #fef2f2; color: #991b1b; }
+.fraud-score--medium { background: #fffbeb; color: #92400e; }
+.fraud-score--low    { background: #ecfdf5; color: #065f46; }
+
+/* Status badges inline */
+.badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: .8rem; font-weight: 700; }
+.badge--open,.badge--scheduled { background: #eff6ff; color: #1e40af; }
+.badge--extended { background: #fffbeb; color: #92400e; }
+.badge--closed,.badge--settled { background: var(--color-surface); color: var(--color-text-muted); }
+.badge--cancelled { background: #fef2f2; color: #991b1b; }
+
+/* Analytics */
+.admin-analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+@media (max-width: 900px) { .admin-analytics-grid { grid-template-columns: 1fr; } }
+.admin-analytics-chart { background: var(--color-bg); border: 1.5px solid var(--color-border); border-radius: var(--radius); padding: 20px; }
+.admin-analytics-chart__title { font-size: .9375rem; font-weight: 700; margin: 0 0 16px; }

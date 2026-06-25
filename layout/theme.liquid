@@ -186,6 +186,12 @@
   {% if page.handle == 'host-dashboard' or page.handle == 'property-create' %}
     {{ 'plugin-host.js' | asset_url | script_tag }}
   {% endif %}
+  {% if page.handle == 'messages' %}
+    {{ 'plugin-messaging.js' | asset_url | script_tag }}
+  {% endif %}
+  {% if page.handle == 'admin' %}
+    {{ 'plugin-admin.js' | asset_url | script_tag }}
+  {% endif %}
 
   {{ 'theme.js' | asset_url | script_tag }}
 </body>
