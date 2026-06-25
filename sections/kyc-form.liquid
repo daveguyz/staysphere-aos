@@ -1,0 +1,152 @@
+{%- assign lot_id    = request.query_string | split: 'lot=' | last | split: '&' | first -%}
+{%- assign return_to = request.query_string | split: 'return_to=' | last | split: '&' | first | url_decode -%}
+{%- assign pk_key    = settings.stripe_kyc_publishable_key -%}
+
+<div class="kyc-page page-width section-padding"
+     id="kyc-page"
+     data-lot-id="{{ lot_id }}"
+     data-return-to="{{ return_to | default: '/pages/auction-room' }}{% if lot_id != blank %}?lot={{ lot_id }}{% endif %}"
+     data-stripe-key="{{ pk_key }}"
+     data-api="{{ settings.api_gateway_url }}">
+
+  <div class="kyc-page__inner">
+
+    {%- comment -%} ── HEADER ── {%- endcomment -%}
+    <div class="kyc-page__header">
+      <span class="kyc-page__icon" aria-hidden="true">🪪</span>
+      <h1 class="kyc-page__title">Identity verification</h1>
+      <p class="kyc-page__sub">
+        Required to bid on high-value auction lots.
+        Your information is processed securely by Stripe Identity.
+        We never store your documents.
+      </p>
+    </div>
+
+    {%- comment -%} ── CURRENT STATUS (loaded by JS) ── {%- endcomment -%}
+    <div class="kyc-page__status-wrap" id="kyc-status-wrap">
+      <div class="skeleton-line skeleton-line--short" aria-hidden="true" id="kyc-status-skeleton"></div>
+    </div>
+
+    {%- comment -%} ── STEPS ── {%- endcomment -%}
+    <div class="kyc-steps">
+      <div class="kyc-step" id="kyc-step-start">
+        <div class="kyc-step__num" aria-hidden="true">1</div>
+        <div class="kyc-step__content">
+          <h2 class="kyc-step__title">Start verification</h2>
+          <p class="kyc-step__body">
+            We'll open a secure Stripe Identity flow where you upload a photo ID
+            (passport, national ID, or driver's licence) and a selfie.
+            Takes about 2 minutes.
+          </p>
+          <div class="kyc-step__what-you-need">
+            <p class="kyc-step__what-title">You'll need:</p>
+            <ul class="kyc-step__what-list">
+              <li>📗 Passport <em>or</em> national ID card <em>or</em> driver's licence</li>
+              <li>📷 Camera access (selfie required)</li>
+              <li>Good lighting</li>
+            </ul>
+          </div>
+          <button class="btn btn--primary" id="kyc-start-btn">
+            <span class="btn-label">Start identity verification</span>
+            <span class="btn-spinner hidden" aria-hidden="true"></span>
+          </button>
+          <p class="kyc-step__note">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Powered by
+            <a href="https://stripe.com/identity" target="_blank" rel="noopener">Stripe Identity</a>.
+            Your data is encrypted and never shared with third parties.
+          </p>
+        </div>
+      </div>
+
+      <div class="kyc-step kyc-step--pending hidden" id="kyc-step-pending">
+        <div class="kyc-step__num" aria-hidden="true">2</div>
+        <div class="kyc-step__content">
+          <h2 class="kyc-step__title">Complete verification</h2>
+          <p class="kyc-step__body">
+            A verification session has been created. Click the button below
+            to open the secure Stripe verification page.
+          </p>
+          <a href="#" class="btn btn--primary" id="kyc-continue-link" target="_blank" rel="noopener">
+            Continue verification →
+          </a>
+          <p class="kyc-step__note">Opens in a new tab. Return here once complete.</p>
+          <button class="btn btn--ghost btn--sm" id="kyc-check-status-btn" style="margin-top:12px;">
+            I've completed verification — check status
+          </button>
+        </div>
+      </div>
+
+      <div class="kyc-step kyc-step--processing hidden" id="kyc-step-processing">
+        <div class="kyc-step__num kyc-step__num--processing" aria-hidden="true">⏳</div>
+        <div class="kyc-step__content">
+          <h2 class="kyc-step__title">Verification in progress</h2>
+          <p class="kyc-step__body">
+            Stripe is reviewing your documents. This usually takes a few seconds,
+            but can take up to a few minutes.
+          </p>
+          <p class="kyc-step__body">
+            You'll receive an email when your identity is confirmed.
+            You can also refresh this page to check.
+          </p>
+          <button class="btn btn--ghost btn--sm" id="kyc-refresh-btn">Refresh status</button>
+        </div>
+      </div>
+
+      <div class="kyc-step kyc-step--verified hidden" id="kyc-step-verified">
+        <div class="kyc-step__num kyc-step__num--verified" aria-hidden="true">✓</div>
+        <div class="kyc-step__content">
+          <h2 class="kyc-step__title">Identity verified!</h2>
+          <p class="kyc-step__body">
+            Your identity has been confirmed. You're now cleared to bid on
+            all auction lots, including high-value and KYC-gated auctions.
+          </p>
+          {%- if lot_id != blank -%}
+            <a href="/pages/auction-room?lot={{ lot_id }}"
+               class="btn btn--primary" id="kyc-back-btn">
+              Return to auction →
+            </a>
+          {%- else -%}
+            <a href="/pages/auctions" class="btn btn--primary">Browse auctions</a>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="kyc-step kyc-step--failed hidden" id="kyc-step-failed">
+        <div class="kyc-step__num kyc-step__num--failed" aria-hidden="true">✗</div>
+        <div class="kyc-step__content">
+          <h2 class="kyc-step__title">Verification could not be completed</h2>
+          <p class="kyc-step__body" id="kyc-fail-reason">
+            Unfortunately your identity verification was unsuccessful.
+            This could be due to a document issue or image quality.
+          </p>
+          <button class="btn btn--primary" id="kyc-retry-btn">Try again</button>
+          <a href="/pages/contact" class="btn btn--ghost btn--sm"
+             style="margin-top:8px;">Contact support</a>
+        </div>
+      </div>
+
+      <div class="kyc-step kyc-step--requires-input hidden" id="kyc-step-requires-input">
+        <div class="kyc-step__num" aria-hidden="true">⚠</div>
+        <div class="kyc-step__content">
+          <h2 class="kyc-step__title">Additional information needed</h2>
+          <p class="kyc-step__body" id="kyc-input-reason">
+            Stripe needs additional information to complete your verification.
+          </p>
+          <a href="#" class="btn btn--primary" id="kyc-fix-link" target="_blank" rel="noopener">
+            Provide additional information
+          </a>
+        </div>
+      </div>
+
+    </div>{%- comment -%} /kyc-steps {%- endcomment -%}
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "KYC form",
+  "settings": []
+}
+{% endschema %}

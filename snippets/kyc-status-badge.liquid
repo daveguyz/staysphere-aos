@@ -1,0 +1,43 @@
+{% comment %}
+  Renders a KYC status badge.
+  Parameters:
+  - status: 'NOT_STARTED' | 'SESSION_CREATED' | 'PROCESSING' | 'VERIFIED' | 'FAILED' | 'REQUIRES_INPUT' | 'CANCELLED'
+  - size: 'sm' | 'md' (default 'md')
+{% endcomment %}
+{%- assign badge_size = size | default: 'md' -%}
+{%- case status -%}
+  {%- when 'VERIFIED' -%}
+    {%- assign kyc_label = 'Identity verified' -%}
+    {%- assign kyc_icon  = '✓' -%}
+    {%- assign kyc_class = 'kyc-badge--verified' -%}
+  {%- when 'PROCESSING' -%}
+    {%- assign kyc_label = 'Verification in review' -%}
+    {%- assign kyc_icon  = '⏳' -%}
+    {%- assign kyc_class = 'kyc-badge--processing' -%}
+  {%- when 'SESSION_CREATED' -%}
+    {%- assign kyc_label = 'Verification pending' -%}
+    {%- assign kyc_icon  = '🔗' -%}
+    {%- assign kyc_class = 'kyc-badge--pending' -%}
+  {%- when 'REQUIRES_INPUT' -%}
+    {%- assign kyc_label = 'More info needed' -%}
+    {%- assign kyc_icon  = '⚠' -%}
+    {%- assign kyc_class = 'kyc-badge--requires-input' -%}
+  {%- when 'FAILED' -%}
+    {%- assign kyc_label = 'Verification failed' -%}
+    {%- assign kyc_icon  = '✗' -%}
+    {%- assign kyc_class = 'kyc-badge--failed' -%}
+  {%- when 'CANCELLED' -%}
+    {%- assign kyc_label = 'Cancelled' -%}
+    {%- assign kyc_icon  = '–' -%}
+    {%- assign kyc_class = 'kyc-badge--cancelled' -%}
+  {%- else -%}
+    {%- assign kyc_label = 'Not started' -%}
+    {%- assign kyc_icon  = '○' -%}
+    {%- assign kyc_class = 'kyc-badge--not-started' -%}
+{%- endcase -%}
+
+<span class="kyc-status-badge kyc-status-badge--{{ badge_size }} {{ kyc_class }}"
+      aria-label="KYC status: {{ kyc_label }}">
+  <span class="kyc-status-badge__icon" aria-hidden="true">{{ kyc_icon }}</span>
+  {{ kyc_label }}
+</span>

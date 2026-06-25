@@ -1,0 +1,1 @@
+{ "sections": { "deposit_form": { "type": "deposit-form" } }, "order": ["deposit_form"] }

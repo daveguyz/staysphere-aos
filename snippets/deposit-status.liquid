@@ -1,0 +1,43 @@
+{% comment %}
+  Renders a deposit status badge.
+  Parameters:
+  - status: 'PENDING' | 'HELD' | 'RELEASED' | 'CHARGED' | 'FAILED' | 'EXPIRED'
+  - amount: number
+  - currency_symbol: e.g. 'N$'
+{% endcomment %}
+{%- assign sym = currency_symbol | default: settings.auction_currency_symbol | default: 'N$' -%}
+{%- case status -%}
+  {%- when 'HELD' -%}
+    {%- assign dep_label = 'Deposit held' -%}
+    {%- assign dep_class = 'deposit-badge--held' -%}
+    {%- assign dep_icon  = '🔒' -%}
+  {%- when 'RELEASED' -%}
+    {%- assign dep_label = 'Deposit released' -%}
+    {%- assign dep_class = 'deposit-badge--released' -%}
+    {%- assign dep_icon  = '✓' -%}
+  {%- when 'CHARGED' -%}
+    {%- assign dep_label = 'Deposit applied to purchase' -%}
+    {%- assign dep_class = 'deposit-badge--charged' -%}
+    {%- assign dep_icon  = '💳' -%}
+  {%- when 'FAILED' -%}
+    {%- assign dep_label = 'Deposit failed' -%}
+    {%- assign dep_class = 'deposit-badge--failed' -%}
+    {%- assign dep_icon  = '✗' -%}
+  {%- when 'EXPIRED' -%}
+    {%- assign dep_label = 'Deposit expired' -%}
+    {%- assign dep_class = 'deposit-badge--expired' -%}
+    {%- assign dep_icon  = '⏰' -%}
+  {%- else -%}
+    {%- assign dep_label = 'Deposit pending' -%}
+    {%- assign dep_class = 'deposit-badge--pending' -%}
+    {%- assign dep_icon  = '⏳' -%}
+{%- endcase -%}
+
+<span class="deposit-status-badge {{ dep_class }}"
+      aria-label="{{ dep_label }}{% if amount %}: {{ sym }}{{ amount }}{% endif %}">
+  <span aria-hidden="true">{{ dep_icon }}</span>
+  {{ dep_label }}
+  {%- if amount != blank and status == 'HELD' -%}
+    <span class="deposit-status-badge__amount">{{ sym }}{{ amount }}</span>
+  {%- endif -%}
+</span>

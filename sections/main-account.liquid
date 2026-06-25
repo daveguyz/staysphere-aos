@@ -1,0 +1,141 @@
+{%- assign sym = settings.auction_currency_symbol | default: 'N$' -%}
+
+<div class="account-page page-width section-padding"
+     id="account-page"
+     data-api="{{ settings.api_gateway_url }}"
+     data-currency-symbol="{{ sym }}">
+
+  {%- comment -%} ── HEADER ── {%- endcomment -%}
+  <div class="account-header">
+    <div class="account-header__avatar" id="account-avatar" aria-hidden="true">
+      <span id="account-avatar-initials">?</span>
+    </div>
+    <div class="account-header__info">
+      <h1 class="account-header__name" id="account-name">
+        <span class="skeleton-line skeleton-line--short" aria-hidden="true"></span>
+      </h1>
+      <p class="account-header__email" id="account-email">
+        <span class="skeleton-line skeleton-line--short" aria-hidden="true"></span>
+      </p>
+      <div class="account-header__badges" id="account-badges"></div>
+    </div>
+    <button class="btn btn--ghost btn--sm account-header__logout"
+            id="account-logout-btn" aria-label="Sign out">
+      Sign out
+    </button>
+  </div>
+
+  {%- comment -%} ── TABS ── {%- endcomment -%}
+  <div class="account-tabs" role="tablist" aria-label="Account sections">
+    <button class="account-tab account-tab--active" role="tab" id="tab-bids"
+            data-panel="panel-bids" aria-selected="true" aria-controls="panel-bids">
+      My bids
+    </button>
+    <button class="account-tab" role="tab" id="tab-wins"
+            data-panel="panel-wins" aria-selected="false" aria-controls="panel-wins">
+      Won lots
+    </button>
+    <button class="account-tab" role="tab" id="tab-deposits"
+            data-panel="panel-deposits" aria-selected="false" aria-controls="panel-deposits">
+      Deposits
+    </button>
+    {%- if settings.feature_auction_kyc -%}
+    <button class="account-tab" role="tab" id="tab-kyc"
+            data-panel="panel-kyc" aria-selected="false" aria-controls="panel-kyc">
+      Identity (KYC)
+    </button>
+    {%- endif -%}
+    <button class="account-tab" role="tab" id="tab-bookings"
+            data-panel="panel-bookings" aria-selected="false" aria-controls="panel-bookings">
+      Bookings
+    </button>
+  </div>
+
+  {%- comment -%} ── PANEL: MY BIDS ── {%- endcomment -%}
+  <div class="account-panel" id="panel-bids" role="tabpanel" aria-labelledby="tab-bids">
+    <div class="account-bids-list" id="bids-list" aria-live="polite">
+      {%- for i in (1..4) -%}
+        <div class="account-bid-row account-bid-row--skeleton" aria-hidden="true">
+          <div class="skeleton-block account-bid-row__image"></div>
+          <div class="account-bid-row__info">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line skeleton-line--short"></div>
+          </div>
+          <div class="account-bid-row__amount skeleton-line skeleton-line--short"></div>
+        </div>
+      {%- endfor -%}
+    </div>
+    <div class="account-empty hidden" id="bids-empty">
+      <p>You haven't placed any bids yet. <a href="/pages/auctions">Browse auctions →</a></p>
+    </div>
+  </div>
+
+  {%- comment -%} ── PANEL: WON LOTS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="panel-wins" role="tabpanel" aria-labelledby="tab-wins">
+    <div class="account-wins-grid" id="wins-grid" aria-live="polite">
+      {%- for i in (1..3) -%}
+        <div class="auction-card auction-card--skeleton" aria-hidden="true">
+          <div class="auction-card__image-wrap skeleton-block"></div>
+          <div class="auction-card__body">
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="skeleton-line"></div>
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+    <div class="account-empty hidden" id="wins-empty">
+      <p>No won lots yet. <a href="/pages/auctions">Find your next auction →</a></p>
+    </div>
+  </div>
+
+  {%- comment -%} ── PANEL: DEPOSITS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="panel-deposits" role="tabpanel" aria-labelledby="tab-deposits">
+    <div class="account-deposits-list" id="deposits-list" aria-live="polite">
+      {%- for i in (1..3) -%}
+        <div class="account-deposit-row account-deposit-row--skeleton" aria-hidden="true">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line skeleton-line--short"></div>
+        </div>
+      {%- endfor -%}
+    </div>
+    <div class="account-empty hidden" id="deposits-empty">
+      <p>No deposits on record.</p>
+    </div>
+  </div>
+
+  {%- comment -%} ── PANEL: KYC ── {%- endcomment -%}
+  {%- if settings.feature_auction_kyc -%}
+  <div class="account-panel hidden" id="panel-kyc" role="tabpanel" aria-labelledby="tab-kyc">
+    <div class="account-kyc-status" id="account-kyc-panel" aria-live="polite">
+      <div class="skeleton-line skeleton-line--short" aria-hidden="true"></div>
+    </div>
+    <div class="account-kyc-actions" id="account-kyc-actions"></div>
+  </div>
+  {%- endif -%}
+
+  {%- comment -%} ── PANEL: BOOKINGS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="panel-bookings" role="tabpanel" aria-labelledby="tab-bookings">
+    <div class="account-bookings-list" id="bookings-list" aria-live="polite">
+      {%- for i in (1..3) -%}
+        <div class="account-booking-row account-booking-row--skeleton" aria-hidden="true">
+          <div class="skeleton-block account-booking-row__image"></div>
+          <div class="account-booking-row__info">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line skeleton-line--short"></div>
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+    <div class="account-empty hidden" id="bookings-empty">
+      <p>No bookings yet. <a href="/collections/all">Browse properties →</a></p>
+    </div>
+  </div>
+
+</div>
+
+{% schema %}
+{
+  "name": "Account",
+  "settings": []
+}
+{% endschema %}

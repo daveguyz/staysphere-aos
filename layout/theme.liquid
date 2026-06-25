@@ -175,6 +175,11 @@
       {{ 'plugin-auction-room.js' | asset_url | script_tag }}
     {% endif %}
   {% endif %}
+  {% if template.name == 'customers' or template.name == 'account'
+     or page.handle == 'kyc' or page.handle == 'deposit'
+     or page.handle == 'auction-success' %}
+    {{ 'plugin-auth.js' | asset_url | script_tag }}
+  {% endif %}
 
   {{ 'theme.js' | asset_url | script_tag }}
 </body>

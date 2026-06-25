@@ -1,0 +1,1 @@
+{ "sections": { "auction_success": { "type": "auction-success" } }, "order": ["auction_success"] }

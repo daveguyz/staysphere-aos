@@ -923,3 +923,189 @@ details[open] .proxy-bid-summary__caret { transform: rotate(90deg); }
 /* btn-spinner */
 .btn-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ================================================================
+   PHASE E — Auth, KYC, Deposit, Account, Auction Success
+   ================================================================ */
+
+/* ── KYC status badge ──────────────────────────────────────────── */
+.kyc-status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border-radius: 20px; font-size: .8125rem; font-weight: 700;
+  border: 1.5px solid var(--color-border); background: var(--color-surface);
+}
+.kyc-status-badge--sm { font-size: .75rem; padding: 2px 9px; }
+.kyc-badge--verified       { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
+.kyc-badge--processing     { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+.kyc-badge--pending        { background: #eff6ff; border-color: #93c5fd; color: #1e40af; }
+.kyc-badge--requires-input { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+.kyc-badge--failed         { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+.kyc-badge--cancelled,.kyc-badge--not-started { background: var(--color-surface); color: var(--color-text-muted); }
+
+/* ── Deposit status badge ──────────────────────────────────────── */
+.deposit-status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border-radius: 20px; font-size: .8125rem; font-weight: 700;
+}
+.deposit-status-badge__amount { margin-left: 4px; }
+.deposit-badge--held     { background: #eff6ff; border: 1.5px solid #93c5fd; color: #1e40af; }
+.deposit-badge--released { background: #ecfdf5; border: 1.5px solid #6ee7b7; color: #065f46; }
+.deposit-badge--charged  { background: #fdf4ff; border: 1.5px solid #d8b4fe; color: #6b21a8; }
+.deposit-badge--failed   { background: #fef2f2; border: 1.5px solid #fca5a5; color: #991b1b; }
+.deposit-badge--pending  { background: #fffbeb; border: 1.5px solid #fcd34d; color: #92400e; }
+
+/* ── KYC Page ──────────────────────────────────────────────────── */
+.kyc-page__inner,.deposit-page__inner { max-width: 640px; margin: 0 auto; }
+.kyc-page__header,.deposit-page__header { text-align: center; margin-bottom: 36px; }
+.kyc-page__icon,.deposit-page__icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+.kyc-page__title,.deposit-page__title { font-size: clamp(22px,3vw,32px); font-weight: 800; margin: 0 0 10px; }
+.kyc-page__sub,.deposit-page__sub { font-size: .9375rem; color: var(--color-text-muted); line-height: 1.6; margin: 0; }
+.kyc-page__status-wrap { display: flex; justify-content: center; margin-bottom: 28px; min-height: 28px; }
+
+.kyc-steps { display: flex; flex-direction: column; gap: 0; }
+.kyc-step {
+  display: grid; grid-template-columns: 40px 1fr; gap: 16px;
+  padding: 24px 0; border-bottom: 1px solid var(--color-border);
+}
+.kyc-step:last-child { border-bottom: none; }
+.kyc-step__num {
+  width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary);
+  color: var(--color-primary-text); display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: .9375rem; flex-shrink: 0;
+}
+.kyc-step__num--verified { background: #10b981; }
+.kyc-step__num--failed   { background: #ef4444; }
+.kyc-step__num--processing { background: #f59e0b; font-size: 1rem; }
+.kyc-step__title { font-size: 1.0625rem; font-weight: 700; margin: 0 0 8px; }
+.kyc-step__body { font-size: .9375rem; color: var(--color-text); line-height: 1.6; margin: 0 0 14px; }
+.kyc-step__what-you-need { background: var(--color-surface); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px; }
+.kyc-step__what-title { font-size: .8125rem; font-weight: 700; margin: 0 0 8px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: .5px; }
+.kyc-step__what-list { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: .9rem; }
+.kyc-step__note { font-size: .8125rem; color: var(--color-text-muted); display: flex; align-items: center; gap: 6px; margin: 12px 0 0; }
+
+/* ── Deposit Page ──────────────────────────────────────────────── */
+.deposit-lot-summary { background: var(--color-surface); border-radius: var(--radius); padding: 16px; margin-bottom: 24px; }
+.deposit-lot-summary__inner { display: flex; flex-direction: column; gap: 4px; }
+.deposit-lot-summary__title { font-size: 1rem; font-weight: 700; margin: 0; }
+.deposit-lot-summary__location { font-size: .875rem; color: var(--color-text-muted); margin: 0; }
+
+.deposit-amount-display { text-align: center; padding: 20px; background: color-mix(in srgb,var(--color-primary) 6%,var(--color-bg)); border-radius: var(--radius); margin-bottom: 24px; }
+.deposit-amount-display__label { font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; color: var(--color-text-muted); display: block; margin-bottom: 4px; }
+.deposit-amount-display__amount { font-size: 2rem; font-weight: 800; color: var(--color-primary); display: block; margin-bottom: 4px; }
+.deposit-amount-display__note { font-size: .8125rem; color: var(--color-text-muted); }
+
+.deposit-form { display: flex; flex-direction: column; gap: 16px; }
+.stripe-element-mount { border: 1.5px solid var(--color-border); border-radius: var(--radius); padding: 14px; min-height: 42px; background: var(--color-bg); }
+.stripe-element-mount:focus-within { border-color: var(--color-primary); }
+.stripe-element-errors { font-size: .8125rem; color: #ef4444; min-height: 20px; }
+.deposit-form__summary { background: var(--color-surface); border-radius: var(--radius); padding: 14px 16px; }
+.deposit-form__summary-row { display: flex; justify-content: space-between; font-size: .9rem; padding: 3px 0; }
+.deposit-form__summary-row--note { color: var(--color-text-muted); font-size: .8125rem; }
+.deposit-form__trust { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: .8125rem; color: var(--color-text-muted); text-align: center; }
+
+.deposit-paid-state,.deposit-success-state { text-align: center; padding: 40px 24px; }
+.deposit-paid-state__icon,.deposit-success-state__icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+.deposit-paid-state__title,.deposit-success-state__title { font-size: 1.5rem; font-weight: 800; margin: 0 0 8px; }
+.deposit-paid-state__sub,.deposit-success-state__sub { font-size: .9375rem; color: var(--color-text-muted); margin: 0 0 20px; }
+
+/* ── Auction success page ──────────────────────────────────────── */
+.auction-success-page { max-width: 640px; margin: 0 auto; }
+.auction-success-card,.auction-loss-card {
+  background: var(--color-bg); border: 1.5px solid var(--color-border);
+  border-radius: calc(var(--radius)*2); padding: 36px; text-align: center;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08);
+}
+.auction-success-card__confetti { font-size: 3rem; display: block; margin-bottom: 16px; }
+.auction-success-card__title { font-size: clamp(22px,3vw,32px); font-weight: 800; margin: 0 0 24px; }
+.auction-success-card__lot-summary { margin-bottom: 20px; }
+.auction-success-card__lot-title { font-size: 1.0625rem; font-weight: 700; margin: 0 0 4px; }
+.auction-success-card__lot-location { font-size: .875rem; color: var(--color-text-muted); margin: 0; }
+.auction-success-card__amount-row { background: color-mix(in srgb,var(--color-primary) 7%,var(--color-bg)); border-radius: var(--radius); padding: 16px; margin-bottom: 24px; }
+.auction-success-card__amount-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; color: var(--color-text-muted); display: block; margin-bottom: 4px; }
+.auction-success-card__amount { font-size: 2rem; font-weight: 800; color: var(--color-primary); display: block; }
+.auction-success-card__deposit-status { margin-bottom: 20px; display: flex; justify-content: center; }
+.auction-success-card__next-title { font-size: 1rem; font-weight: 700; text-align: left; margin: 0 0 16px; }
+.auction-success-card__steps-list { text-align: left; margin: 0 0 28px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.auction-success-card__step { display: flex; gap: 14px; align-items: flex-start; }
+.auction-success-card__step-icon { font-size: 1.5rem; flex-shrink: 0; }
+.auction-success-card__step-title { font-size: .9375rem; font-weight: 700; margin: 0 0 4px; }
+.auction-success-card__step-body { font-size: .875rem; color: var(--color-text-muted); margin: 0; line-height: 1.5; }
+.auction-success-card__actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+.auction-success-card__support { font-size: .875rem; color: var(--color-text-muted); }
+.auction-loss-card__icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+.auction-loss-card__title { font-size: 1.75rem; font-weight: 800; margin: 0 0 8px; }
+.auction-loss-card__sub { color: var(--color-text-muted); margin: 0 0 20px; }
+
+/* ── Account Page ──────────────────────────────────────────────── */
+.account-header { display: flex; align-items: flex-start; gap: 20px; padding: 0 0 28px; border-bottom: 1.5px solid var(--color-border); margin-bottom: 24px; flex-wrap: wrap; }
+.account-header__avatar { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 800; flex-shrink: 0; background: var(--color-surface); }
+.account-header__info { flex: 1; min-width: 0; }
+.account-header__name { font-size: 1.375rem; font-weight: 800; margin: 0 0 4px; }
+.account-header__email { font-size: .875rem; color: var(--color-text-muted); margin: 0 0 8px; }
+.account-header__badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.account-header__logout { margin-left: auto; align-self: center; }
+
+.account-tabs { display: flex; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+.account-tab { padding: 8px 16px; border: 1.5px solid var(--color-border); border-radius: var(--radius); background: none; font-size: .875rem; font-weight: 600; cursor: pointer; color: var(--color-text); transition: all .15s; }
+.account-tab:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.account-tab--active { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-primary-text); }
+.account-panel { min-height: 200px; }
+
+.account-bid-row { display: grid; grid-template-columns: 16px 1fr auto auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--color-border); }
+.account-bid-row:last-child { border-bottom: none; }
+.account-bid-row--skeleton { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; }
+.account-bid-row__status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-border); }
+.account-bid-row__lot-title { font-size: .9rem; font-weight: 600; margin: 0 0 2px; }
+.account-bid-row__lot-title a { text-decoration: none; color: var(--color-text); }
+.account-bid-row__lot-title a:hover { color: var(--color-primary); }
+.account-bid-row__time { font-size: .8rem; color: var(--color-text-muted); margin: 0; }
+.account-bid-row__amount { font-size: .9375rem; font-weight: 700; white-space: nowrap; }
+.account-bid-row__status-label { font-size: .8rem; font-weight: 600; }
+.bid-status--winning { color: var(--color-primary); }
+.bid-status--won     { color: #10b981; }
+.bid-status--outbid,.bid-status--lost { color: var(--color-text-muted); }
+.account-bid-row__status-dot.bid-status--winning { background: var(--color-primary); animation: pulse-dot 1.4s ease-in-out infinite; }
+.account-bid-row__status-dot.bid-status--won     { background: #10b981; }
+
+.account-wins-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 16px; }
+.account-win-card { background: var(--color-surface); border-radius: var(--radius); padding: 16px; }
+.account-win-card__title { font-weight: 700; margin: 0 0 6px; font-size: .9375rem; }
+.account-win-card__amount { font-size: 1.125rem; font-weight: 800; color: var(--color-primary); margin: 0 0 12px; }
+
+.account-deposit-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--color-border); font-size: .9rem; }
+.account-deposit-row:last-child { border-bottom: none; }
+.account-deposit-row--skeleton { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; }
+.account-deposit-row__lot a { text-decoration: none; color: var(--color-primary); font-weight: 600; }
+.account-deposit-row__amount { font-weight: 700; }
+.account-deposit-row__date { color: var(--color-text-muted); font-size: .8125rem; }
+
+.account-booking-row { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--color-border); }
+.account-booking-row:last-child { border-bottom: none; }
+.account-booking-row--skeleton { display: flex; gap: 12px; padding: 12px 0; }
+.account-booking-row__image { width: 48px; height: 48px; border-radius: var(--radius); flex-shrink: 0; }
+.account-booking-row__property { font-size: .9375rem; font-weight: 600; margin: 0 0 3px; }
+.account-booking-row__dates { font-size: .8125rem; color: var(--color-text-muted); margin: 0; }
+.account-booking-row__amount { font-weight: 700; white-space: nowrap; }
+.account-booking-row__status { font-size: .8rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: var(--color-surface); }
+.booking-status--confirmed { color: #10b981; background: #ecfdf5; }
+.booking-status--pending   { color: #d97706; background: #fffbeb; }
+.booking-status--cancelled { color: #ef4444; background: #fef2f2; }
+
+.account-empty { padding: 32px 0; color: var(--color-text-muted); font-size: .9375rem; }
+.account-kyc-status { margin-bottom: 16px; }
+.account-kyc-actions { display: flex; gap: 10px; }
+
+/* ── Password strength ──────────────────────────────────────────── */
+.password-strength { margin-top: 6px; }
+.password-strength-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; margin-bottom: 4px; }
+.password-strength-bar__fill { height: 100%; border-radius: 2px; transition: width .3s, background .3s; }
+.password-strength-bar__fill--weak      { background: #ef4444; }
+.password-strength-bar__fill--fair      { background: #f97316; }
+.password-strength-bar__fill--good      { background: #f59e0b; }
+.password-strength-bar__fill--strong    { background: #10b981; }
+.password-strength-bar__fill--very-strong { background: #059669; }
+.password-strength-label { font-size: .75rem; font-weight: 600; }
+.password-strength-label--weak      { color: #ef4444; }
+.password-strength-label--fair      { color: #f97316; }
+.password-strength-label--good      { color: #f59e0b; }
+.password-strength-label--strong,.password-strength-label--very-strong { color: #10b981; }

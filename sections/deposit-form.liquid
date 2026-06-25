@@ -1,0 +1,127 @@
+{%- assign lot_id     = request.query_string | split: 'lot=' | last | split: '&' | first -%}
+{%- assign return_to  = request.query_string | split: 'return_to=' | last | split: '&' | first | url_decode -%}
+{%- assign pk_key     = settings.stripe_kyc_publishable_key -%}
+{%- assign sym        = settings.auction_currency_symbol | default: 'N$' -%}
+
+<div class="deposit-page page-width section-padding"
+     id="deposit-page"
+     data-lot-id="{{ lot_id }}"
+     data-return-to="{{ return_to | default: '/pages/auction-room' }}{% if lot_id != blank %}?lot={{ lot_id }}{% endif %}"
+     data-stripe-key="{{ pk_key }}"
+     data-api="{{ settings.api_gateway_url }}">
+
+  <div class="deposit-page__inner">
+
+    {%- comment -%} ── HEADER ── {%- endcomment -%}
+    <div class="deposit-page__header">
+      <span class="deposit-page__icon" aria-hidden="true">💳</span>
+      <h1 class="deposit-page__title">Secure your bidding spot</h1>
+      <p class="deposit-page__sub">
+        A refundable deposit is required to participate in this auction.
+        If you don't win, your deposit is fully released within 24 hours.
+      </p>
+    </div>
+
+    {%- comment -%} ── LOT SUMMARY (loaded by JS) ── {%- endcomment -%}
+    <div class="deposit-lot-summary" id="deposit-lot-summary">
+      <div class="skeleton-line skeleton-line--short" aria-hidden="true"></div>
+      <div class="skeleton-line" aria-hidden="true"></div>
+    </div>
+
+    {%- comment -%} ── ALREADY PAID STATE ── {%- endcomment -%}
+    <div class="deposit-paid-state hidden" id="deposit-paid-state">
+      <div class="deposit-paid-state__icon" aria-hidden="true">✅</div>
+      <h2 class="deposit-paid-state__title">Deposit already held</h2>
+      <p class="deposit-paid-state__sub">You're cleared to bid on this lot.</p>
+      {%- if lot_id != blank -%}
+        <a href="/pages/auction-room?lot={{ lot_id }}" class="btn btn--primary">
+          Go to auction room →
+        </a>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} ── PAYMENT FORM ── {%- endcomment -%}
+    <div class="deposit-form-wrap" id="deposit-form-wrap">
+
+      <div class="deposit-amount-display" id="deposit-amount-display" aria-live="polite">
+        <span class="deposit-amount-display__label">Deposit amount</span>
+        <span class="deposit-amount-display__amount" id="deposit-amount-value">
+          <span class="skeleton-inline" aria-hidden="true"></span>
+        </span>
+        <span class="deposit-amount-display__note">Fully refundable if you don't win</span>
+      </div>
+
+      <div class="deposit-form" id="deposit-form" novalidate>
+
+        <div class="form-field">
+          <label for="deposit-card-holder">Name on card</label>
+          <input type="text" id="deposit-card-holder"
+                 class="deposit-card-holder-input"
+                 autocomplete="cc-name"
+                 required placeholder="Your full name">
+        </div>
+
+        {%- comment -%} Stripe Elements mounts here {%- endcomment -%}
+        <div class="form-field">
+          <label for="stripe-card-element">Card details</label>
+          <div id="stripe-card-element" class="stripe-element-mount"
+               aria-label="Card details (Stripe)"
+               role="group">
+            {%- comment -%} Stripe injects iframe here at runtime {%- endcomment -%}
+            <div class="stripe-element-placeholder" id="stripe-element-placeholder">
+              <div class="skeleton-line" aria-hidden="true"></div>
+            </div>
+          </div>
+          <div id="stripe-card-errors" class="stripe-element-errors" role="alert" aria-live="polite"></div>
+        </div>
+
+        <div class="deposit-form__summary" id="deposit-summary-panel">
+          <div class="deposit-form__summary-row">
+            <span>Deposit hold</span>
+            <span id="deposit-summary-amount">–</span>
+          </div>
+          <div class="deposit-form__summary-row deposit-form__summary-row--note">
+            <span>Charge on win, released on loss</span>
+          </div>
+        </div>
+
+        <div id="deposit-error" class="auth-page__error hidden" role="alert"></div>
+
+        <button type="button" class="btn btn--primary btn--full" id="deposit-pay-btn">
+          <span class="btn-label">Hold <span id="deposit-btn-amount">deposit</span></span>
+          <span class="btn-spinner hidden" aria-hidden="true"></span>
+        </button>
+
+        <p class="deposit-form__trust">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Secured by Stripe · PCI DSS compliant · No card details stored on our servers
+        </p>
+
+      </div>
+    </div>
+
+    {%- comment -%} ── SUCCESS STATE (shown after successful hold) ── {%- endcomment -%}
+    <div class="deposit-success-state hidden" id="deposit-success-state">
+      <div class="deposit-success-state__icon" aria-hidden="true">🎉</div>
+      <h2 class="deposit-success-state__title">Deposit held successfully!</h2>
+      <p class="deposit-success-state__sub">
+        Your deposit of <strong id="deposit-success-amount">–</strong> is authorised and held.
+        You're now cleared to bid. If you don't win, it will be released within 24 hours.
+      </p>
+      {%- if lot_id != blank -%}
+        <a href="/pages/auction-room?lot={{ lot_id }}"
+           class="btn btn--primary" id="deposit-go-bid-btn">
+          Go bid now →
+        </a>
+      {%- endif -%}
+    </div>
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Deposit form",
+  "settings": []
+}
+{% endschema %}
