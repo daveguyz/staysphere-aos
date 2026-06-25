@@ -1,0 +1,32 @@
+{% comment %}
+  Renders an inline trust score badge.
+  Parameters:
+  - score: integer 0-100
+  - size: 'sm' | 'md' (default 'md')
+{% endcomment %}
+{%- assign badge_size = size | default: 'md' -%}
+{%- assign badge_score = score | plus: 0 -%}
+{%- if badge_score >= 90 -%}
+  {%- assign badge_label = 'SuperHost' -%}
+  {%- assign badge_class = 'trust-badge--super' -%}
+  {%- assign badge_icon = '✦' -%}
+{%- elsif badge_score >= 80 -%}
+  {%- assign badge_label = 'Trusted' -%}
+  {%- assign badge_class = 'trust-badge--trusted' -%}
+  {%- assign badge_icon = '✓' -%}
+{%- elsif badge_score >= 65 -%}
+  {%- assign badge_label = 'Verified' -%}
+  {%- assign badge_class = 'trust-badge--verified' -%}
+  {%- assign badge_icon = '✓' -%}
+{%- else -%}
+  {%- assign badge_label = '' -%}
+{%- endif -%}
+
+{%- if badge_label != '' -%}
+  <span class="trust-badge trust-badge--{{ badge_size }} {{ badge_class }}"
+        aria-label="Trust score: {{ badge_label }} ({{ badge_score }}/100)"
+        title="StaySphere trust score: {{ badge_score }}/100">
+    <span class="trust-badge__icon" aria-hidden="true">{{ badge_icon }}</span>
+    {{ badge_label }}
+  </span>
+{%- endif -%}

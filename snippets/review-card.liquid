@@ -1,0 +1,57 @@
+{% comment %}
+  Renders a review card.
+  Parameters:
+  - review: review object { guestId, guestName, overallRating, comment, createdAt, hostResponse, ratings }
+  - skeleton: boolean — render skeleton placeholder
+{% endcomment %}
+
+{%- if skeleton -%}
+  <div class="review-card review-card--skeleton" aria-hidden="true">
+    <div class="review-card__header">
+      <div class="skeleton-circle review-skeleton-avatar"></div>
+      <div>
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-line skeleton-line--xs"></div>
+      </div>
+    </div>
+    <div class="review-card__stars skeleton-block review-skeleton-stars"></div>
+    <div class="skeleton-line"></div>
+    <div class="skeleton-line"></div>
+    <div class="skeleton-line skeleton-line--short"></div>
+  </div>
+{%- else -%}
+  <div class="review-card">
+    <div class="review-card__header">
+      <div class="review-card__avatar" aria-hidden="true">
+        {%- if review.guestAvatarUrl -%}
+          <img src="{{ review.guestAvatarUrl }}" alt="{{ review.guestName }}" width="40" height="40" loading="lazy">
+        {%- else -%}
+          <span class="review-card__avatar-initials">{{ review.guestName | slice: 0 }}</span>
+        {%- endif -%}
+      </div>
+      <div class="review-card__meta">
+        <p class="review-card__name">{{ review.guestName | default: 'Guest' }}</p>
+        <p class="review-card__date">{{ review.createdAt }}</p>
+      </div>
+    </div>
+
+    <div class="review-card__stars" aria-label="{{ review.overallRating }} out of 5 stars">
+      {%- assign full_stars = review.overallRating | floor -%}
+      {%- for i in (1..5) -%}
+        <svg class="review-star{% if i <= full_stars %} review-star--filled{% endif %}"
+             width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      {%- endfor -%}
+    </div>
+
+    <p class="review-card__comment">{{ review.comment }}</p>
+
+    {%- if review.hostResponse -%}
+      <div class="review-card__host-response">
+        <p class="review-card__host-response-label">Response from host</p>
+        <p class="review-card__host-response-text">{{ review.hostResponse }}</p>
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}

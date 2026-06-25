@@ -1,90 +1,424 @@
-{% comment %}
-  Phase 1 — Property Detail Page
-  Full implementation: gallery, calendar, amenities, area intelligence, booking widget
-{% endcomment %}
 {%- assign property_id = product.metafields.staysphere.property_id | default: product.id -%}
+{%- assign beds         = product.metafields.staysphere.bedrooms    | default: '' -%}
+{%- assign baths        = product.metafields.staysphere.bathrooms   | default: '' -%}
+{%- assign guests       = product.metafields.staysphere.max_guests  | default: '' -%}
+{%- assign city         = product.metafields.staysphere.city        | default: 'Namibia' -%}
+{%- assign trust        = product.metafields.staysphere.trust_score | plus: 0 -%}
+{%- assign rating       = product.metafields.staysphere.average_rating | plus: 0 -%}
+{%- assign review_count = product.metafields.staysphere.review_count | default: 0 -%}
+{%- assign today        = 'now' | date: '%Y-%m-%d' -%}
 
-<article class="main-product page-width section-padding" data-property-id="{{ property_id }}">
-  <div class="main-product__layout">
+<article class="main-product" data-property-id="{{ property_id }}">
 
-    {% comment %} Left: Gallery + details {% endcomment %}
+  {%- comment -%} ── BREADCRUMB ── {%- endcomment -%}
+  {%- if settings.show_breadcrumbs -%}
+    <nav class="breadcrumb page-width" aria-label="Breadcrumb">
+      <a href="/" class="breadcrumb__link">Home</a>
+      <span class="breadcrumb__sep" aria-hidden="true">›</span>
+      <a href="/collections/all" class="breadcrumb__link">All stays</a>
+      {%- if city != blank -%}
+        <span class="breadcrumb__sep" aria-hidden="true">›</span>
+        <a href="/collections/all?city={{ city | url_encode }}" class="breadcrumb__link">{{ city }}</a>
+      {%- endif -%}
+      <span class="breadcrumb__sep" aria-hidden="true">›</span>
+      <span class="breadcrumb__current" aria-current="page">{{ product.title | truncate: 40 }}</span>
+    </nav>
+  {%- endif -%}
+
+  {%- comment -%} ── GALLERY ── {%- endcomment -%}
+  <div class="product-gallery" id="product-gallery">
+    {%- if product.images.size > 0 -%}
+      <div class="product-gallery__hero" id="gallery-main">
+        <img id="gallery-hero-img"
+             src="{{ product.featured_image | image_url: width: 1400 }}"
+             srcset="{{ product.featured_image | image_url: width: 800 }} 800w,
+                     {{ product.featured_image | image_url: width: 1200 }} 1200w,
+                     {{ product.featured_image | image_url: width: 1400 }} 1400w"
+             sizes="(max-width: 768px) 100vw, 70vw"
+             alt="{{ product.featured_image.alt | default: product.title }}"
+             class="product-gallery__hero-img"
+             loading="eager" fetchpriority="high"
+             width="1400" height="933">
+        <div class="product-gallery__hero-controls">
+          <button class="gallery-arrow gallery-arrow--prev" id="gallery-prev"
+                  aria-label="Previous image" {% if product.images.size < 2 %}hidden{% endif %}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="gallery-arrow gallery-arrow--next" id="gallery-next"
+                  aria-label="Next image" {% if product.images.size < 2 %}hidden{% endif %}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
+          <button class="gallery-expand-btn" id="gallery-expand" aria-label="View all photos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            All photos ({{ product.images.size }})
+          </button>
+        </div>
+      </div>
+      {%- if product.images.size > 1 -%}
+        <div class="product-gallery__thumbs" role="list" id="gallery-thumbs">
+          {%- for image in product.images limit: 6 -%}
+            <button class="product-gallery__thumb{% if forloop.first %} active{% endif %}"
+                    role="listitem"
+                    data-index="{{ forloop.index0 }}"
+                    data-src="{{ image | image_url: width: 1400 }}"
+                    data-srcset="{{ image | image_url: width: 800 }} 800w, {{ image | image_url: width: 1400 }} 1400w"
+                    aria-label="Photo {{ forloop.index }}">
+              <img src="{{ image | image_url: width: 200 }}"
+                   alt="{{ image.alt | default: product.title }}"
+                   loading="lazy" width="200" height="133">
+              {%- if forloop.index == 6 and product.images.size > 6 -%}
+                <span class="thumb-more">+{{ product.images.size | minus: 6 }}</span>
+              {%- endif -%}
+            </button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    {%- else -%}
+      <div class="product-gallery__placeholder">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <p>No photos yet</p>
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%} ── PRODUCT BODY ── {%- endcomment -%}
+  <div class="main-product__body page-width">
+
+    {%- comment -%} ── PRIMARY COLUMN ── {%- endcomment -%}
     <div class="main-product__primary">
-      <div class="product-gallery" id="product-gallery">
-        {%- if product.images.size > 0 -%}
-          <div class="product-gallery__main">
-            <img src="{{ product.featured_image | image_url: width: 1200 }}"
-                 alt="{{ product.featured_image.alt | default: product.title }}"
-                 class="product-gallery__hero-img"
-                 loading="eager" width="1200" height="800">
+
+      {%- comment -%} Title + meta {%- endcomment -%}
+      <header class="product-header">
+        <div class="product-header__top">
+          <div>
+            <p class="product-header__location">📍 {{ city }}</p>
+            <h1 class="product-header__title">{{ product.title }}</h1>
           </div>
-          {%- if product.images.size > 1 -%}
-            <div class="product-gallery__thumbs">
-              {%- for image in product.images limit: 6 -%}
-                <button class="product-gallery__thumb" aria-label="View image {{ forloop.index }}">
-                  <img src="{{ image | image_url: width: 200 }}"
-                       alt="{{ image.alt | default: product.title }}"
-                       loading="lazy" width="200" height="133">
-                </button>
+          <button class="product-header__wishlist" data-property-id="{{ property_id }}"
+                  aria-label="Save to wishlist" aria-pressed="false">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="product-header__meta">
+          {%- if beds != '' -%}
+            <span class="product-meta-item">🛏 {{ beds }} bed{% if beds != '1' %}s{% endif %}</span>
+          {%- endif -%}
+          {%- if baths != '' -%}
+            <span class="product-meta-item">🚿 {{ baths }} bath{% if baths != '1' %}s{% endif %}</span>
+          {%- endif -%}
+          {%- if guests != '' -%}
+            <span class="product-meta-item">👥 Up to {{ guests }} guests</span>
+          {%- endif -%}
+        </div>
+
+        {%- if rating > 0 or trust >= 80 -%}
+          <div class="product-header__ratings">
+            {%- if rating > 0 -%}
+              <span class="product-rating">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <strong>{{ rating | round: 1 }}</strong>
+                <span class="product-rating__count">({{ review_count }} review{% if review_count != 1 %}s{% endif %})</span>
+              </span>
+            {%- endif -%}
+            {%- if trust >= 80 -%}
+              {% render 'trust-badge', score: trust %}
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </header>
+
+      <hr class="product-divider">
+
+      {%- comment -%} Description {%- endcomment -%}
+      {%- if product.description != blank -%}
+        <section class="product-description" aria-label="Property description">
+          <h2 class="product-section-title">About this property</h2>
+          <div class="product-description__text rte" id="product-desc-text">
+            {{ product.description }}
+          </div>
+          {%- if product.description.size > 600 -%}
+            <button class="product-description__toggle" id="desc-toggle" aria-expanded="false">
+              Show more ↓
+            </button>
+          {%- endif -%}
+        </section>
+        <hr class="product-divider">
+      {%- endif -%}
+
+      {%- comment -%} Amenities — loaded from API or Shopify metafields {%- endcomment -%}
+      <section class="product-amenities" aria-label="Amenities">
+        <h2 class="product-section-title">Amenities</h2>
+        <div class="amenities-grid" id="amenities-grid">
+          {%- comment -%} Shopify metafield-based fallback {%- endcomment -%}
+          {%- assign amenities_raw = product.metafields.staysphere.amenities -%}
+          {%- if amenities_raw != blank -%}
+            {%- assign amenity_list = amenities_raw | split: ',' -%}
+            {%- for amenity in amenity_list -%}
+              <div class="amenity-item">
+                <span class="amenity-item__icon" aria-hidden="true">
+                  {%- case amenity | strip -%}
+                    {%- when 'WiFi' -%}📶
+                    {%- when 'Pool' -%}🏊
+                    {%- when 'Parking' -%}🚗
+                    {%- when 'Braai' -%}🔥
+                    {%- when 'Kitchen' -%}🍳
+                    {%- when 'AirConditioning' -%}❄
+                    {%- when 'Fireplace' -%}🔥
+                    {%- when 'PetFriendly' -%}🐾
+                    {%- when 'GameDrives' -%}🦁
+                    {%- when 'BreakfastIncluded' -%}🥞
+                    {%- else -%}✓
+                  {%- endcase -%}
+                </span>
+                <span class="amenity-item__name">{{ amenity | strip | replace: '_', ' ' }}</span>
+              </div>
+            {%- endfor -%}
+          {%- else -%}
+            {%- comment -%} Skeleton — JS will fill from API {%- endcomment -%}
+            {%- for i in (1..6) -%}
+              <div class="amenity-item skeleton-item" aria-hidden="true">
+                <span class="skeleton-block amenity-skeleton-icon"></span>
+                <span class="skeleton-line skeleton-line--short"></span>
+              </div>
+            {%- endfor -%}
+          {%- endif -%}
+        </div>
+        <button class="amenities-show-all btn btn--ghost btn--sm hidden" id="amenities-show-all">
+          Show all amenities
+        </button>
+      </section>
+
+      <hr class="product-divider">
+
+      {%- comment -%} Location / map {%- endcomment -%}
+      {%- if section.settings.show_map and settings.google_maps_key != blank -%}
+        <section class="product-map-section" aria-label="Location">
+          <h2 class="product-section-title">Location</h2>
+          <p class="product-map-label">
+            📍 {{ product.metafields.staysphere.address | default: city }}
+          </p>
+          <div class="product-map" id="property-map"
+               data-lat="{{ product.metafields.staysphere.latitude | default: '-22.5' }}"
+               data-lng="{{ product.metafields.staysphere.longitude | default: '17.0' }}"
+               data-title="{{ product.title | escape }}"
+               aria-label="Property location map">
+            <div class="product-map__placeholder">
+              <p>Map loading…</p>
+            </div>
+          </div>
+        </section>
+        <hr class="product-divider">
+      {%- endif -%}
+
+      {%- comment -%} Area intelligence (live data from ai-service) {%- endcomment -%}
+      <section class="product-area" id="area-intelligence" aria-label="Area intelligence"
+               data-property-id="{{ property_id }}" data-city="{{ city }}">
+        <h2 class="product-section-title">Around {{ city }}</h2>
+        <div class="area-grid" id="area-grid">
+          <div class="area-card skeleton-card" aria-hidden="true"></div>
+          <div class="area-card skeleton-card" aria-hidden="true"></div>
+          <div class="area-card skeleton-card" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <hr class="product-divider">
+
+      {%- comment -%} Reviews {%- endcomment -%}
+      {%- if section.settings.show_reviews -%}
+        <section class="product-reviews" id="product-reviews" aria-label="Guest reviews">
+          <div class="product-reviews__header">
+            <h2 class="product-section-title">
+              {%- if rating > 0 -%}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#f59e0b" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                {{ rating | round: 1 }} · {{ review_count }} review{% if review_count != 1 %}s{% endif %}
+              {%- else -%}
+                Reviews
+              {%- endif -%}
+            </h2>
+          </div>
+
+          {%- comment -%} Rating breakdown — loaded by JS from trust-service {%- endcomment -%}
+          <div class="rating-breakdown" id="rating-breakdown">
+            {%- assign dimensions = 'Cleanliness,Accuracy,Communication,Location,Value' | split: ',' -%}
+            {%- for dim in dimensions -%}
+              <div class="rating-bar">
+                <span class="rating-bar__label">{{ dim }}</span>
+                <div class="rating-bar__track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="5">
+                  <div class="rating-bar__fill skeleton-block" style="width:0%"></div>
+                </div>
+                <span class="rating-bar__value">–</span>
+              </div>
+            {%- endfor -%}
+          </div>
+
+          <div class="reviews-list" id="reviews-list">
+            <div class="review-skeleton" aria-hidden="true">
+              {%- for i in (1..3) -%}
+                {% render 'review-card', skeleton: true %}
               {%- endfor -%}
             </div>
-          {%- endif -%}
-        {%- endif -%}
-      </div>
-
-      <div class="product-details">
-        <p class="product-details__location">
-          📍 {{ product.metafields.staysphere.city | default: 'Namibia' }}
-        </p>
-        <h1 class="product-details__title">{{ product.title }}</h1>
-        <div class="product-details__meta">
-          {%- assign beds = product.metafields.staysphere.bedrooms -%}
-          {%- assign baths = product.metafields.staysphere.bathrooms -%}
-          {%- assign guests = product.metafields.staysphere.max_guests -%}
-          {%- if beds -%}<span>🛏 {{ beds }} bed{% if beds != '1' %}s{% endif %}</span>{%- endif -%}
-          {%- if baths -%}<span>🚿 {{ baths }} bath{% if baths != '1' %}s{% endif %}</span>{%- endif -%}
-          {%- if guests -%}<span>👥 Up to {{ guests }} guests</span>{%- endif -%}
-        </div>
-        <div class="product-details__description">{{ product.description }}</div>
-      </div>
-    </div>
-
-    {% comment %} Right: Booking widget sidebar {% endcomment %}
-    <aside class="main-product__sidebar">
-      <div class="booking-sidebar" id="booking-sidebar" data-property-id="{{ property_id }}">
-        <div class="booking-sidebar__price">
-          <strong class="booking-sidebar__amount">
-            {{ settings.default_currency_symbol }}{{ product.price | money_without_currency }}
-          </strong>
-          <span class="booking-sidebar__unit">/ night</span>
-        </div>
-        <div class="booking-sidebar__dates">
-          <div class="form-field">
-            <label for="booking-checkin">Check in</label>
-            <input type="date" id="booking-checkin" class="booking-sidebar__date-input"
-                   min="{{ 'now' | date: '%Y-%m-%d' }}">
           </div>
-          <div class="form-field">
-            <label for="booking-checkout">Check out</label>
-            <input type="date" id="booking-checkout" class="booking-sidebar__date-input">
+
+          <button class="btn btn--ghost btn--sm reviews-load-more hidden" id="reviews-load-more">
+            Load more reviews
+          </button>
+        </section>
+        <hr class="product-divider">
+      {%- endif -%}
+
+      {%- comment -%} Host card — loaded from API {%- endcomment -%}
+      <section class="product-host" id="product-host" aria-label="Host">
+        <h2 class="product-section-title">Your host</h2>
+        <div class="host-card" id="host-card">
+          <div class="host-card__avatar skeleton-circle" id="host-avatar"></div>
+          <div class="host-card__info">
+            <div class="skeleton-line skeleton-line--short" id="host-name"></div>
+            <div class="skeleton-line" id="host-since"></div>
           </div>
         </div>
-        <div class="form-field">
-          <label for="booking-guests">Guests</label>
-          <select id="booking-guests" class="booking-sidebar__guests">
-            {%- for i in (1..12) -%}
-              <option value="{{ i }}">{{ i }} guest{% if i > 1 %}s{% endif %}</option>
+      </section>
+
+      <hr class="product-divider">
+
+      {%- comment -%} House rules {%- endcomment -%}
+      {%- assign rules_raw = product.metafields.staysphere.house_rules -%}
+      {%- if rules_raw != blank -%}
+        <section class="product-rules" aria-label="House rules">
+          <h2 class="product-section-title">House rules</h2>
+          <div class="rules-list">
+            {%- assign rules = rules_raw | split: '|' -%}
+            {%- for rule in rules -%}
+              <p class="rules-list__item">{{ rule | strip }}</p>
             {%- endfor -%}
-          </select>
+          </div>
+        </section>
+        <hr class="product-divider">
+      {%- endif -%}
+
+    </div>{%- comment -%} end primary {%- endcomment -%}
+
+    {%- comment -%} ── BOOKING SIDEBAR ── {%- endcomment -%}
+    <aside class="main-product__sidebar">
+      <div class="booking-widget" id="booking-widget"
+           data-property-id="{{ property_id }}"
+           data-base-rate="{{ product.price | money_without_currency }}"
+           data-currency="{{ settings.default_currency }}"
+           data-currency-symbol="{{ settings.default_currency_symbol }}">
+
+        <div class="booking-widget__price-row">
+          <div>
+            <strong class="booking-widget__rate" id="bw-rate">
+              {{ settings.default_currency_symbol }}{{ product.price | money_without_currency }}
+            </strong>
+            <span class="booking-widget__per-night">/ night</span>
+          </div>
+          {%- if settings.feature_dynamic_pricing -%}
+            <span class="booking-widget__dynamic-badge" id="bw-dynamic-badge" hidden>
+              Dynamic pricing
+            </span>
+          {%- endif -%}
         </div>
-        {%- if settings.feature_bookings -%}
-          <button class="btn btn--primary btn--full" id="booking-reserve-btn">Reserve</button>
-          <p class="booking-sidebar__note">You won't be charged yet</p>
-        {%- else -%}
-          <a href="/contact" class="btn btn--outline btn--full">Enquire</a>
+
+        {%- if rating > 0 -%}
+          <div class="booking-widget__rating">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            {{ rating | round: 1 }}
+            <a href="#product-reviews" class="booking-widget__review-link">
+              ({{ review_count }} review{% if review_count != 1 %}s{% endif %})
+            </a>
+          </div>
         {%- endif -%}
+
+        {%- comment -%} Date + guest pickers {%- endcomment -%}
+        <div class="booking-widget__fields">
+          <div class="booking-date-row">
+            <div class="booking-date-cell booking-date-cell--left">
+              <label for="bw-checkin" class="booking-date-label">CHECK-IN</label>
+              <input type="date" id="bw-checkin" class="booking-date-input"
+                     min="{{ today }}" aria-label="Check-in date">
+            </div>
+            <div class="booking-date-divider" aria-hidden="true"></div>
+            <div class="booking-date-cell booking-date-cell--right">
+              <label for="bw-checkout" class="booking-date-label">CHECKOUT</label>
+              <input type="date" id="bw-checkout" class="booking-date-input"
+                     aria-label="Check-out date">
+            </div>
+          </div>
+          <div class="booking-guests-row">
+            <label for="bw-guests" class="booking-date-label">GUESTS</label>
+            <select id="bw-guests" class="booking-guests-select" aria-label="Number of guests">
+              {%- for i in (1..12) -%}
+                {%- if guests == blank or i <= guests -%}
+                  <option value="{{ i }}">{{ i }} guest{% if i > 1 %}s{% endif %}</option>
+                {%- endif -%}
+              {%- endfor -%}
+            </select>
+          </div>
+        </div>
+
+        {%- comment -%} Availability state — managed by JS {%- endcomment -%}
+        <div class="booking-widget__availability hidden" id="bw-availability" aria-live="polite"></div>
+
+        {%- comment -%} Price breakdown — shown once dates are selected {%- endcomment -%}
+        <div class="booking-widget__breakdown hidden" id="bw-breakdown">
+          <div class="bw-line"><span id="bw-nights-label">— × —</span><span id="bw-nights-amt">—</span></div>
+          <div class="bw-line"><span>Cleaning fee</span><span id="bw-cleaning">—</span></div>
+          <div class="bw-line"><span>Service fee</span><span id="bw-service">—</span></div>
+          <div class="bw-line bw-line--total"><strong>Total</strong><strong id="bw-total">—</strong></div>
+          <p class="bw-not-charged">You won't be charged yet</p>
+        </div>
+
+        {%- comment -%} CTA button {%- endcomment -%}
+        {%- if settings.feature_bookings -%}
+          <button class="btn btn--primary btn--full booking-widget__cta" id="bw-reserve-btn"
+                  data-property-id="{{ property_id }}">
+            <span class="btn-label" id="bw-cta-label">Reserve</span>
+            <span class="btn-spinner hidden" aria-hidden="true"></span>
+          </button>
+        {%- else -%}
+          <a href="/contact?property={{ product.handle }}" class="btn btn--outline btn--full">
+            Enquire about this property
+          </a>
+        {%- endif -%}
+
+        {%- comment -%} Negotiation (Phase 3+) {%- endcomment -%}
+        {%- if settings.feature_negotiations -%}
+          <button class="btn btn--ghost btn--full btn--sm booking-widget__negotiate" id="bw-negotiate-btn"
+                  data-property-id="{{ property_id }}">
+            Make an offer
+          </button>
+        {%- endif -%}
+
+        {%- comment -%} Trust signal {%- endcomment -%}
+        <p class="booking-widget__trust">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Secure booking · Instant confirmation
+        </p>
+
+      </div>
+
+      {%- comment -%} Share card {%- endcomment -%}
+      <div class="product-share-card">
+        <button class="product-share-btn" id="product-share-btn" aria-label="Share this property">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+        <button class="product-share-btn" data-property-id="{{ property_id }}" aria-pressed="false"
+                aria-label="Save to wishlist" id="sidebar-wishlist-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Save
+        </button>
       </div>
     </aside>
-  </div>
+
+  </div>{%- comment -%} end body {%- endcomment -%}
+
 </article>
 
 {% schema %}
@@ -92,7 +426,8 @@
   "name": "Property",
   "settings": [
     { "type": "checkbox", "id": "show_map", "label": "Show location map", "default": true },
-    { "type": "checkbox", "id": "show_reviews", "label": "Show reviews", "default": true }
+    { "type": "checkbox", "id": "show_reviews", "label": "Show reviews section", "default": true },
+    { "type": "checkbox", "id": "show_host_card", "label": "Show host card", "default": true }
   ]
 }
 {% endschema %}

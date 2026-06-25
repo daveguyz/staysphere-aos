@@ -147,6 +147,15 @@
   {% render 'modal-backdrop' %}
   <div id="global-toast-container" aria-live="polite" aria-atomic="true"></div>
 
+
+  {% comment %} Page-specific plugins {% endcomment %}
+  {% if template.name == 'collection' %}
+    {{ 'plugin-search.js' | asset_url | script_tag }}
+  {% endif %}
+  {% if template.name == 'product' %}
+    {{ 'plugin-product.js' | asset_url | script_tag }}
+  {% endif %}
+
   {{ 'theme.js' | asset_url | script_tag }}
 </body>
 </html>

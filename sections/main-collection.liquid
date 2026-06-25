@@ -1,63 +1,403 @@
-{% comment %}
-  Phase 1 — Property Search & Browse
-  Full implementation: search filters, map toggle, pagination, URL-driven state
-{% endcomment %}
-<section class="main-collection section-padding">
-  <div class="page-width">
-    <header class="collection-header">
-      <h1 class="collection-header__title">
-        {%- if collection.title -%}
+{%- paginate collection.products by section.settings.products_per_page -%}
+
+{%- comment -%} Read URL params for active filters {%- endcomment -%}
+{%- assign param_city      = request.path | split: '?' | last -%}
+{%- assign q_city          = request.query_string | split: 'city=' | last | split: '&' | first | url_decode -%}
+{%- assign q_checkin       = request.query_string | split: 'checkIn=' | last | split: '&' | first -%}
+{%- assign q_checkout      = request.query_string | split: 'checkOut=' | last | split: '&' | first -%}
+{%- assign q_guests        = request.query_string | split: 'guests=' | last | split: '&' | first -%}
+{%- assign q_min_price     = request.query_string | split: 'minPrice=' | last | split: '&' | first -%}
+{%- assign q_max_price     = request.query_string | split: 'maxPrice=' | last | split: '&' | first -%}
+{%- assign q_beds          = request.query_string | split: 'bedrooms=' | last | split: '&' | first -%}
+{%- assign q_pet           = request.query_string | split: 'petFriendly=' | last | split: '&' | first -%}
+{%- assign q_pool          = request.query_string | split: 'hasPool=' | last | split: '&' | first -%}
+{%- assign q_ai            = request.query_string | split: 'aiQuery=' | last | split: '&' | first | url_decode -%}
+{%- assign q_sort          = request.query_string | split: 'sortBy=' | last | split: '&' | first -%}
+
+{%- assign has_filters = false -%}
+{%- if q_city != blank or q_checkin != blank or q_beds != blank or q_pet != blank or q_pool != blank or q_min_price != blank -%}
+  {%- assign has_filters = true -%}
+{%- endif -%}
+
+<div class="collection-page" id="collection-page"
+     data-endpoint="{{ settings.api_gateway_url }}/api/v1/properties/search"
+     data-mock="{{ settings.api_mock_mode }}">
+
+  {%- comment -%} ── TOP BAR ── {%- endcomment -%}
+  <div class="collection-topbar page-width">
+    <div class="collection-topbar__left">
+      <h1 class="collection-topbar__title">
+        {%- if q_ai != blank -%}
+          AI results for "{{ q_ai }}"
+        {%- elsif q_city != blank -%}
+          Stays in {{ q_city }}
+        {%- elsif collection.title != blank -%}
           {{ collection.title }}
-        {%- elsif request.path contains 'all' -%}
-          All Stays
         {%- else -%}
-          Browse Stays
+          All Stays
         {%- endif -%}
       </h1>
-      {%- if collection.description != blank -%}
-        <p class="collection-header__desc">{{ collection.description }}</p>
-      {%- endif -%}
-    </header>
-
-    {% comment %} Search filters bar (Phase 1 — currently shows active query params) {% endcomment %}
-    {%- assign params = request.path -%}
-    <div class="collection-filters" id="collection-filters">
-      <div class="collection-filters__search">
-        <input type="search" id="collection-search"
-               value="{{ request.page_type }}"
-               placeholder="{{ settings.search_placeholder }}"
-               class="collection-filters__input"
-               aria-label="Search properties">
-      </div>
+      <p class="collection-topbar__count" id="result-count" aria-live="polite">
+        <span class="skeleton-inline" aria-hidden="true">loading</span>
+      </p>
     </div>
 
-    {% comment %} Property grid — loaded by theme.js from API or Shopify products {% endcomment %}
-    <div class="property-grid"
-         id="collection-property-grid"
-         data-endpoint="/api/v1/properties/search"
-         aria-label="Properties">
-      {%- for product in collection.products -%}
-        {% render 'property-card', product: product %}
-      {%- else -%}
-        <p class="collection-empty">No stays found. Try adjusting your search.</p>
-      {%- endfor -%}
-    </div>
-
-    {% comment %} Pagination {% endcomment %}
-    {%- if paginate.pages > 1 -%}
-      <div class="pagination">
-        {{ paginate | default_pagination }}
+    <div class="collection-topbar__right">
+      {%- comment -%} Sort {%- endcomment -%}
+      <div class="sort-select-wrap">
+        <label for="sort-select" class="visually-hidden">Sort by</label>
+        <select id="sort-select" class="sort-select" aria-label="Sort properties">
+          <option value="averageRating"    {% if q_sort == 'averageRating' %}selected{% endif %}>Top rated</option>
+          <option value="priceAsc"         {% if q_sort == 'priceAsc' %}selected{% endif %}>Price: low → high</option>
+          <option value="priceDesc"        {% if q_sort == 'priceDesc' %}selected{% endif %}>Price: high → low</option>
+          <option value="newest"           {% if q_sort == 'newest' %}selected{% endif %}>Newest</option>
+          <option value="trustScore"       {% if q_sort == 'trustScore' %}selected{% endif %}>Most trusted</option>
+        </select>
       </div>
-    {%- endif -%}
+
+      {%- comment -%} View toggle {%- endcomment -%}
+      <div class="view-toggle" role="group" aria-label="View mode">
+        <button class="view-toggle__btn view-toggle__btn--grid active" id="view-grid"
+                aria-label="Grid view" aria-pressed="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </button>
+        <button class="view-toggle__btn view-toggle__btn--list" id="view-list"
+                aria-label="List view" aria-pressed="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+            <line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      {%- comment -%} Filter toggle (mobile) {%- endcomment -%}
+      <button class="filter-toggle-btn btn btn--ghost btn--sm" id="filter-toggle"
+              aria-expanded="false" aria-controls="filter-panel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/>
+          <line x1="11" y1="18" x2="13" y2="18"/>
+        </svg>
+        Filters
+        {%- if has_filters -%}
+          <span class="filter-toggle-btn__dot" aria-label="Active filters"></span>
+        {%- endif -%}
+      </button>
+    </div>
   </div>
-</section>
+
+  {%- comment -%} Active filter chips {%- endcomment -%}
+  {%- if has_filters -%}
+    <div class="active-filters page-width" id="active-filters" aria-label="Active filters">
+      {%- if q_city != blank -%}
+        <button class="filter-chip" data-remove="city">📍 {{ q_city }} ✕</button>
+      {%- endif -%}
+      {%- if q_checkin != blank -%}
+        <button class="filter-chip" data-remove="checkIn">📅 {{ q_checkin }} ✕</button>
+      {%- endif -%}
+      {%- if q_beds != blank -%}
+        <button class="filter-chip" data-remove="bedrooms">🛏 {{ q_beds }}+ beds ✕</button>
+      {%- endif -%}
+      {%- if q_pet == 'true' -%}
+        <button class="filter-chip" data-remove="petFriendly">🐾 Pet-friendly ✕</button>
+      {%- endif -%}
+      {%- if q_pool == 'true' -%}
+        <button class="filter-chip" data-remove="hasPool">🏊 Pool ✕</button>
+      {%- endif -%}
+      {%- if q_min_price != blank or q_max_price != blank -%}
+        <button class="filter-chip" data-remove="price">
+          💰 N${{ q_min_price | default: '0' }}–{{ q_max_price | default: '∞' }} ✕
+        </button>
+      {%- endif -%}
+      <button class="filter-chip filter-chip--clear" id="clear-all-filters">Clear all</button>
+    </div>
+  {%- endif -%}
+
+  <div class="collection-body page-width">
+
+    {%- comment -%} ── FILTER SIDEBAR ── {%- endcomment -%}
+    <aside class="filter-panel" id="filter-panel" aria-label="Filter properties" hidden>
+      <div class="filter-panel__header">
+        <h2 class="filter-panel__title">Filters</h2>
+        <button class="filter-panel__close" id="filter-panel-close" aria-label="Close filters">✕</button>
+      </div>
+
+      <form class="filter-form" id="filter-form" novalidate>
+
+        <div class="filter-group">
+          <h3 class="filter-group__label">Destination</h3>
+          <div class="filter-city-wrap">
+            <input type="text" id="filter-city" name="city"
+                   value="{{ q_city }}"
+                   placeholder="Windhoek, Etosha…"
+                   class="filter-city-input"
+                   autocomplete="off" list="city-suggestions">
+            <datalist id="city-suggestions">
+              <option value="Windhoek">
+              <option value="Swakopmund">
+              <option value="Etosha">
+              <option value="Sossusvlei">
+              <option value="Lüderitz">
+              <option value="Walvis Bay">
+              <option value="Damaraland">
+              <option value="Caprivi Strip">
+              <option value="Fish River Canyon">
+              <option value="Waterberg">
+            </datalist>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-group__label">Dates</h3>
+          <div class="filter-dates">
+            <div class="form-field">
+              <label for="filter-checkin">Check in</label>
+              <input type="date" id="filter-checkin" name="checkIn"
+                     value="{{ q_checkin }}"
+                     min="{{ 'now' | date: '%Y-%m-%d' }}"
+                     class="filter-date-input">
+            </div>
+            <div class="form-field">
+              <label for="filter-checkout">Check out</label>
+              <input type="date" id="filter-checkout" name="checkOut"
+                     value="{{ q_checkout }}"
+                     class="filter-date-input">
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-group__label">Guests</h3>
+          <select id="filter-guests" name="guests" class="filter-select">
+            <option value="">Any</option>
+            {%- for i in (1..12) -%}
+              <option value="{{ i }}" {% if q_guests == i %}selected{% endif %}>
+                {{ i }} guest{% if i > 1 %}s{% endif %}
+              </option>
+            {%- endfor -%}
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-group__label">Price per night (N$)</h3>
+          <div class="filter-price-row">
+            <div class="form-field">
+              <label for="filter-min-price">Min</label>
+              <input type="number" id="filter-min-price" name="minPrice"
+                     value="{{ q_min_price }}" min="0" step="50"
+                     placeholder="0" class="filter-price-input">
+            </div>
+            <span class="filter-price-sep">–</span>
+            <div class="form-field">
+              <label for="filter-max-price">Max</label>
+              <input type="number" id="filter-max-price" name="maxPrice"
+                     value="{{ q_max_price }}" min="0" step="50"
+                     placeholder="Any" class="filter-price-input">
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-group__label">Bedrooms</h3>
+          <div class="filter-pill-row" role="group" aria-label="Minimum bedrooms">
+            {%- assign bed_opts = '0,1,2,3,4,5' | split: ',' -%}
+            {%- for n in bed_opts -%}
+              <button type="button"
+                      class="filter-pill{% if q_beds == n %} filter-pill--active{% endif %}"
+                      data-filter="bedrooms" data-value="{{ n }}">
+                {%- if n == '0' -%}Any{%- else -%}{{ n }}+{%- endif -%}
+              </button>
+            {%- endfor -%}
+          </div>
+          <input type="hidden" id="filter-bedrooms" name="bedrooms" value="{{ q_beds }}">
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-group__label">Amenities</h3>
+          <div class="filter-checkbox-list">
+            <label class="filter-checkbox">
+              <input type="checkbox" name="petFriendly" value="true"
+                     {% if q_pet == 'true' %}checked{% endif %}>
+              <span>🐾 Pet-friendly</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" name="hasPool" value="true"
+                     {% if q_pool == 'true' %}checked{% endif %}>
+              <span>🏊 Swimming pool</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" name="hasWifi" value="true">
+              <span>📶 Wi-Fi</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" name="hasParking" value="true">
+              <span>🚗 Parking</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" name="hasBraai" value="true">
+              <span>🔥 Braai / BBQ</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" name="selfCatering" value="true">
+              <span>🍳 Self-catering</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-group__label">Property type</h3>
+          <div class="filter-checkbox-list">
+            <label class="filter-checkbox">
+              <input type="checkbox" name="propertyType" value="LODGE">
+              <span>🌿 Lodge</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" name="propertyType" value="GUESTHOUSE">
+              <span>🏠 Guesthouse</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" name="propertyType" value="SELF_CATERING">
+              <span>🏡 Self-catering unit</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" name="propertyType" value="TENTED_CAMP">
+              <span>⛺ Tented camp</span>
+            </label>
+            <label class="filter-checkbox">
+              <input type="checkbox" name="propertyType" value="BOUTIQUE_HOTEL">
+              <span>🏨 Boutique hotel</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-group__label">Minimum rating</h3>
+          <div class="filter-pill-row" role="group" aria-label="Minimum star rating">
+            {%- assign rating_opts = '0,3,3.5,4,4.5' | split: ',' -%}
+            {%- for r in rating_opts -%}
+              <button type="button"
+                      class="filter-pill"
+                      data-filter="minRating" data-value="{{ r }}">
+                {%- if r == '0' -%}Any{%- else -%}⭐ {{ r }}+{%- endif -%}
+              </button>
+            {%- endfor -%}
+          </div>
+          <input type="hidden" id="filter-min-rating" name="minRating">
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="btn btn--primary btn--full" id="apply-filters-btn">
+            Show results
+          </button>
+          <button type="button" class="btn btn--ghost btn--full" id="reset-filters-btn">
+            Reset filters
+          </button>
+        </div>
+      </form>
+    </aside>
+
+    {%- comment -%} ── RESULTS GRID ── {%- endcomment -%}
+    <div class="collection-results">
+
+      {%- comment -%} AI query bar {%- endcomment -%}
+      {%- if settings.search_show_ai_bar and settings.feature_ai_concierge -%}
+        <div class="collection-ai-bar" id="collection-ai-bar">
+          <span class="collection-ai-bar__badge">✦ AI</span>
+          <input type="text" id="collection-ai-input"
+                 value="{{ q_ai }}"
+                 placeholder="Describe your ideal stay in Namibia…"
+                 class="collection-ai-bar__input"
+                 aria-label="Natural language search">
+          <button class="btn btn--primary btn--sm" id="collection-ai-btn">Search</button>
+          {%- if q_ai != blank -%}
+            <button class="btn btn--ghost btn--sm" id="collection-ai-clear">Clear AI</button>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- comment -%} Skeleton cards shown on initial load {%- endcomment -%}
+      <div class="property-grid property-grid--collection"
+           id="collection-grid"
+           aria-label="Properties"
+           aria-live="polite">
+
+        {%- comment -%} Skeleton placeholders while JS loads real data {%- endcomment -%}
+        <div class="collection-skeleton" id="collection-skeleton" aria-hidden="true">
+          {%- for i in (1..9) -%}
+            <div class="property-card property-card--skeleton">
+              <div class="property-card__image-wrap skeleton-block" style="aspect-ratio:3/2"></div>
+              <div class="property-card__body">
+                <div class="skeleton-line skeleton-line--short"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line skeleton-line--short"></div>
+                <div class="skeleton-line skeleton-line--price"></div>
+              </div>
+            </div>
+          {%- endfor -%}
+        </div>
+
+        {%- comment -%} Real cards injected here by plugin-search.js {%- endcomment -%}
+        <div class="collection-cards hidden" id="collection-cards"></div>
+
+        {%- comment -%} Shopify fallback (no-JS / API offline) {%- endcomment -%}
+        <noscript>
+          <div class="property-grid">
+            {%- for product in collection.products -%}
+              {% render 'property-card', product: product %}
+            {%- else -%}
+              <p class="collection-empty">No stays found.</p>
+            {%- endfor -%}
+          </div>
+        </noscript>
+
+      </div>
+
+      {%- comment -%} Empty state {%- endcomment -%}
+      <div class="collection-empty-state hidden" id="collection-empty">
+        <div class="collection-empty-state__icon" aria-hidden="true">🏜</div>
+        <h2 class="collection-empty-state__title">No stays found</h2>
+        <p class="collection-empty-state__text">
+          Try widening your search — remove a filter or explore a different region.
+        </p>
+        <button class="btn btn--primary" id="clear-all-filters-2">Clear all filters</button>
+      </div>
+
+      {%- comment -%} Pagination {%- endcomment -%}
+      <nav class="collection-pagination hidden" id="collection-pagination"
+           aria-label="Property pages">
+        <button class="btn btn--ghost btn--sm pag-btn" id="pag-prev" disabled>← Previous</button>
+        <span class="pag-info" id="pag-info"></span>
+        <button class="btn btn--ghost btn--sm pag-btn" id="pag-next">Next →</button>
+      </nav>
+    </div>
+  </div>
+</div>
 
 {% schema %}
 {
   "name": "Collection",
   "settings": [
-    { "type": "range", "id": "products_per_page", "min": 9, "max": 48, "step": 3, "label": "Properties per page", "default": 24 },
-    { "type": "checkbox", "id": "show_filter_bar", "label": "Show filter bar", "default": true }
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 9,
+      "max": 48,
+      "step": 3,
+      "label": "Properties per page",
+      "default": 24
+    },
+    {
+      "type": "checkbox",
+      "id": "show_filter_sidebar",
+      "label": "Show filter sidebar on desktop",
+      "default": true
+    }
   ]
 }
 {% endschema %}
+
+{%- endpaginate -%}
