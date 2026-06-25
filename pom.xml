@@ -28,6 +28,7 @@
         <module>services/auth-service</module>
         <module>services/analytics-service</module>
         <module>services/messaging-service</module>
+        <module>services/auction-service</module>
         <module>shopify-integration</module>
     </modules>
 

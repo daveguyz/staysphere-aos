@@ -221,6 +221,22 @@ services:
       test: ["CMD-SHELL", "pg_isready -U staysphere -d staysphere_messaging"]
       interval: 10s
 
+
+  db-auction:
+    image: postgres:16-alpine
+    container_name: db-auction
+    environment:
+      POSTGRES_DB: staysphere_auction
+      POSTGRES_USER: staysphere
+      POSTGRES_PASSWORD: staysphere_secret
+    ports: ["5442:5432"]
+    volumes: [db-auction-data:/var/lib/postgresql/data]
+    networks: [staysphere-net]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U staysphere -d staysphere_auction"]
+      interval: 10s
+
   # ─── SPRING CLOUD INFRASTRUCTURE ──────────────
   service-discovery:
     build:
@@ -545,6 +561,34 @@ services:
     networks: [staysphere-net]
     restart: unless-stopped
 
+
+  auction-service:
+    build:
+      context: .
+      dockerfile: services/auction-service/Dockerfile
+    container_name: auction-service
+    depends_on:
+      db-auction:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      service-discovery:
+        condition: service_healthy
+    environment:
+      <<: *common-env
+      PORT: 8094
+      DB_URL: jdbc:postgresql://db-auction:5432/staysphere_auction
+    ports: ["8094:8094"]
+    networks: [staysphere-net]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8094/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   # ─── MONITORING ────────────────────────────────
   prometheus:
     image: prom/prometheus:v2.51.0
@@ -609,5 +653,6 @@ volumes:
   db-auth-data:
   db-analytics-data:
   db-messaging-data:
+  db-auction-data:
   prometheus-data:
   grafana-data:

@@ -106,3 +106,17 @@ staysphere:
           predicates: [ Path=/api/v1/messages/**, /ws/** ]
           filters:
             - name: JwtAuthGatewayFilter
+
+        - id: auction-service
+          uri: lb://auction-service
+          predicates: [ Path=/api/v1/auctions/**, /api/v1/auction/** ]
+          filters:
+            - name: JwtAuthGatewayFilter
+
+        - id: auction-public
+          uri: lb://auction-service
+          predicates: [ Path=/api/v1/auctions, /api/v1/auctions/live, /api/v1/auctions/*/bids ]
+
+        - id: auction-websocket
+          uri: lb:ws://auction-service
+          predicates: [ Path=/ws/auction/** ]
