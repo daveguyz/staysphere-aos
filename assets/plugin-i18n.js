@@ -147,7 +147,7 @@
         if (cached) {
           const parsed = JSON.parse(cached);
           if (Date.now() - parsed._ts < DETECT_TTL_MS) {
-            return parsed;
+            return { ...parsed, _fromCache: true };
           }
         }
       } catch (_) {}
@@ -166,9 +166,12 @@
             country,
             countryName: data.country_name || '',
             city:        data.city || '',
+            region:      data.region || '',
             currency:    data.currency || defaults.currency || DEFAULT_LOCALE.currency,
             language:    (data.languages || '').split(',')[0].split('-')[0] || defaults.language || 'en',
             timezone:    data.timezone || browserTz || defaults.tz || 'UTC',
+            _source:     'ip',
+            _fromCache:  false,
             _ts:         Date.now(),
           };
           // Normalise language to one we support
@@ -178,13 +181,18 @@
         }
       } catch (_) {}
 
-      // 4. Fallback — derive from browser timezone alone
+      // 4. Fallback — derive from browser timezone alone (no network request)
+      const browserLang = (navigator.language || 'en').split('-')[0];
       return {
-        country:  '',
-        currency: DEFAULT_LOCALE.currency,
-        language: navigator.language?.split('-')[0] || 'en',
-        timezone: browserTz || 'UTC',
-        _ts:      Date.now(),
+        country:    '',
+        countryName:'',
+        city:       '',
+        currency:   DEFAULT_LOCALE.currency,
+        language:   LANGUAGES[browserLang] ? browserLang : 'en',
+        timezone:   browserTz || 'UTC',
+        _source:    'browser',
+        _fromCache: false,
+        _ts:        Date.now(),
       };
     },
   };
@@ -530,58 +538,118 @@
     // ── Bootstrap ────────────────────────────────────────────────
 
     /**
-     * Called once on DOMContentLoaded.
-     * 1. Load exchange rates (cached or fresh)
-     * 2. Detect geo (cached or fresh)
-     * 3. Apply detected locale unless user has overridden
-     * 4. Register the English catalog (always available)
-     * 5. Stamp prices
+     * Bootstrap sequence (called once on DOMContentLoaded):
+     *
+     * Phase A:
+     *   1. Read ssI18nConfig (injected by theme.liquid)
+     *   2. Register English catalog stub
+     *   3. If autoDetect enabled: run GeoDetector → saveDetected
+     *   4. If autoDetect disabled: apply operator defaults from ssI18nConfig
+     *   5. Emit ss:locale-detected with full detection result
+     *
+     * Phase B–D: applied in the same init() call after detection.
+     *   6. Load exchange rates (background)
+     *   7. Stamp prices / repaint if currency differs from base
+     *   8. Load + apply language
+     *   9. Apply timezone
+     *  10. Emit ss:i18n-ready
      */
     async init() {
-      // Register en catalog from the global Shopify locale object if available
-      const enCatalog = window.ssLocaleEn || {};
-      Translator.register('en', enCatalog);
+      const cfg = window.ssI18nConfig || {};
 
-      // Load exchange rates in background
-      CurrencyConverter.loadRates().catch(() => {});
-
-      // Detect geo
-      const detected = await GeoDetector.detect();
-      LocaleStore.saveDetected({
-        currency: detected.currency,
-        language: detected.language,
-        timezone: detected.timezone,
-        country:  detected.country,
+      // Register English catalog stub (real translations loaded on demand)
+      Translator.register('en', {
+        general: { search:'Search', close:'Close', loading:'Loading…',
+                   save:'Save', cancel:'Cancel', confirm:'Confirm',
+                   back:'Back', next:'Next', view_all:'View all',
+                   sign_in:'Sign in', sign_out:'Sign out',
+                   create_account:'Create account' },
+        hero: { search_where:'Where', search_button:'Search',
+                ai_placeholder:'Describe the property you\'re looking for…',
+                ai_button:'Ask AI' },
+        property: { book_now:'Reserve', per_night:'/ night',
+                    total:'Total', cleaning_fee:'Cleaning fee',
+                    service_fee:'Service fee', taxes:'Taxes' },
+        errors: { no_results:'No listings found. Try adjusting your search.' },
       });
 
-      // Apply current locale
+      // ── Phase A: detection ──────────────────────────────────────
+      const autoDetect = cfg.autoDetect !== false;
+      let detected = null;
+
+      if (autoDetect) {
+        try {
+          detected = await GeoDetector.detect();
+          LocaleStore.saveDetected({
+            currency:    detected.currency,
+            language:    detected.language,
+            timezone:    detected.timezone,
+            country:     detected.country,
+            countryName: detected.countryName,
+            city:        detected.city,
+          });
+          document.dispatchEvent(new CustomEvent('ss:locale-detected', {
+            detail: {
+              source:      detected._source || 'ip',
+              country:     detected.country,
+              countryName: detected.countryName || '',
+              city:        detected.city || '',
+              currency:    detected.currency,
+              language:    detected.language,
+              timezone:    detected.timezone,
+              fromCache:   detected._fromCache || false,
+            },
+          }));
+          console.debug('[i18n] Detected locale:', detected.country,
+            detected.currency, detected.language, detected.timezone);
+        } catch (e) {
+          console.warn('[i18n] Geo detection failed, using defaults:', e.message);
+        }
+      } else {
+        // Operator has disabled auto-detect — use theme settings as defaults
+        // (only if user hasn't already set an override)
+        const stored = LocaleStore.load();
+        if (!stored.userOverride) {
+          LocaleStore.saveDetected({
+            currency: cfg.defaultCurrency || 'USD',
+            language: cfg.defaultLanguage || 'en',
+            timezone: cfg.defaultTimezone || 'UTC',
+          });
+        }
+      }
+
+      // ── Phase B–D: apply current locale ────────────────────────
       const locale = LocaleStore.load();
 
-      // Currency
-      PricePatcher.baseCurrency = document.body.dataset.currency || 'USD';
+      // Currency — load rates in background then stamp/repaint
+      PricePatcher.baseCurrency = cfg.defaultCurrency || document.body.dataset.currency || 'USD';
       PricePatcher.stampPrices();
-      if (locale.currency && locale.currency !== PricePatcher.baseCurrency) {
-        await CurrencyConverter.loadRates();
-        PricePatcher.repaintAll(locale.currency);
-      }
+      CurrencyConverter.loadRates().then(() => {
+        if (locale.currency && locale.currency !== PricePatcher.baseCurrency) {
+          PricePatcher.repaintAll(locale.currency);
+        }
+      }).catch(() => {});
 
       // Language
       if (locale.language && locale.language !== 'en') {
-        await Translator.loadRemote(locale.language);
+        await Translator.loadRemote(locale.language).catch(() => {});
       }
       Translator.setLanguage(locale.language || 'en');
 
       // Timezone
-      TimeFormatter.setTimezone(locale.timezone || detected.timezone || 'UTC');
+      TimeFormatter.setTimezone(
+        locale.timezone
+        || (detected && detected.timezone)
+        || cfg.defaultTimezone
+        || 'UTC'
+      );
 
       // Expose on SDK
-      if (window.StaySphere) {
-        window.StaySphere.i18n = I18n;
-      } else {
-        window.StaySphere = { i18n: I18n };
-      }
+      window.StaySphere = window.StaySphere || {};
+      window.StaySphere.i18n = I18n;
 
       document.dispatchEvent(new CustomEvent('ss:i18n-ready', { detail: locale }));
+      console.debug('[i18n] Ready. Locale:', locale);
     },
   };
 

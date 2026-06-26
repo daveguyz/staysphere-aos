@@ -2,9 +2,17 @@
 <html lang="{{ request.locale.iso_code }}" data-theme-version="1.0.0">
 <head>
   <meta charset="utf-8">
-  {%- comment -%} Inline English locale catalog for zero-latency i18n {%- endcomment -%}
+  {%- comment -%} Inline i18n bootstrap — sets locale context before any plugin runs {%- endcomment -%}
   <script>
-    window.ssLocaleEn = {{ 'en.default' | t: scope: '' | json }};
+    // Phase A bootstrap: pass theme locale settings to JS before plugins load
+    window.ssI18nConfig = {
+      autoDetect:      {{ settings.locale_auto_detect | default: true | json }},
+      defaultLanguage: {{ settings.default_language | default: 'en' | json }},
+      defaultTimezone: {{ settings.default_timezone | default: 'UTC' | json }},
+      defaultCurrency: {{ settings.default_currency | default: 'USD' | json }},
+      cdnHost:         "{{ 'x' | asset_url | remove: '/assets/x' }}",
+      shopLocale:      "{{ request.locale.iso_code | default: 'en' }}"
+    };
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="{{ settings.color_nav_bg }}">

@@ -307,6 +307,12 @@
         const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
         set('bs-property', b.property?.title || b.propertyId);
         set('bs-checkin',  fmtDate(b.checkIn));
+        const bsCheckinEl  = $('bs-checkin');
+        const bsCheckoutEl = $('bs-checkout');
+        if (bsCheckinEl  && b.checkIn)  bsCheckinEl.dataset.datetime  = b.checkIn  + 'T00:00:00';
+        if (bsCheckoutEl && b.checkOut) bsCheckoutEl.dataset.datetime = b.checkOut + 'T00:00:00';
+        // Let TimeFormatter reformat in user's timezone
+        window.StaySphere?.i18n?.time?._repaintDates?.();
         set('bs-checkout', fmtDate(b.checkOut));
         set('bs-guests',   `${b.guestCount} guest${b.guestCount !== 1 ? 's' : ''}`);
         set('bs-total',    fmt(b.totalAmount, sym));

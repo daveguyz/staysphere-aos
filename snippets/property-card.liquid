@@ -77,7 +77,9 @@
     {%- endif -%}
 
     <div class="property-card__price">
-      <strong class="property-card__price-amount">
+      <strong class="property-card__price-amount"
+              data-price="{{ product.price | money_without_currency | remove: ',' }}"
+              data-price-currency="{{ settings.default_currency | default: 'USD' }}">
         {{ settings.default_currency_symbol }}{{ product.price | money_without_currency }}
       </strong>
       <span class="property-card__price-unit">/ night</span>

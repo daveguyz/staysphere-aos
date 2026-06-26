@@ -125,7 +125,9 @@
           <div class="auction-card__price-row">
             <div>
               <span class="auction-card__price-label">${priceLabel}</span>
-              <p class="auction-card__price">${s}${Number(displayPrice || 0).toLocaleString()}</p>
+              <p class="auction-card__price"
+           data-price="${Number(displayPrice || 0)}"
+           data-price-currency="${document.body.dataset.currency || 'USD'}">${s}${Number(displayPrice || 0).toLocaleString()}</p>
             </div>
             <div class="auction-card__bids">
               <span class="auction-card__bid-count">${lot.totalBids || 0}</span>

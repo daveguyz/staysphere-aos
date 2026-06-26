@@ -12,6 +12,8 @@
 <div class="countdown-timer{% if is_extended %} countdown-timer--extended{% endif %}"
      id="countdown-{{ lot_id }}"
      data-ends-at="{{ ends_at }}"
+     data-datetime="{{ ends_at }}"
+     data-datetime-style="relative"
      data-lot-id="{{ lot_id }}"
      data-status="{{ status }}"
      role="timer"

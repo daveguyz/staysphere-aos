@@ -62,6 +62,11 @@
     const i18n = getI18n();
     if (!i18n) return;
 
+    // Respect operator setting — if locale selector is disabled, do nothing
+    const cfg = window.ssI18nConfig || {};
+    if (document.body.dataset.localeAutoDetect === 'false'
+        && !document.body.dataset.showCurrencySelector) return;
+
     const locale   = i18n.currentLocale();
     const langInfo = i18n.LANGUAGES[locale.language] || { flag: '🌐', label: 'English' };
     const curInfo  = i18n.CURRENCIES[locale.currency] || { symbol: '$' };

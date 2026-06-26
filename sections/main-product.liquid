@@ -308,6 +308,8 @@
       <div class="booking-widget" id="booking-widget"
            data-property-id="{{ property_id }}"
            data-base-rate="{{ product.price | money_without_currency }}"
+           data-price="{{ product.price | money_without_currency | remove: ',' }}"
+           data-price-currency="{{ settings.default_currency | default: 'USD' }}"
            data-currency="{{ settings.default_currency }}"
            data-currency-symbol="{{ settings.default_currency_symbol }}">
 
