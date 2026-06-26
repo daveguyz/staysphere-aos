@@ -1,161 +1,225 @@
-# 🏠 StaySphere AOS — Accommodation Operating System
+# StaySphere AOS — Accommodation Operating System
 
-**The premier accommodation booking platform for Namibia and Southern Africa, built on Spring Boot microservices + Shopify.**
+> **Live auction + booking platform for Namibian and Southern African hospitality.**
+> Spring Boot microservices backend · Shopify Liquid theme · Real-time WebSocket bidding · KYC · Stripe · Mux livestream
 
 ---
 
-## 🏗️ Architecture
+## What it is
+
+StaySphere AOS combines accommodation booking with a full live-auction operating system inside a Shopify storefront. Operators can run English, Dutch, Reverse, and Sealed-bid auctions for properties with deposit-gating, Stripe Identity KYC, Claude AI fraud detection, and Mux HLS livestream — all in one platform.
+
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   Shopify Theme (Liquid)                  │
-│         + StaySphere JS/CSS (AI Concierge, Search)       │
-└────────────────────────┬────────────────────────────────┘
-                         │ HTTPS
-┌────────────────────────▼────────────────────────────────┐
-│              API Gateway (Port 8080)                     │
-│    JWT Auth • Rate Limiting • CORS • Load Balancing      │
-└────┬──────┬──────┬──────┬──────┬──────┬──────┬─────────┘
-     │      │      │      │      │      │      │
-  8081   8082   8083   8084   8085   8086   8087   8088
-Property Booking  Pay   AI   Pricing Trust  Notif  Search
-Service  Engine  Svc   Svc   Engine  Svc    Svc   Service
-   │       │      │      │      │      │      │      │
-  PG     PG    PG    PG    PG    PG    PG    ES
-  Redis       Stripe Anthropic          Twilio
-              ←────────── Kafka ──────────────→
-              ←──────── Eureka (8761) ─────────→
-              ←────── Config Server (8888) ──────→
+Shopify Storefront (Liquid theme)  ←→  API Gateway :8080
+                                         ├── auth-service          :8091
+                                         ├── property-service      :8081
+                                         ├── booking-engine        :8082
+                                         ├── payment-service       :8083
+                                         ├── auction-service       :8094  ← WebSocket + Redis
+                                         ├── ai-service            :8084
+                                         ├── pricing-engine        :8085
+                                         ├── trust-service         :8086
+                                         ├── notification-service  :8087  ← Email/SMS
+                                         ├── search-service        :8088  ← Elasticsearch
+                                         ├── analytics-service     :8092
+                                         ├── messaging-service     :8093
+                                         └── shopify-integration   :8090  ← OAuth + provisioning
+                                     Kafka  ←── event bus
+                                     Redis  ←── bid locks + presence
 ```
 
-## 🚀 Quick Start
+---
+
+## Quick start (local dev)
+
+### Prerequisites
+- Java 21, Maven 3.9+
+- Docker & Docker Compose
+- Node.js 18+ (for Shopify CLI)
+
+### 1. Clone and configure
 
 ```bash
-# 1. Clone and configure
+git clone https://github.com/daveguyz/staysphere-aos.git
+cd staysphere-aos
 cp .env.example .env
-# Edit .env with your Stripe, Anthropic, Shopify, Twilio keys
-
-# 2. Start everything
-docker compose up -d
-
-# 3. Wait for services to start (~3-5 minutes)
-docker compose ps
-
-# 4. Access points:
-# - API Gateway:      http://localhost:8080
-# - Eureka Dashboard: http://localhost:8761  (eureka/eureka_secret)
-# - Kafka UI:         http://localhost:8989
-# - Grafana:          http://localhost:3000  (admin/grafana_secret)
-# - Prometheus:       http://localhost:9090
+# Edit .env — at minimum set JWT_SECRET and STRIPE_SECRET_KEY
 ```
 
-## 📦 Microservices
-
-| Service | Port | Description |
-|---------|------|-------------|
-| api-gateway | 8080 | Spring Cloud Gateway, JWT auth, rate limiting |
-| service-discovery | 8761 | Eureka Server |
-| config-server | 8888 | Spring Cloud Config |
-| property-service | 8081 | Listings, availability, Shopify product sync |
-| booking-engine | 8082 | Reservations, SERIALIZABLE transactions, AI negotiation |
-| payment-service | 8083 | Stripe Connect, webhooks, host payouts |
-| ai-service | 8084 | Claude-powered concierge, search intent, area intelligence |
-| pricing-engine | 8085 | Namibia-aware dynamic pricing, hourly recalculation |
-| trust-service | 8086 | 100-pt trust scores, review management |
-| notification-service | 8087 | Email (Thymeleaf), SMS + WhatsApp (Twilio) |
-| search-service | 8088 | Elasticsearch full-text + geo search |
-| shopify-integration | 8090 | Webhook handlers, storefront sync |
-
-## 🔐 Security Features
-
-- **JWT authentication** across all services (RS256-compatible)
-- **API Gateway** validates tokens before forwarding requests
-- **Rate limiting** via Redis: 120 req/min general, 20 req/min AI endpoints
-- **Stripe webhook HMAC** verification
-- **Shopify webhook HMAC-SHA256** verification
-- **`Isolation.SERIALIZABLE`** on booking transactions (prevents double bookings)
-- **Redis locks** (15-min TTL) as secondary protection layer
-- **CORS whitelist** for Shopify domains only
-- **Flyway migrations** for schema integrity
-
-## 💰 Pricing Logic
-
-Namibia-specific dynamic pricing factors:
-- **Seasonal**: Jun–Oct (dry/wildlife season) +25%, Feb–Apr (rainy) -10%
-- **Day-of-week**: Friday/Saturday +15%
-- **Custom rules**: per-property date range and event rules
-- **Floor price**: never drops below host-set minimum
-- **Multiplier cap**: 0.5x–1.5x base rate
-- **Hourly recalculation**: `@Scheduled(fixedRate = 3_600_000)`
-
-## 🤖 AI Features (Claude)
-
-- **Travel Concierge**: full multi-turn conversation with property recommendations
-- **Search Intent Extraction**: natural language → structured `SearchRequestDTO`
-- **AI Negotiation Advisor**: Claude advises hosts on guest price offers
-- **Smart Calendar Insights**: booking timing recommendations
-- **Area Intelligence**: local knowledge about Namibian destinations
-- **Property Comparison**: structured comparison with recommendation
-
-## 📊 Monitoring
-
-- **Prometheus** scrapes all `/actuator/prometheus` endpoints
-- **Grafana** for dashboards (pre-configured)
-- **Kafka UI** for message inspection
-- **Spring Actuator** health, info, metrics on all services
-
-## 🛒 Shopify Integration
-
-- Products synced from property-service via Admin API
-- Metafields: property_id, bedrooms, max_guests, lat/lon, city
-- Order webhooks → booking confirmation
-- Customer webhooks → user profile sync
-- Draft orders for payment processing via Stripe Connect
-
-## 📁 Project Structure
-
-```
-staysphere/
-├── shared/
-│   ├── common-dto/          # Shared DTOs (PropertyDTO, BookingDTO, etc.)
-│   ├── common-events/       # Kafka event classes (TOPIC constants)
-│   └── common-security/     # JWT filter, token provider
-├── infrastructure/
-│   ├── api-gateway/         # Spring Cloud Gateway
-│   ├── service-discovery/   # Eureka Server
-│   └── config-server/       # Spring Cloud Config
-├── services/
-│   ├── property-service/    # Port 8081
-│   ├── booking-engine/      # Port 8082
-│   ├── payment-service/     # Port 8083
-│   ├── ai-service/          # Port 8084
-│   ├── pricing-engine/      # Port 8085
-│   ├── trust-service/       # Port 8086
-│   ├── notification-service/# Port 8087
-│   └── search-service/      # Port 8088
-├── shopify-integration/     # Webhook handlers + Storefront client
-├── shopify-theme/           # Liquid templates + JS/CSS
-├── k8s/                     # Kubernetes manifests + monitoring config
-├── docker-compose.yml       # Full local stack
-└── .env.example             # Environment variable template
-```
-
-## 🏃 Running Tests
+### 2. Start infrastructure
 
 ```bash
-# Run all tests (requires Docker for Testcontainers)
-mvn test
-
-# Run specific service tests
-mvn test -pl services/booking-engine
+docker compose up -d \
+  postgres redis kafka zookeeper elasticsearch \
+  service-discovery config-server
 ```
 
-## 🌍 Target Market
+### 3. Build shared modules
 
-- **Primary**: Namibia (NAD currency, local knowledge)
-- **Secondary**: Southern Africa (Botswana, Zambia, South Africa)
-- **Key destinations**: Windhoek, Swakopmund, Etosha National Park, Sossusvlei, Fish River Canyon
+```bash
+./mvnw install -pl shared/common-dto,shared/common-events,shared/common-security -am -DskipTests
+```
+
+### 4. Start services
+
+```bash
+# Start all services (or pick individual ones)
+./mvnw spring-boot:run -pl services/auth-service &
+./mvnw spring-boot:run -pl services/property-service &
+./mvnw spring-boot:run -pl services/auction-service &
+# ... etc
+./mvnw spring-boot:run -pl infrastructure/api-gateway
+```
+
+### 5. Connect the Shopify theme
+
+```bash
+# Install Shopify CLI
+npm install -g @shopify/cli @shopify/theme
+
+# Push theme to your dev store
+git checkout theme
+shopify theme push --store staysphere-aos.myshopify.com
+
+# In Theme Customizer → API & Integration:
+# Set API Gateway URL to http://localhost:8080
+```
 
 ---
 
-Built with ❤️ for Africa's most spectacular destinations.
+## Deployment (Railway)
+
+### Prerequisites
+- Railway account + project
+- GitHub repo connected to Railway
+- All secrets added to Railway environment
+
+### Required environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `JWT_SECRET` | Base64-encoded 256-bit secret (`openssl rand -base64 64`) |
+| `STRIPE_SECRET_KEY` | Stripe live secret key (`sk_live_...`) |
+| `STRIPE_KYC_WEBHOOK_SECRET` | Stripe Identity webhook secret |
+| `ANTHROPIC_API_KEY` | Claude API key for AI fraud detection |
+| `MUX_TOKEN_ID` | Mux Video token ID for livestreaming |
+| `MUX_TOKEN_SECRET` | Mux Video token secret |
+| `SHOPIFY_API_KEY` | App API key from Shopify Partners |
+| `SHOPIFY_API_SECRET` | App API secret |
+| `SHOPIFY_OAUTH_REDIRECT_URI` | `https://your-app.railway.app/oauth/shopify/callback` |
+| `SHOPIFY_STORE_URL` | `https://your-store.myshopify.com` |
+| `SHOPIFY_ACCESS_TOKEN` | Admin API token |
+| `SHOPIFY_WEBHOOK_SECRET` | Webhook HMAC secret |
+| `API_GATEWAY_URL` | Public URL of api-gateway service |
+| `FRONTEND_URL` | Shopify store URL |
+| `KAFKA_SERVERS` | Managed Kafka broker URL |
+| `REDIS_HOST` / `REDIS_PORT` | Managed Redis |
+| `DB_URL` / `DB_USERNAME` / `DB_PASSWORD` | PostgreSQL per-service |
+
+### Deploy steps
+
+```bash
+# 1. Install Railway CLI
+npm install -g @railway/cli
+railway login
+
+# 2. Create project and link
+railway init
+railway link
+
+# 3. Add a PostgreSQL instance per service that needs its own DB:
+#    auth, property, booking, payment, auction, messaging, analytics,
+#    notification, pricing, trust, shopify-integration
+
+# 4. Add Redis + Kafka (Railway plugins or managed services)
+
+# 5. Push — CI will build images and deploy automatically
+git push origin main
+```
+
+### Activate the Shopify app
+
+After services are deployed:
+
+1. Go to Shopify Partners → Apps → Create app
+2. Set App URL to `https://your-app.railway.app`
+3. Set Redirect URL to `https://your-app.railway.app/oauth/shopify/callback`
+4. Copy API key + secret to Railway env vars
+5. Install app on your store: `https://your-app.railway.app/oauth/shopify/install?shop=your-store.myshopify.com`
+6. The theme provisions automatically during install (~2 minutes)
+7. Go to Shopify Admin → Online Store → Themes → Publish "StaySphere AOS"
+
+---
+
+## Enable features
+
+All features default **OFF** — enable them progressively in Theme Customizer:
+
+| Setting path | What it activates |
+|-------------|-------------------|
+| Feature Flags → **Payments enabled** | Stripe checkout |
+| Auction OS → **Enable Auction OS** | Auction listing + room pages |
+| Auction OS → **Enable live bidding** | WebSocket real-time bids |
+| Auction OS → **Enable proxy bidding** | Auto-bid ceiling |
+| Auction OS → **Enable Dutch auctions** | Dutch tab on listing page |
+| Auction OS → **Enable deposit-gated bidding** | Stripe deposit before bid |
+| Auction OS → **Enable KYC-gated bidding** | Stripe Identity verification |
+| Auction OS → **Enable auction livestream** | Mux HLS in auction room |
+| Auction OS → **Livestream provider** | MUX / YOUTUBE / NONE |
+
+---
+
+## Run tests
+
+```bash
+# All tests (requires Docker for Testcontainers)
+./mvnw verify
+
+# Auction service only (race condition + KYC + deposit + state machine)
+./mvnw test -pl services/auction-service
+
+# Booking engine only
+./mvnw test -pl services/booking-engine
+```
+
+---
+
+## Project structure
+
+```
+staysphere-aos/
+├── shared/
+│   ├── common-dto/         Shared request/response DTOs
+│   ├── common-events/      Kafka event classes (17 events)
+│   └── common-security/    JWT filter, security constants
+├── infrastructure/
+│   ├── api-gateway/        Spring Cloud Gateway :8080
+│   ├── service-discovery/  Eureka Server :8761
+│   └── config-server/      Spring Cloud Config :8888
+├── services/
+│   ├── auction-service/    ← Auction OS (Phase A–C)
+│   ├── auth-service/       JWT auth, user management
+│   ├── booking-engine/     Bookings, availability
+│   ├── payment-service/    Stripe payments
+│   ├── property-service/   Property CRUD + search
+│   ├── ai-service/         Claude API integration
+│   ├── pricing-engine/     Dynamic pricing
+│   ├── trust-service/      Trust scores + reviews
+│   ├── notification-service/ Email (Thymeleaf) + SMS
+│   ├── search-service/     Elasticsearch
+│   ├── analytics-service/  Platform analytics
+│   └── messaging-service/  Real-time messaging + tickets
+├── shopify-integration/    OAuth + theme provisioning
+├── .github/workflows/
+│   ├── ci.yml              Build + test + theme check
+│   └── deploy.yml          Docker images + Railway deploy
+└── docker-compose.yml      Full local stack
+```
+
+---
+
+## License
+
+Proprietary — StaySphere AOS. All rights reserved.
