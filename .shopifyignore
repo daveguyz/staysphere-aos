@@ -1,12 +1,7 @@
-# Development files
-*.map
-*.min.js.map
+# Ignore generated files and editor artifacts
 .DS_Store
-node_modules/
-.env
-.env.*
-!.env.example
-
-# Build artifacts
-dist/
-.cache/
+*.bak
+*.tmp
+*.swp
+.idea/
+.vscode/

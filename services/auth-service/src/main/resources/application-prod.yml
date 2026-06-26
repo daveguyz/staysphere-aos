@@ -1,0 +1,35 @@
+# StaySphere AOS — auth-service PRODUCTION profile
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 3
+  jpa:
+    show-sql: false
+  kafka:
+    producer:
+      retries: 3
+      properties:
+        enable.idempotence: true
+        acks: all
+
+server:
+  compression:
+    enabled: true
+  http2:
+    enabled: true
+  tomcat:
+    threads:
+      max: 150
+      min-spare: 15
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    com.staysphere: INFO
+    org.springframework: WARN
+    org.hibernate: WARN

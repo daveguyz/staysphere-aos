@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- Suppress false positives for test-scoped dependencies -->
+    <suppress>
+        <notes>Test containers — not in production classpath</notes>
+        <gav regex="true">^org\.testcontainers:.*:test$</gav>
+    </suppress>
+</suppressions>
