@@ -129,6 +129,10 @@
     clear() {
       try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
     },
+
+    clearDetected() {
+      try { localStorage.removeItem(DETECT_KEY); } catch (_) {}
+    },
   };
 
   // ═══════════════════════════════════════════════════════════════

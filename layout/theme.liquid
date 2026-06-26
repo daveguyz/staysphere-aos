@@ -105,6 +105,7 @@
       data-api="{{ settings.api_gateway_url | default: '' }}"
       data-currency="{{ settings.default_currency }}"
       data-locale-auto-detect="{{ settings.locale_auto_detect | default: true }}"
+      data-show-currency-selector="{{ settings.show_currency_selector | default: true }}"
       data-default-language="{{ settings.default_language | default: 'en' }}"
       data-default-timezone="{{ settings.default_timezone | default: 'UTC' }}"
       data-cdn-host="{{ 'x' | asset_url | remove: '/assets/x' }}"
