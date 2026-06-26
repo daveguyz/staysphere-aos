@@ -31,9 +31,10 @@
     <div class="hero-search" id="hero-search-widget">
       <div class="hero-search__fields">
         <div class="hero-search__field hero-search__field--destination">
-          <label for="hero-destination" class="hero-search__label">Where</label>
+          <label for="hero-destination" class="hero-search__label" data-i18n="hero.search_where">Where</label>
           <input type="text" id="hero-destination" name="city"
                  placeholder="{{ section.settings.destination_placeholder | default: 'City, suburb, postcode…' }}"
+                 data-i18n-placeholder="hero.ai_placeholder"
                  class="hero-search__input" autocomplete="off" spellcheck="false">
           <div class="hero-search__autocomplete" id="hero-autocomplete" role="listbox" aria-label="Destination suggestions" hidden></div>
         </div>
@@ -60,7 +61,7 @@
 
         <button class="hero-search__submit btn btn--primary" id="hero-search-btn" type="button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          Search
+          <span data-i18n="hero.search_button">Search</span>
         </button>
       </div>
 
@@ -69,8 +70,9 @@
           <span class="hero-search__ai-badge" aria-label="AI powered">✦ AI</span>
           <input type="text" id="hero-ai-input" class="hero-search__ai-input"
                  placeholder="Describe the property you’re looking for…"
+                 data-i18n-placeholder="hero.ai_placeholder"
                  aria-label="Natural language property search">
-          <button class="hero-search__ai-btn btn btn--ghost btn--sm" id="hero-ai-btn" type="button">Ask Concierge</button>
+          <button class="hero-search__ai-btn btn btn--ghost btn--sm" id="hero-ai-btn" type="button" data-i18n="hero.ai_button">Ask Concierge</button>
         </div>
       {% endif %}
     </div>

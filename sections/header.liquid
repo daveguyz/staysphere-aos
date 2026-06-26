@@ -79,21 +79,21 @@
               <strong>{{ customer.first_name }} {{ customer.last_name }}</strong>
               <span>{{ customer.email }}</span>
             </div>
-            <a href="/account" class="nav-dropdown__link">My bookings</a>
-            <a href="/pages/messages" class="nav-dropdown__link">Messages</a>
-            <a href="/account/profile" class="nav-dropdown__link">Profile &amp; settings</a>
+            <a href="/account" class="nav-dropdown__link" data-i18n="nav.my_bookings">My bookings</a>
+            <a href="/pages/messages" class="nav-dropdown__link" data-i18n="nav.messages">Messages</a>
+            <a href="/account/profile" class="nav-dropdown__link" data-i18n="nav.profile">Profile &amp; settings</a>
             {% if settings.feature_host_dashboard and customer.tags contains 'host' %}
-              <a href="/pages/host-dashboard" class="nav-dropdown__link">Agent dashboard</a>
+              <a href="/pages/host-dashboard" class="nav-dropdown__link" data-i18n="nav.agent_dashboard">Agent dashboard</a>
             {% endif %}
             {% if customer.tags contains 'admin' or customer.tags contains 'superadmin' %}
-              <a href="/pages/admin" class="nav-dropdown__link nav-dropdown__link--admin">Admin panel</a>
+              <a href="/pages/admin" class="nav-dropdown__link nav-dropdown__link--admin" data-i18n="nav.admin_panel">Admin panel</a>
             {% endif %}
-            <a href="/account/logout" class="nav-dropdown__link nav-dropdown__link--signout">Sign out</a>
+            <a href="/account/logout" class="nav-dropdown__link nav-dropdown__link--signout" data-i18n="account.sign_out">Sign out</a>
           </div>
         </div>
       {%- else -%}
-        <a href="/account/login" class="btn btn--ghost btn--sm">Sign in</a>
-        <a href="/account/register" class="btn btn--primary btn--sm">Get started</a>
+        <a href="/account/login" class="btn btn--ghost btn--sm" data-i18n="nav.sign_in">Sign in</a>
+        <a href="/account/register" class="btn btn--primary btn--sm" data-i18n="nav.get_started">Get started</a>
       {%- endif -%}
 
       {% comment %} Mobile hamburger {% endcomment %}
@@ -128,7 +128,7 @@
       {% endfor %}
       <div class="mobile-menu__divider"></div>
       {%- if customer -%}
-        <a href="/account" class="mobile-menu__link">My bookings</a>
+        <a href="/account" class="mobile-menu__link" data-i18n="nav.my_bookings">My bookings</a>
         <a href="/pages/messages" class="mobile-menu__link">Messages</a>
         {% if settings.feature_host_dashboard and customer.tags contains 'host' %}
           <a href="/pages/host-dashboard" class="mobile-menu__link">Agent dashboard</a>

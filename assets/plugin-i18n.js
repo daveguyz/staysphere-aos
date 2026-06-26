@@ -380,16 +380,41 @@
     async loadRemote(lang) {
       if (this.catalogs[lang]) return;
       try {
-        const url = window.StaySphere?.i18n?._assetUrl?.(lang)
-          || `/cdn/shop/t/1/assets/locale.${lang}.json`;
-        const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
+        // Build URL from CDN host injected by theme.liquid into ssI18nConfig
+        const cdn = window.ssI18nConfig?.cdnHost || '';
+        const url = cdn
+          ? `${cdn}/assets/locale.${lang}.json`
+          : `//${window.location.host}/cdn/shop/assets/locale.${lang}.json`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
         if (res.ok) {
           const data = await res.json();
           this.register(lang, data);
+          console.debug('[i18n] Loaded locale:', lang, `(${Object.keys(data).length} sections)`);
+        } else {
+          console.warn('[i18n] Could not load locale', lang, res.status);
         }
-      } catch (_) {
+      } catch (e) {
+        console.warn('[i18n] loadRemote failed for', lang, e.message);
         // Silently fall back to English
       }
+    },
+
+    /** Re-translate any newly inserted [data-i18n] elements via MutationObserver */
+    watchTranslations() {
+      const observer = new MutationObserver(mutations => {
+        if (this.current === 'en') return; // nothing to do in English
+        let needsApply = false;
+        mutations.forEach(mutation => {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeType !== 1) return;
+            if (node.dataset?.i18n || node.querySelector?.('[data-i18n]')) {
+              needsApply = true;
+            }
+          });
+        });
+        if (needsApply) this._applyDOM();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
     },
   };
 
@@ -644,20 +669,95 @@
     async init() {
       const cfg = window.ssI18nConfig || {};
 
-      // Register English catalog stub (real translations loaded on demand)
+      // Register full English catalog — covers every data-i18n key in the theme
       Translator.register('en', {
-        general: { search:'Search', close:'Close', loading:'Loading…',
-                   save:'Save', cancel:'Cancel', confirm:'Confirm',
-                   back:'Back', next:'Next', view_all:'View all',
-                   sign_in:'Sign in', sign_out:'Sign out',
-                   create_account:'Create account' },
-        hero: { search_where:'Where', search_button:'Search',
-                ai_placeholder:'Describe the property you\'re looking for…',
-                ai_button:'Ask AI' },
-        property: { book_now:'Reserve', per_night:'/ night',
-                    total:'Total', cleaning_fee:'Cleaning fee',
-                    service_fee:'Service fee', taxes:'Taxes' },
-        errors: { no_results:'No listings found. Try adjusting your search.' },
+        general: {
+          search:'Search', close:'Close', loading:'Loading…', error:'Something went wrong',
+          save:'Save', cancel:'Cancel', confirm:'Confirm', back:'Back', next:'Next',
+          view_all:'View all listings', sign_in:'Sign in', sign_out:'Sign out',
+          create_account:'Get started', or:'or', required:'Required',
+          guest_details:'Guest details', payment:'Payment',
+          whats_next:'What happens next', setup_banner_title:'Connect StaySphere AOS to go live',
+        },
+        nav: {
+          home:'Home', properties:'Properties', auctions:'Auctions',
+          about:'About', contact:'Contact', sign_in:'Sign in',
+          get_started:'Get started', my_bookings:'My bookings',
+          messages:'Messages', profile:'Profile & settings',
+          agent_dashboard:'Agent dashboard', admin_panel:'Admin panel',
+        },
+        hero: {
+          search_where:'Where', search_checkin:'Check-in',
+          search_checkout:'Check-out', search_guests:'Guests',
+          search_button:'Search', ai_label:'Or describe what you\'re looking for',
+          ai_placeholder:'Describe the property you\'re looking for…',
+          ai_button:'Ask AI',
+        },
+        how_it_works: {
+          heading:'The complete real estate platform',
+          step1_title:'List', step2_title:'Auction or Book', step3_title:'Close the deal',
+        },
+        property: {
+          bedrooms:'bed', bedrooms_plural:'beds',
+          bathrooms:'bath', bathrooms_plural:'baths',
+          guests:'guest', guests_plural:'guests',
+          per_night:'/ night', per_listing:'/ listing',
+          book_now:'Reserve', make_offer:'Make an offer',
+          check_availability:'Check availability',
+          save_wishlist:'Save', remove_wishlist:'Saved',
+          new_listing:'New listing', view_listing:'View listing',
+          cleaning_fee:'Cleaning / admin fee',
+          service_fee:'Service fee', taxes:'Taxes', total:'Total',
+          not_charged_yet:'You won\'t be charged yet',
+        },
+        auction: {
+          live:'Live', upcoming:'Upcoming', closed:'Closed',
+          bid_now:'Bid now', current_bid:'Current bid',
+          starting_price:'Starting price', bids:'bids',
+          deposit_required:'Deposit required', time_remaining:'Time remaining',
+          auction_closed:'Auction closed', sold:'Sold!',
+        },
+        booking: {
+          confirm:'Confirm your transaction', confirmed:'Confirmed', pending:'Pending',
+          check_in:'Check-in', check_out:'Check-out',
+          special_requests:'Any specific requirements or conditions…',
+          agree_terms:'I agree to the House rules and Privacy policy',
+          secure_payment:'Secured by Stripe — You won\'t be charged until confirmed',
+        },
+        account: {
+          heading:'My account', bids:'My bids', wins:'Won lots',
+          deposits:'Deposits', kyc:'Identity', transactions:'Transactions',
+          sign_out:'Sign out',
+        },
+        auth: {
+          login_heading:'Sign in to your account',
+          register_heading:'Create your account',
+          email:'Email', password:'Password',
+          forgot_password:'Forgot password?',
+          no_account:'New here?', have_account:'Already have an account?',
+          submit_login:'Sign in', submit_register:'Get started',
+          terms:'I agree to the Terms of Service and Privacy Policy',
+          become_agent:'I also want to list properties as an agent',
+        },
+        trust: {
+          verified_agents:'Verified agents',
+          verified_agents_text:'Every agent is licensed and ID-verified before listing.',
+          secure_transactions:'Secure transactions',
+          secure_transactions_text:'Buyer deposits held in escrow, released on deal completion.',
+          support:'24/7 support',
+          support_text:'Our team is available around the clock.',
+        },
+        footer: {
+          tagline:'The complete property platform for agents worldwide.',
+          rights:'All rights reserved.',
+        },
+        errors: {
+          no_results:'No listings found. Try adjusting your search.',
+          api_offline:'Our servers are loading. Showing cached results.',
+          required_field:'This field is required',
+          invalid_email:'Please enter a valid email address',
+          password_short:'Password must be at least 8 characters',
+        },
       });
 
       // ── Phase A: detection ──────────────────────────────────────
@@ -713,6 +813,7 @@
       PricePatcher.baseCurrency = cfg.defaultCurrency || document.body.dataset.currency || 'USD';
       PricePatcher.stampPrices();
       PricePatcher.watchMutations();   // auto-stamp JS-rendered cards
+      Translator.watchTranslations();    // auto-translate JS-rendered content
       CurrencyConverter.loadRates().then(() => {
         const targetCurrency = locale.currency || PricePatcher.baseCurrency;
         if (targetCurrency !== PricePatcher.baseCurrency) {

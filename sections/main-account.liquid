@@ -20,7 +20,9 @@
       <div class="account-header__badges" id="account-badges"></div>
     </div>
     <button class="btn btn--ghost btn--sm account-header__logout"
-            id="account-logout-btn" aria-label="Sign out">
+            id="account-logout-btn" aria-label="Sign out"
+            data-i18n="account.sign_out"
+            data-i18n-aria="account.sign_out">
       Sign out
     </button>
   </div>
@@ -37,17 +39,17 @@
     </button>
     <button class="account-tab" role="tab" id="tab-deposits"
             data-panel="panel-deposits" aria-selected="false" aria-controls="panel-deposits">
-      Deposits
+      <span data-i18n="account.deposits">Deposits</span>
     </button>
     {%- if settings.feature_auction_kyc -%}
     <button class="account-tab" role="tab" id="tab-kyc"
             data-panel="panel-kyc" aria-selected="false" aria-controls="panel-kyc">
-      Identity (KYC)
+      <span data-i18n="account.kyc">Identity (KYC)</span>
     </button>
     {%- endif -%}
     <button class="account-tab" role="tab" id="tab-bookings"
             data-panel="panel-bookings" aria-selected="false" aria-controls="panel-bookings">
-      Bookings
+      <span data-i18n="account.transactions">Transactions</span>
     </button>
   </div>
 

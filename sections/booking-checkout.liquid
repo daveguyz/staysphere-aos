@@ -20,7 +20,7 @@
      data-stripe-key="{{ settings.stripe_publishable_key }}"
      data-currency-symbol="{{ sym }}">
 
-  <h1 class="checkout-page__title">Confirm your transaction</h1>
+  <h1 class="checkout-page__title" data-i18n="booking.confirm">Confirm your transaction</h1>
 
   <div class="checkout-layout">
 
@@ -41,7 +41,7 @@
 
       {%- comment -%} Guest details ── {%- endcomment -%}
       <div class="checkout-section" id="checkout-guest-section">
-        <h2 class="checkout-section__title">Guest details</h2>
+        <h2 class="checkout-section__title" data-i18n="general.guest_details">Guest details</h2>
         <div class="checkout-guest-form">
           <div class="form-row">
             <div class="form-field">
@@ -76,7 +76,7 @@
       {%- comment -%} Payment ── {%- endcomment -%}
       {%- if settings.feature_payments -%}
       <div class="checkout-section" id="checkout-payment-section">
-        <h2 class="checkout-section__title">Payment</h2>
+        <h2 class="checkout-section__title" data-i18n="general.payment">Payment</h2>
 
         <div class="checkout-payment-methods" id="checkout-payment-methods">
           <label class="checkout-payment-option checkout-payment-option--active" id="pay-card-option">
