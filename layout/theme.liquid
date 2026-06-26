@@ -118,6 +118,7 @@
       data-auction-use-es="{{ settings.auction_search_elasticsearch }}"
       data-customer-id="{{ customer.id | default: '' }}"
       data-customer-email="{{ customer.email | default: '' }}">
+  {%- render 'app-setup-banner' -%}
 
   {% if settings.google_tag_manager_id != blank %}
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ settings.google_tag_manager_id }}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>

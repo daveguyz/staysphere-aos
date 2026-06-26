@@ -1434,3 +1434,26 @@ details[open] .proxy-bid-summary__caret { transform: rotate(90deg); }
 @media (max-width: 900px) { .admin-analytics-grid { grid-template-columns: 1fr; } }
 .admin-analytics-chart { background: var(--color-bg); border: 1.5px solid var(--color-border); border-radius: var(--radius); padding: 20px; }
 .admin-analytics-chart__title { font-size: .9375rem; font-weight: 700; margin: 0 0 16px; }
+
+/* ================================================================
+   PHASE I — App setup banner
+   ================================================================ */
+.app-setup-banner {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff; padding: 12px 0; position: sticky; top: 0; z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+.app-setup-banner__inner {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.app-setup-banner__icon { font-size: 1.5rem; flex-shrink: 0; }
+.app-setup-banner__body { flex: 1; min-width: 0; }
+.app-setup-banner__title { font-size: .9375rem; font-weight: 700; display: block; margin-bottom: 3px; }
+.app-setup-banner__text { font-size: .8125rem; color: #aab4c4; margin: 0; line-height: 1.4; }
+.app-setup-banner__text em { color: #f0b429; font-style: normal; font-weight: 600; }
+.app-setup-banner__cta { background: #f0b429; color: #1a1a2e; border: none; white-space: nowrap; flex-shrink: 0; }
+.app-setup-banner__cta:hover { background: #e8a800; }
+@media (max-width: 640px) {
+  .app-setup-banner__inner { flex-direction: column; align-items: flex-start; }
+  .app-setup-banner__cta { width: 100%; text-align: center; }
+}

@@ -1,0 +1,33 @@
+{% comment %}
+  Renders a setup banner when API Gateway URL is not configured.
+  Shown only in Theme Customizer (request.design_mode) — never to customers.
+  Disappears automatically once api_gateway_url is set in Theme Settings.
+{% endcomment %}
+
+{%- if settings.api_gateway_url == blank and request.design_mode -%}
+<div class="app-setup-banner" role="alert" aria-label="Setup required">
+  <div class="app-setup-banner__inner page-width">
+    <div class="app-setup-banner__icon" aria-hidden="true">⚡</div>
+    <div class="app-setup-banner__body">
+      <strong class="app-setup-banner__title">
+        Connect StaySphere AOS to go live
+      </strong>
+      <p class="app-setup-banner__text">
+        Your theme is running on sample data.
+        Go to <em>Theme Settings → API &amp; Integration → API Gateway URL</em>
+        and enter your deployed API URL to activate live listings, bookings, and auctions.
+      </p>
+    </div>
+    <a href="https://apps.shopify.com/staysphere-aos"
+       class="btn btn--primary btn--sm app-setup-banner__cta"
+       target="_blank" rel="noopener">
+      View app →
+    </a>
+  </div>
+</div>
+{%- elsif settings.api_gateway_url == blank -%}
+{%- comment -%}
+  Not in design mode + no API URL = customer-facing mock mode.
+  Show nothing — plugins fall back to mock data silently.
+{%- endcomment -%}
+{%- endif -%}
