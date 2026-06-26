@@ -23,7 +23,16 @@
   const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
   function fmt(n, sym) {
-    return (sym || 'N$') + Number(n || 0).toLocaleString('en-NA', { minimumFractionDigits: 0 });
+    const i18n = window.StaySphere?.i18n;
+    if (i18n?.fx?.loaded) {
+      const page = document.getElementById('checkout-page');
+      const base = page?.dataset?.currency || document.body.dataset.currency || 'USD';
+      const to   = i18n.currentCurrency();
+      if (base !== to) return i18n.fx.format(Number(n || 0), base, to);
+      // Same currency — just format with correct symbol
+      return i18n.fx.format(Number(n || 0), base, base);
+    }
+    return (sym || '$') + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0 });
   }
   function setLoading(id, on) {
     const btn = $(id);
@@ -45,7 +54,18 @@
   }
   function fmtDate(d) {
     if (!d) return '–';
-    return new Date(d + 'T00:00:00').toLocaleDateString('en-NA', { day: 'numeric', month: 'short', year: 'numeric' });
+    const i18n = window.StaySphere?.i18n;
+    const tz   = i18n?.time?.timezone || 'UTC';
+    const lang = i18n?.currentLanguage?.() || 'en';
+    const langMap = { en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE', pt:'pt-BR', ar:'ar-SA', zh:'zh-CN' };
+    const bcp47 = langMap[lang] || 'en-US';
+    try {
+      return new Intl.DateTimeFormat(bcp47, {
+        timeZone: tz, day:'numeric', month:'short', year:'numeric'
+      }).format(new Date(d + 'T00:00:00'));
+    } catch (_) {
+      return new Date(d + 'T00:00:00').toLocaleDateString();
+    }
   }
 
   // ══════════════════════════════════════════════════════════
@@ -284,6 +304,13 @@
     });
 
     loadCheckoutData();
+
+    // Re-render price breakdown when user changes currency
+    document.addEventListener('ss:currency-changed', () => {
+      if (propertyData && priceData) {
+        renderPriceBreakdown(propertyData, checkIn, checkOut, guests, sym, priceData.total);
+      }
+    });
   }
 
   // ══════════════════════════════════════════════════════════

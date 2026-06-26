@@ -78,7 +78,13 @@
   }
 
   function fmt(amount) {
-    return cfg().sym + Number(amount || 0).toLocaleString('en-NA');
+    const i18n = window.StaySphere?.i18n;
+    if (i18n?.fx?.loaded) {
+      const base = cfg().currency || document.body.dataset.currency || 'USD';
+      const to   = i18n.currentCurrency();
+      return i18n.fx.format(Number(amount || 0), base, to);
+    }
+    return cfg().sym + Number(amount || 0).toLocaleString('en-US');
   }
 
   // ─── 1. Load lot from REST API ─────────────────────────────────────────────
@@ -211,7 +217,18 @@
     // Not open yet
     if (status === 'DRAFT' || status === 'SCHEDULED') {
       setText('bid-state-scheduled-msg',
-        lot.startsAt ? `Opens ${new Date(lot.startsAt).toLocaleString('en-NA')}` : 'Check back when the auction starts.');
+        (() => {
+          if (!lot.startsAt) return 'Check back when the auction starts.';
+          const i18n = window.StaySphere?.i18n;
+          const tz   = i18n?.time?.timezone || 'UTC';
+          const lang = i18n?.currentLanguage?.() || 'en';
+          const langMap = { en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE', pt:'pt-BR', ar:'ar-SA', zh:'zh-CN' };
+          const bcp47 = langMap[lang] || 'en-US';
+          const dt = new Intl.DateTimeFormat(bcp47, {
+            timeZone: tz, day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'
+          }).format(new Date(lot.startsAt));
+          return `Opens ${dt}`;
+        })());
       return showPanel('bid-state-scheduled');
     }
 
@@ -910,6 +927,14 @@
       if (stompClient && isConnected) {
         try { stompClient.disconnect(); } catch (_) {}
       }
+    });
+
+    // Re-render bid amounts when user changes currency
+    document.addEventListener('ss:currency-changed', () => {
+      const currentBid = lot?.currentBidAmount || lot?.startingPrice;
+      if (currentBid) updateBidDisplay(currentBid, lot?.totalBids, lot?.uniqueBidders);
+      const depEl = document.getElementById('deposit-amount-display');
+      if (depEl && lot?.depositAmount) depEl.textContent = fmt(lot.depositAmount);
     });
   }
 

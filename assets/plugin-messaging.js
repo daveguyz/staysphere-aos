@@ -112,7 +112,15 @@
     const initials   = (otherParty.split(' ').map(w => w[0]).join('').slice(0, 2)).toUpperCase();
     const preview    = esc(conv.lastMessagePreview || 'No messages yet');
     const time       = conv.lastMessageAt
-      ? new Date(conv.lastMessageAt).toLocaleTimeString('en-NA', { hour: '2-digit', minute: '2-digit' })
+      ? (() => {
+        const i18n = window.StaySphere?.i18n;
+        const tz   = i18n?.time?.timezone || 'UTC';
+        const lang = i18n?.currentLanguage?.() || 'en';
+        const langMap = { en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE', pt:'pt-BR', ar:'ar-SA', zh:'zh-CN' };
+        return new Intl.DateTimeFormat(langMap[lang] || 'en-US', {
+          timeZone: tz, hour:'2-digit', minute:'2-digit'
+        }).format(new Date(conv.lastMessageAt));
+      })()
       : '';
     const hasUnread  = (conv.unreadCount || 0) > 0;
 
@@ -210,7 +218,15 @@
     div.dataset.msgId = msg.id;
 
     const time = msg.sentAt
-      ? new Date(msg.sentAt).toLocaleTimeString('en-NA', { hour: '2-digit', minute: '2-digit' })
+      ? (() => {
+        const i18n = window.StaySphere?.i18n;
+        const tz   = i18n?.time?.timezone || 'UTC';
+        const lang = i18n?.currentLanguage?.() || 'en';
+        const langMap = { en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE', pt:'pt-BR', ar:'ar-SA', zh:'zh-CN' };
+        return new Intl.DateTimeFormat(langMap[lang] || 'en-US', {
+          timeZone: tz, hour:'2-digit', minute:'2-digit'
+        }).format(new Date(msg.sentAt));
+      })()
       : '';
 
     div.innerHTML = `
@@ -391,7 +407,15 @@
       listEl.innerHTML = tickets.map(t => {
         const priorityClass = { HIGH: 'ticket-priority--high', MEDIUM: 'ticket-priority--medium', LOW: 'ticket-priority--low' }[t.priority] || '';
         const statusClass = { OPEN: 'ticket-status--open', IN_PROGRESS: 'ticket-status--progress', RESOLVED: 'ticket-status--resolved' }[t.status] || '';
-        const created = t.createdAt ? new Date(t.createdAt).toLocaleDateString('en-NA') : '';
+        const created = t.createdAt ? (() => {
+        const i18n = window.StaySphere?.i18n;
+        const lang = i18n?.currentLanguage?.() || 'en';
+        const tz   = i18n?.time?.timezone || 'UTC';
+        const langMap = { en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE', pt:'pt-BR', ar:'ar-SA', zh:'zh-CN' };
+        return new Intl.DateTimeFormat(langMap[lang] || 'en-US', {
+          timeZone: tz, day:'numeric', month:'short', year:'numeric'
+        }).format(new Date(t.createdAt));
+      })() : '';
         return `
           <div class="support-ticket-row">
             <div class="support-ticket-row__info">

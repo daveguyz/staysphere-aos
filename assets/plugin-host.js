@@ -12,7 +12,15 @@
   const api = (path, opts) => window.StaySphere.api(path, opts);
   const toast = msg => window.StaySphere?.toast(msg);
   const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  const fmt = (n, sym) => (sym || 'N$') + Number(n || 0).toLocaleString('en-NA', { minimumFractionDigits: 0 });
+  function fmt(n, sym) {
+    const i18n = window.StaySphere?.i18n;
+    if (i18n?.fx?.loaded) {
+      const base = document.body.dataset.currency || 'USD';
+      const to   = i18n.currentCurrency();
+      return i18n.fx.format(Number(n || 0), base, to);
+    }
+    return (sym || '$') + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0 });
+  }
 
   function setLoading(id, on) {
     const b = $(id);
@@ -45,6 +53,12 @@
 
     initDashboardTabs();
     loadDashboardData(sym);
+
+    // Reload dashboard stats + listings on currency change
+    document.addEventListener('ss:currency-changed', e => {
+      const newSym = e.detail?.symbol || sym;
+      loadDashboardData(newSym);
+    });
   }
 
   function initDashboardTabs() {
@@ -306,7 +320,11 @@
     const months = [];
     for (let m = 0; m < 2; m++) {
       const d = new Date(startDate.getFullYear(), startDate.getMonth() + m, 1);
-      const label = d.toLocaleString('en-NA', { month: 'long', year: 'numeric' });
+      const i18n = window.StaySphere?.i18n;
+        const lang = i18n?.currentLanguage?.() || 'en';
+        const langMap = { en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE', pt:'pt-BR', ar:'ar-SA', zh:'zh-CN' };
+        const bcp47 = langMap[lang] || 'en-US';
+        const label = d.toLocaleString(bcp47, { month: 'long', year: 'numeric' });
       const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
       const firstDow = d.getDay();
       let grid = `<div class="host-cal-month"><h3 class="host-cal-month__title">${label}</h3><div class="host-cal-days-header">`;

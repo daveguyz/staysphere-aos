@@ -11,8 +11,28 @@
   const api = (path, opts) => window.StaySphere.api(path, opts);
   const toast = msg => window.StaySphere?.toast(msg);
   const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  const fmt = n => 'N$' + Number(n || 0).toLocaleString('en-NA', { minimumFractionDigits: 0 });
-  const fmtDate = d => d ? new Date(d).toLocaleDateString('en-NA', { day:'numeric', month:'short', year:'numeric' }) : '–';
+  function fmt(n) {
+    const i18n = window.StaySphere?.i18n;
+    if (i18n?.fx?.loaded) {
+      const base = document.body.dataset.currency || 'USD';
+      const to   = i18n.currentCurrency();
+      return i18n.fx.format(Number(n || 0), base, to);
+    }
+    return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0 });
+  }
+  function fmtDate(d) {
+    if (!d) return '–';
+    const i18n = window.StaySphere?.i18n;
+    const tz   = i18n?.time?.timezone || 'UTC';
+    const lang = i18n?.currentLanguage?.() || 'en';
+    const langMap = { en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE', pt:'pt-BR', ar:'ar-SA', zh:'zh-CN' };
+    const bcp47 = langMap[lang] || 'en-US';
+    try {
+      return new Intl.DateTimeFormat(bcp47, {
+        timeZone: tz, day:'numeric', month:'short', year:'numeric'
+      }).format(new Date(d));
+    } catch (_) { return new Date(d).toLocaleDateString(); }
+  }
 
   function init() {
     const dash = $('admin-dashboard');
@@ -26,6 +46,14 @@
     initTabs();
     loadStats();
     loadAuctions();
+
+    // Reload stats on currency change so revenue figures convert
+    document.addEventListener('ss:currency-changed', () => {
+      loadStats();
+      // Reload the currently visible tab
+      const activePanel = document.querySelector('#admin-dashboard .account-panel:not(.hidden)');
+      if (activePanel?.id === 'ap-analytics') loadAnalytics();
+    });
   }
 
   // ─── Tabs ─────────────────────────────────────────────────────────────────

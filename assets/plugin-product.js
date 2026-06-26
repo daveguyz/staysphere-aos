@@ -94,7 +94,26 @@
 
     const propertyId = widget.dataset.propertyId;
     const baseRate   = parseFloat(widget.dataset.baseRate) || 0;
-    const sym        = widget.dataset.currencySymbol || '$';
+
+    // ── i18n: read sym and conversion helper from the i18n SDK ──
+    // Falls back to dataset if SDK not loaded (e.g. slow connection)
+    function sym() {
+      const i18n = window.StaySphere?.i18n;
+      if (i18n?.fx?.loaded) {
+        return (i18n.CURRENCIES[i18n.currentCurrency()]?.symbol)
+               || widget.dataset.currencySymbol || '$';
+      }
+      return widget.dataset.currencySymbol || '$';
+    }
+    function fmtPrice(amount) {
+      const i18n = window.StaySphere?.i18n;
+      const base  = widget.dataset.currency || widget.dataset.currencySymbol?.replace(/[^A-Z]/g,'') || 'USD';
+      const to    = i18n?.currentCurrency?.() || base;
+      if (i18n?.fx?.loaded && base !== to) {
+        return i18n.fx.format(amount, base, to);
+      }
+      return sym() + Math.round(amount).toLocaleString();
+    }
 
     const checkInEl  = $('bw-checkin');
     const checkOutEl = $('bw-checkout');
@@ -118,7 +137,7 @@
         );
         if (res.success && res.data?.dynamicRate) {
           currentRate = res.data.dynamicRate;
-          if (rateEl) rateEl.textContent = `${sym}${currentRate.toFixed(0)}`;
+          if (rateEl) rateEl.textContent = fmtPrice(currentRate);
           if (dynamicBadge) dynamicBadge.hidden = false;
         }
       } catch (_) {}
@@ -143,11 +162,11 @@
       const total       = nightCost + cleaningFee + serviceFee;
 
       const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
-      set('bw-nights-label', `${sym}${currentRate.toFixed(0)} × ${nights} night${nights !== 1 ? 's' : ''}`);
-      set('bw-nights-amt',   `${sym}${nightCost.toFixed(0)}`);
-      set('bw-cleaning',     `${sym}${cleaningFee.toFixed(0)}`);
-      set('bw-service',      `${sym}${serviceFee.toFixed(0)}`);
-      set('bw-total',        `${sym}${total.toFixed(0)}`);
+      set('bw-nights-label', `${fmtPrice(currentRate)} × ${nights} night${nights !== 1 ? 's' : ''}`);
+      set('bw-nights-amt',   fmtPrice(nightCost));
+      set('bw-cleaning',     fmtPrice(cleaningFee));
+      set('bw-service',      fmtPrice(serviceFee));
+      set('bw-total',        fmtPrice(total));
       if (breakdown) breakdown.classList.remove('hidden');
     }
 
@@ -241,6 +260,15 @@
     }
 
     fetchDynamicRate();
+
+    // Re-run breakdown when user changes currency
+    document.addEventListener('ss:currency-changed', () => {
+      const ci = checkInEl?.value;
+      const co = checkOutEl?.value;
+      if (ci && co) calcBreakdown(ci, co);
+      // Also update the rate display
+      if (rateEl) rateEl.textContent = fmtPrice(currentRate);
+    });
   }
 
   // ─── Reviews ───────────────────────────────────────────────────────────────

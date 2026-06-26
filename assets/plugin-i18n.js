@@ -272,15 +272,42 @@
       const currInfo  = CURRENCIES[to] || { symbol: to };
       const sym = currInfo.symbol;
 
-      // Use Intl.NumberFormat for locale-aware grouping
+      // BCP 47 locale tag for digit grouping (e.g. 'fr' → 1 234, 'de' → 1.234)
+      // Map language code to full BCP 47 tag for reliable Intl support
+      const langMap = {
+        en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE',
+        pt:'pt-BR', ar:'ar-SA', zh:'zh-CN',
+      };
+      const lang = (window.StaySphere?.i18n?.currentLanguage?.() || 'en');
+      const bcp47 = langMap[lang] || 'en-US';
+
+      // Property/auction prices are always whole numbers — no decimal places.
+      // Exception: currencies where sub-units matter (BHD, KWD etc.) — none
+      // in our supported set, so 0 decimal places everywhere.
       try {
-        const locale = I18n.currentLocale().language || 'en';
-        return sym + new Intl.NumberFormat(locale, {
-          minimumFractionDigits: ['JPY','KES','NGN'].includes(to) ? 0 : 0,
-          maximumFractionDigits: ['JPY','KES','NGN'].includes(to) ? 0 : 2,
+        return sym + new Intl.NumberFormat(bcp47, {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
         }).format(Math.round(converted));
       } catch (_) {
         return sym + Math.round(converted).toLocaleString();
+      }
+    },
+
+    /**
+     * Return just the numeric string without symbol, for use in
+     * elements that render the symbol separately.
+     */
+    formatNumber(amount, from, to) {
+      const converted = this.convert(amount, from, to);
+      const langMap = { en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE', pt:'pt-BR', ar:'ar-SA', zh:'zh-CN' };
+      const lang  = (window.StaySphere?.i18n?.currentLanguage?.() || 'en');
+      const bcp47 = langMap[lang] || 'en-US';
+      try {
+        return new Intl.NumberFormat(bcp47, { minimumFractionDigits:0, maximumFractionDigits:0 })
+          .format(Math.round(converted));
+      } catch (_) {
+        return String(Math.round(converted));
       }
     },
   };
@@ -455,14 +482,63 @@
 
     /**
      * Re-render all stamped prices in the new currency.
+     * Also updates data-currency-symbol on <body> so sym() calls
+     * in other plugins stay consistent after a currency change.
      */
     repaintAll(toCurrency) {
+      const currInfo = CURRENCIES[toCurrency] || { symbol: toCurrency };
+      // Keep body data-attribute in sync so existing sym() reads work
+      document.body.dataset.currencySymbol = currInfo.symbol;
+      document.body.dataset.currency       = toCurrency;
+
       document.querySelectorAll('[data-price-base]').forEach(el => {
         const base     = parseFloat(el.dataset.priceBase);
         const fromCurr = el.dataset.priceCurrency || this.baseCurrency;
         if (isNaN(base)) return;
         el.textContent = CurrencyConverter.format(base, fromCurr, toCurrency);
       });
+    },
+
+    /**
+     * Observe DOM mutations and stamp / convert any newly inserted
+     * [data-price] elements automatically.
+     * Called once from init() after the first stampPrices().
+     */
+    watchMutations() {
+      const observer = new MutationObserver(mutations => {
+        const currentCurrency = window.StaySphere?.i18n?.currentCurrency?.() || this.baseCurrency;
+        let needsRepaint = false;
+
+        mutations.forEach(mutation => {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeType !== 1) return; // element nodes only
+            // Check the node itself
+            if (node.dataset?.price && !node.dataset?.priceBase) {
+              const raw = node.dataset.price;
+              if (!isNaN(parseFloat(raw))) {
+                node.dataset.priceBase     = raw;
+                node.dataset.priceCurrency = node.dataset.priceCurrency || this.baseCurrency;
+                needsRepaint = true;
+              }
+            }
+            // Check descendants
+            node.querySelectorAll?.('[data-price]:not([data-price-base])').forEach(el => {
+              const raw = el.dataset.price;
+              if (!isNaN(parseFloat(raw))) {
+                el.dataset.priceBase     = raw;
+                el.dataset.priceCurrency = el.dataset.priceCurrency || this.baseCurrency;
+                needsRepaint = true;
+              }
+            });
+          });
+        });
+
+        if (needsRepaint && currentCurrency !== this.baseCurrency) {
+          this.repaintAll(currentCurrency);
+        }
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
     },
   };
 
@@ -506,8 +582,15 @@
       if (!CURRENCIES[code]) return;
       LocaleStore.save({ currency: code });
       CurrencyConverter.loadRates().then(() => {
+        // Repaint first, then notify listeners so they see converted prices
         PricePatcher.repaintAll(code);
-        document.dispatchEvent(new CustomEvent('ss:currency-changed', { detail: { currency: code } }));
+        const sym  = CURRENCIES[code]?.symbol || code;
+        const rate = CurrencyConverter.rates[code];
+        document.dispatchEvent(new CustomEvent('ss:currency-changed', {
+          detail: { currency: code, symbol: sym, rate },
+        }));
+        console.debug('[i18n] Currency changed to', code, sym,
+          '| 1 USD =', rate, code);
       });
     },
 
@@ -621,14 +704,22 @@
       // ── Phase B–D: apply current locale ────────────────────────
       const locale = LocaleStore.load();
 
-      // Currency — load rates in background then stamp/repaint
+      // Currency — stamp all existing prices, start mutation observer,
+      // then load live rates and repaint if visitor's currency differs from base
       PricePatcher.baseCurrency = cfg.defaultCurrency || document.body.dataset.currency || 'USD';
       PricePatcher.stampPrices();
+      PricePatcher.watchMutations();   // auto-stamp JS-rendered cards
       CurrencyConverter.loadRates().then(() => {
-        if (locale.currency && locale.currency !== PricePatcher.baseCurrency) {
-          PricePatcher.repaintAll(locale.currency);
+        const targetCurrency = locale.currency || PricePatcher.baseCurrency;
+        if (targetCurrency !== PricePatcher.baseCurrency) {
+          PricePatcher.repaintAll(targetCurrency);
         }
-      }).catch(() => {});
+        console.debug('[i18n] Exchange rates loaded. Base:', PricePatcher.baseCurrency,
+          '→ Target:', targetCurrency,
+          '| 1 USD =', CurrencyConverter.rates[targetCurrency] || 1, targetCurrency);
+      }).catch(() => {
+        console.warn('[i18n] Exchange rates unavailable — using fallback rates');
+      });
 
       // Language
       if (locale.language && locale.language !== 'en') {

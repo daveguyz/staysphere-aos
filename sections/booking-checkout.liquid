@@ -148,7 +148,9 @@
     <aside class="checkout-sidebar">
       <div class="checkout-price-card" id="checkout-price-card">
         <div class="checkout-price-card__header">
-          <p class="checkout-price-card__rate" id="checkout-rate">
+          <p class="checkout-price-card__rate" id="checkout-rate"
+           data-price="{{ product.price | money_without_currency | remove: ',' }}"
+           data-price-currency="{{ settings.default_currency | default: 'USD' }}">
             <span class="skeleton-inline" aria-hidden="true"></span>
           </p>
           <p class="checkout-price-card__dates" id="checkout-dates">

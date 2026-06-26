@@ -17,7 +17,28 @@
   const toast = (msg, type) => window.StaySphere.toast(msg, type);
   const sym = () => document.body.dataset.currencySymbol ||
     document.querySelector('[data-currency-symbol]')?.dataset.currencySymbol || '$';
-  const fmt = n => sym() + Number(n || 0).toLocaleString('en-NA');
+  function fmt(n) {
+    const i18n = window.StaySphere?.i18n;
+    if (i18n?.fx?.loaded) {
+      const base = document.body.dataset.currency || 'USD';
+      const to   = i18n.currentCurrency();
+      return i18n.fx.format(Number(n || 0), base, to);
+    }
+    return sym() + Number(n || 0).toLocaleString('en-US');
+  }
+  function fmtDateLocale(d) {
+    if (!d) return '';
+    const i18n = window.StaySphere?.i18n;
+    const tz   = i18n?.time?.timezone || 'UTC';
+    const lang = i18n?.currentLanguage?.() || 'en';
+    const langMap = { en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE', pt:'pt-BR', ar:'ar-SA', zh:'zh-CN' };
+    const bcp47 = langMap[lang] || 'en-US';
+    try {
+      return new Intl.DateTimeFormat(bcp47, {
+        timeZone: tz, day:'numeric', month:'short', year:'numeric'
+      }).format(new Date(d));
+    } catch (_) { return new Date(d).toLocaleDateString(); }
+  }
   const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
   function setLoading(btnId, loading) {
@@ -537,6 +558,13 @@
     loadAccountProfile();
     loadMyBids();
 
+    // Reload bid/deposit amounts on currency change
+    document.addEventListener('ss:currency-changed', () => {
+      loadMyBids();
+      const depositsPanel = document.getElementById('panel-deposits');
+      if (depositsPanel?.dataset.loaded) loadMyDeposits();
+    });
+
     $('account-logout-btn')?.addEventListener('click', () => {
       window.StaySphere.auth.clear();
       window.location.href = '/';
@@ -625,7 +653,7 @@
             <p class="account-bid-row__lot-title">
               <a href="/pages/auction-room?lot=${esc(b.auctionLotId)}">${esc(b.auctionLotId)}</a>
             </p>
-            <p class="account-bid-row__time">${b.placedAt ? new Date(b.placedAt).toLocaleDateString('en-NA') : ''}</p>
+            <p class="account-bid-row__time">${b.placedAt ? fmtDateLocale(b.placedAt) : ''}</p>
           </div>
           <div class="account-bid-row__amount">${fmt(b.amount)}</div>
           <div class="account-bid-row__status-label bid-status--${(b.status||'').toLowerCase()}">${b.status || ''}</div>
@@ -682,7 +710,7 @@
           </div>
           <div class="account-deposit-row__amount">${fmt(d.depositAmount)}</div>
           ${buildDepositBadge(d.status)}
-          <div class="account-deposit-row__date">${d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-NA') : ''}</div>
+          <div class="account-deposit-row__date">${d.createdAt ? fmtDateLocale(d.createdAt) : ''}</div>
         </div>`).join('');
     } catch (_) {
       if (emptyEl) emptyEl.classList.remove('hidden');

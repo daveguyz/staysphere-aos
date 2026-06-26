@@ -8,7 +8,23 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const sym = () => document.body.dataset.currencySymbol || '$';
+  function sym() {
+    const i18n = window.StaySphere?.i18n;
+    if (i18n?.currentCurrency) {
+      const code = i18n.currentCurrency();
+      return i18n.CURRENCIES[code]?.symbol || document.body.dataset.currencySymbol || '$';
+    }
+    return document.body.dataset.currencySymbol || '$';
+  }
+  function fmtI18n(amount) {
+    const i18n = window.StaySphere?.i18n;
+    if (i18n?.fx?.loaded) {
+      const base = document.body.dataset.currency || 'USD';
+      const to   = i18n.currentCurrency();
+      return i18n.fx.format(Number(amount || 0), base, to);
+    }
+    return sym() + Number(amount || 0).toLocaleString('en-US');
+  }
   const apiBase = () => document.body.dataset.api || '';
 
   // ─── State ──────────────────────────────────────────────────────────────────
@@ -127,7 +143,7 @@
               <span class="auction-card__price-label">${priceLabel}</span>
               <p class="auction-card__price"
            data-price="${Number(displayPrice || 0)}"
-           data-price-currency="${document.body.dataset.currency || 'USD'}">${s}${Number(displayPrice || 0).toLocaleString()}</p>
+           data-price-currency="${document.body.dataset.currency || 'USD'}">${fmtI18n(displayPrice || 0)}</p>
             </div>
             <div class="auction-card__bids">
               <span class="auction-card__bid-count">${lot.totalBids || 0}</span>
@@ -143,7 +159,16 @@
 
   function formatDate(iso) {
     if (!iso) return '';
-    return new Date(iso).toLocaleDateString('en-NA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const i18n = window.StaySphere?.i18n;
+    const tz   = i18n?.time?.timezone || 'UTC';
+    const lang = i18n?.currentLanguage?.() || 'en';
+    const langMap = { en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE', pt:'pt-BR', ar:'ar-SA', zh:'zh-CN' };
+    const bcp47 = langMap[lang] || 'en-US';
+    try {
+      return new Intl.DateTimeFormat(bcp47, {
+        timeZone: tz, day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'
+      }).format(new Date(iso));
+    } catch (_) { return new Date(iso).toLocaleDateString(); }
   }
 
   function esc(s) {
