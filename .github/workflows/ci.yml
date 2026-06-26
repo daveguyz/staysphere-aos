@@ -1,0 +1,201 @@
+# ============================================================
+# StaySphere AOS — CI Pipeline
+# Runs on every push to main and every PR targeting main.
+# ============================================================
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  JAVA_VERSION: '21'
+  MAVEN_OPTS: '-Xmx2g -XX:+UseG1GC'
+
+jobs:
+  # ── Build + unit tests ──────────────────────────────────────
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: staysphere_test
+          POSTGRES_USER: staysphere
+          POSTGRES_PASSWORD: staysphere_secret
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build shared modules
+        run: |
+          ./mvnw install -pl shared/common-dto,shared/common-events,shared/common-security \
+            -am -DskipTests -q
+
+      - name: Run tests — auction-service
+        run: |
+          ./mvnw test -pl services/auction-service \
+            -Dspring.data.elasticsearch.repositories.enabled=false \
+            -Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+        env:
+          STRIPE_SECRET_KEY: sk_test_ci_stub
+          ANTHROPIC_API_KEY: ''
+          MUX_TOKEN_ID: ''
+          MUX_TOKEN_SECRET: ''
+          JWT_SECRET: dGVzdC1zZWNyZXQtZm9yLWNpLXBpcGVsaW5lLW9ubHk=
+
+      - name: Run tests — booking-engine
+        run: ./mvnw test -pl services/booking-engine
+        env:
+          JWT_SECRET: dGVzdC1zZWNyZXQtZm9yLWNpLXBpcGVsaW5lLW9ubHk=
+          STRIPE_SECRET_KEY: sk_test_ci_stub
+
+      - name: Build all services (no tests)
+        run: |
+          ./mvnw package -DskipTests -q \
+            --batch-mode \
+            -pl services/auth-service,services/property-service,services/payment-service,\
+          services/ai-service,services/pricing-engine,services/trust-service,\
+          services/notification-service,services/search-service,services/analytics-service,\
+          services/messaging-service,services/auction-service \
+            -am
+        env:
+          JWT_SECRET: dGVzdC1zZWNyZXQtZm9yLWNpLXBpcGVsaW5lLW9ubHk=
+          STRIPE_SECRET_KEY: sk_test_ci_stub
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: '**/target/surefire-reports/*.xml'
+          retention-days: 14
+
+  # ── Shopify theme check ─────────────────────────────────────
+  theme-check:
+    name: Shopify Theme Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout theme branch
+        run: |
+          git fetch origin theme
+          git checkout theme
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+
+      - name: Install Shopify CLI
+        run: |
+          npm install -g @shopify/cli @shopify/theme
+        continue-on-error: true
+
+      - name: Validate template section references
+        run: |
+          python3 << 'PYEOF'
+          import json, glob, os, sys
+          sections = set(os.path.splitext(os.path.basename(f))[0]
+                        for f in glob.glob('sections/*.liquid'))
+          errors = []
+          for t in sorted(glob.glob('templates/**/*.json', recursive=True)):
+              try: data = json.load(open(t))
+              except Exception as e: errors.append(f"JSON error {t}: {e}"); continue
+              for k, v in data.get('sections', {}).items():
+                  st = v.get('type', '')
+                  if st not in sections:
+                      errors.append(f"Template {os.path.basename(t)}: section '{st}' not found")
+          if errors:
+              for e in errors: print(f"ERROR: {e}")
+              sys.exit(1)
+          print(f"✅ All {len(list(glob.glob('templates/**/*.json', recursive=True)))} templates valid")
+          print(f"   {len(sections)} sections available")
+          PYEOF
+
+      - name: Check JSON syntax of all theme files
+        run: |
+          python3 << 'PYEOF'
+          import json, glob, sys
+          errors = []
+          for f in glob.glob('**/*.json', recursive=True):
+              if '.git' in f: continue
+              try:
+                  with open(f) as fh: json.load(fh)
+              except Exception as e:
+                  errors.append(f"{f}: {e}")
+          if errors:
+              for e in errors: print(f"ERROR: {e}")
+              sys.exit(1)
+          print(f"✅ All JSON files valid")
+          PYEOF
+
+  # ── Security scan ───────────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: OWASP Dependency Check
+        run: |
+          ./mvnw org.owasp:dependency-check-maven:check \
+            -DfailBuildOnCVSS=9 \
+            -DsuppressionFile=.github/owasp-suppressions.xml \
+            --batch-mode -q \
+            -pl services/auction-service -am
+        continue-on-error: true   # Non-blocking for now; enable strict in Phase I
+
+      - name: Check for hardcoded secrets
+        run: |
+          # Fail if real credentials found in source
+          if grep -r "sk_live_\|pk_live_\|ghp_[a-zA-Z0-9]\{36\}" \
+               --include="*.java" --include="*.yml" --include="*.yaml" \
+               --exclude-dir=".git" .; then
+            echo "ERROR: Potential hardcoded production credentials found"
+            exit 1
+          fi
+          echo "✅ No hardcoded production credentials found"
