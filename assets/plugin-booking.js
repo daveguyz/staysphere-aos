@@ -65,7 +65,7 @@
     const checkOut = page.dataset.checkOut;
     const guests   = parseInt(page.dataset.guests) || 1;
     const stripeKey = page.dataset.stripeKey;
-    const sym      = page.dataset.currencySymbol || 'N$';
+    const sym      = page.dataset.currencySymbol || '$';
 
     if (!propId || !checkIn || !checkOut) {
       showError('checkout-error', 'Missing booking details. Please go back and try again.');
@@ -115,7 +115,7 @@
         </div>
         <div class="checkout-property-card__info">
           <p class="checkout-property-card__title">${esc(prop.title)}</p>
-          <p class="checkout-property-card__location">📍 ${esc(prop.location?.city || 'Namibia')}</p>
+          <p class="checkout-property-card__location">📍 ${esc(prop.location?.city || '')}</p>
           <div class="checkout-property-card__dates">
             <span>${fmtDate(ci)}</span>
             <span class="checkout-property-card__dates-sep" aria-hidden="true">→</span>
@@ -294,7 +294,7 @@
     if (!page) return;
 
     const bookingId = page.dataset.bookingId;
-    const sym = page.dataset.currencySymbol || 'N$';
+    const sym = page.dataset.currencySymbol || '$';
     if (!bookingId) return;
 
     async function loadBooking() {

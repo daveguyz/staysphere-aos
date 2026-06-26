@@ -16,7 +16,7 @@
   const api = (path, opts) => window.StaySphere.api(path, opts);
   const toast = (msg, type) => window.StaySphere.toast(msg, type);
   const sym = () => document.body.dataset.currencySymbol ||
-    document.querySelector('[data-currency-symbol]')?.dataset.currencySymbol || 'N$';
+    document.querySelector('[data-currency-symbol]')?.dataset.currencySymbol || '$';
   const fmt = n => sym() + Number(n || 0).toLocaleString('en-NA');
   const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -330,7 +330,7 @@
         summaryEl.innerHTML = `
           <div class="deposit-lot-summary__inner">
             <p class="deposit-lot-summary__title">${esc(lot.title)}</p>
-            <p class="deposit-lot-summary__location">📍 ${esc(lot.propertyCity || 'Namibia')}</p>
+            <p class="deposit-lot-summary__location">📍 ${esc(lot.propertyCity || '')}</p>
           </div>`;
       }
 
@@ -471,7 +471,7 @@
         if (summaryEl) {
           summaryEl.innerHTML = `
             <p class="auction-success-card__lot-title">${esc(lot.title)}</p>
-            <p class="auction-success-card__lot-location">📍 ${esc(lot.propertyCity || 'Namibia')}</p>`;
+            <p class="auction-success-card__lot-location">📍 ${esc(lot.propertyCity || '')}</p>`;
         }
 
         // Render winning amount

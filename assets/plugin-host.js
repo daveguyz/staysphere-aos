@@ -41,7 +41,7 @@
       return;
     }
 
-    const sym = dash.dataset.currencySymbol || 'N$';
+    const sym = dash.dataset.currencySymbol || '$';
 
     initDashboardTabs();
     loadDashboardData(sym);
@@ -138,7 +138,7 @@
           </div>
           <div class="host-listing-card__body">
             <p class="host-listing-card__title">${esc(p.title)}</p>
-            <p class="host-listing-card__location">📍 ${esc(p.location?.city || 'Namibia')}</p>
+            <p class="host-listing-card__location">📍 ${esc(p.location?.city || '')}</p>
             <p class="host-listing-card__rate">${fmt(rate, sym)}/night</p>
             <span class="host-listing-card__status ${statusClass}">${status}</span>
             <div class="host-listing-card__actions">
@@ -166,7 +166,7 @@
             body: JSON.stringify({ status: active ? 'INACTIVE' : 'ACTIVE' }),
           });
           toast(active ? 'Property deactivated' : 'Property activated');
-          loadDashboardData(btn.closest('[data-currency-symbol]')?.dataset.currencySymbol || 'N$');
+          loadDashboardData(btn.closest('[data-currency-symbol]')?.dataset.currencySymbol || '$');
         } catch (_) {
           toast('Could not update listing status');
         }
@@ -503,8 +503,8 @@
           latitude:     parseFloat(formData.latitude)      || null,
           longitude:    parseFloat(formData.longitude)     || null,
           instantBook:  formData.instantBook === 'true',
-          currency:     'NAD',
-          country:      'Namibia',
+          currency:     'USD',
+          country:      '',
         };
 
         const method = mode === 'edit' ? 'PUT' : 'POST';

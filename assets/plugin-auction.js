@@ -8,7 +8,7 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const sym = () => document.body.dataset.currencySymbol || 'N$';
+  const sym = () => document.body.dataset.currencySymbol || '$';
   const apiBase = () => document.body.dataset.api || '';
 
   // ─── State ──────────────────────────────────────────────────────────────────
@@ -120,7 +120,7 @@
           </div>
         </a>
         <div class="auction-card__body">
-          <p class="auction-card__location">📍 ${esc(lot.propertyCity || lot.city || 'Namibia')}</p>
+          <p class="auction-card__location">📍 ${esc(lot.propertyCity || lot.city || '')}</p>
           <h3 class="auction-card__title"><a href="/pages/auction-room?lot=${lot.id}">${esc(lot.title)}</a></h3>
           <div class="auction-card__price-row">
             <div>

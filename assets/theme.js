@@ -17,8 +17,8 @@
 
   const CONFIG = {
     apiBase: body.dataset.api || '',
-    currency: body.dataset.currency || 'NAD',
-    currencySymbol: body.dataset.currencySymbol || 'N$',
+    currency: body.dataset.currency || 'USD',
+    currencySymbol: body.dataset.currencySymbol || '$',
     mockMode: body.dataset.mock === 'true',
     customerId: body.dataset.customerId || null,
     customerEmail: body.dataset.customerEmail || null,
@@ -112,10 +112,10 @@
         data: {
           content: [1,2,3,4,5,6].map(i => ({
             id: `mock-${i}`,
-            title: ['Desert Dune Lodge','Etosha Safari Camp','Swakopmund Beach House',
-                    'Windhoek City Suite','Fish River Canyon Retreat','Namib Valley Farm'][i-1],
-            location: { city: ['Sossusvlei','Etosha','Swakopmund','Windhoek','Lüderitz','Hardap'][i-1] },
-            pricing: { currentDynamicRate: [1800,2400,1200,950,1600,750][i-1], currency: 'NAD' },
+            title: ['Oakwood Residences','The Commercial Quarter','Riverside Business Park',
+                    'Harbour View Apartments','The Merchant Centre','Estate at Millfield'][i-1],
+            location: { city: ['London','New York','Sydney','Cape Town','Dubai','Singapore'][i-1] },
+            pricing: { currentDynamicRate: [850000,1200000,475000,620000,980000,320000][i-1], currency: 'USD' },
             bedrooms: [2,3,4,1,3,2][i-1],
             maxGuests: [4,6,8,2,6,4][i-1],
             averageRating: [4.9,4.7,4.8,4.6,4.5,4.4][i-1],
@@ -217,7 +217,7 @@
           </div>
         </a>
         <div class="property-card__body">
-          <p class="property-card__location">📍 ${p.location?.city ?? 'Namibia'}</p>
+          <p class="property-card__location">📍 ${p.location?.city ?? ''}</p>
           <h3 class="property-card__title"><a href="/products/${p.id}">${esc(p.title)}</a></h3>
           <div class="property-card__meta">
             ${p.bedrooms ? `<span class="property-card__meta-item">🛏 ${p.bedrooms} bed${p.bedrooms !== 1 ? 's' : ''}</span>` : ''}

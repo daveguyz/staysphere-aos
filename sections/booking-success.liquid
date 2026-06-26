@@ -1,5 +1,5 @@
 {%- assign booking_id = request.query_string | split: 'booking=' | last | split: '&' | first -%}
-{%- assign sym = settings.default_currency_symbol | default: 'N$' -%}
+{%- assign sym = settings.default_currency_symbol | default: '$' -%}
 
 <div class="booking-success-page page-width section-padding"
      id="booking-success-page"
@@ -48,10 +48,10 @@
     {%- comment -%} Access code (shown when booking is CONFIRMED) ── {%- endcomment -%}
     <div class="booking-success-card__access hidden" id="bs-access-section">
       <div class="booking-access-code" id="bs-access-code-wrap">
-        <p class="booking-access-code__label">Your access code</p>
+        <p class="booking-access-code__label">Your reference code</p>
         <p class="booking-access-code__code" id="bs-access-code"
            aria-label="Access code">––––</p>
-        <button class="btn btn--ghost btn--sm" id="bs-copy-code-btn" aria-label="Copy access code">
+        <button class="btn btn--ghost btn--sm" id="bs-copy-code-btn" aria-label="Copy reference code">
           Copy
         </button>
       </div>
@@ -71,15 +71,15 @@
         <li class="booking-success-card__step">
           <span aria-hidden="true">💬</span>
           <div>
-            <strong>Message your host</strong>
-            <p>Introduce yourself and confirm arrival time.</p>
+            <strong>Message your agent</strong>
+            <p>Introduce yourself and confirm any outstanding details.</p>
           </div>
         </li>
         <li class="booking-success-card__step">
           <span aria-hidden="true">🏠</span>
           <div>
-            <strong>Enjoy your stay</strong>
-            <p>Your access code will be available 24 hours before check-in.</p>
+            <strong>Get ready to proceed</strong>
+            <p>Your agent will be in touch to arrange next steps and handover details.</p>
           </div>
         </li>
       </ol>
@@ -87,7 +87,7 @@
 
     <div class="booking-success-card__actions">
       <a href="/account" class="btn btn--primary">View my bookings</a>
-      <a href="/collections/all" class="btn btn--ghost">Browse more stays</a>
+      <a href="/collections/all" class="btn btn--ghost">Browse more listings</a>
     </div>
 
   </div>

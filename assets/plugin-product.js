@@ -94,7 +94,7 @@
 
     const propertyId = widget.dataset.propertyId;
     const baseRate   = parseFloat(widget.dataset.baseRate) || 0;
-    const sym        = widget.dataset.currencySymbol || 'N$';
+    const sym        = widget.dataset.currencySymbol || '$';
 
     const checkInEl  = $('bw-checkin');
     const checkOutEl = $('bw-checkout');

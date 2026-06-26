@@ -110,7 +110,7 @@
       {%- endif -%}
       {%- if q_min_price != blank or q_max_price != blank -%}
         <button class="filter-chip" data-remove="price">
-          💰 N${{ q_min_price | default: '0' }}–{{ q_max_price | default: '∞' }} ✕
+          💰 ${{ q_min_price | default: '0' }}–{{ q_max_price | default: '∞' }} ✕
         </button>
       {%- endif -%}
       <button class="filter-chip filter-chip--clear" id="clear-all-filters">Clear all</button>
@@ -178,7 +178,7 @@
         </div>
 
         <div class="filter-group">
-          <h3 class="filter-group__label">Price per night (N$)</h3>
+          <h3 class="filter-group__label">Listing price</h3>
           <div class="filter-price-row">
             <div class="form-field">
               <label for="filter-min-price">Min</label>

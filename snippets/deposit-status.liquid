@@ -3,9 +3,9 @@
   Parameters:
   - status: 'PENDING' | 'HELD' | 'RELEASED' | 'CHARGED' | 'FAILED' | 'EXPIRED'
   - amount: number
-  - currency_symbol: e.g. 'N$'
+  - currency_symbol: e.g. '$'
 {% endcomment %}
-{%- assign sym = currency_symbol | default: settings.auction_currency_symbol | default: 'N$' -%}
+{%- assign sym = currency_symbol | default: settings.auction_currency_symbol | default: '$' -%}
 {%- case status -%}
   {%- when 'HELD' -%}
     {%- assign dep_label = 'Deposit held' -%}

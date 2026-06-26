@@ -170,12 +170,12 @@
   function getMockData() {
     // Inline mock if API is offline
     const mock = [
-      { id: 'm1', title: 'Desert Dune Lodge', location: { city: 'Sossusvlei' }, pricing: { currentDynamicRate: 1800 }, bedrooms: 2, maxGuests: 4, averageRating: 4.9, totalReviews: 42, trustScore: 92, imageUrls: [] },
-      { id: 'm2', title: 'Etosha Safari Camp', location: { city: 'Etosha' }, pricing: { currentDynamicRate: 2400 }, bedrooms: 3, maxGuests: 6, averageRating: 4.7, totalReviews: 28, trustScore: 88, imageUrls: [] },
-      { id: 'm3', title: 'Swakopmund Beach House', location: { city: 'Swakopmund' }, pricing: { currentDynamicRate: 1200 }, bedrooms: 4, maxGuests: 8, averageRating: 4.8, totalReviews: 61, trustScore: 95, imageUrls: [] },
-      { id: 'm4', title: 'Windhoek City Suite', location: { city: 'Windhoek' }, pricing: { currentDynamicRate: 950 }, bedrooms: 1, maxGuests: 2, averageRating: 4.6, totalReviews: 15, trustScore: 75, imageUrls: [] },
-      { id: 'm5', title: 'Fish River Canyon Retreat', location: { city: 'Lüderitz' }, pricing: { currentDynamicRate: 1600 }, bedrooms: 3, maxGuests: 6, averageRating: 4.5, totalReviews: 19, trustScore: 80, imageUrls: [] },
-      { id: 'm6', title: 'Namib Valley Farm', location: { city: 'Hardap' }, pricing: { currentDynamicRate: 750 }, bedrooms: 2, maxGuests: 4, averageRating: 4.4, totalReviews: 8, trustScore: 70, imageUrls: [] },
+      { id: 'm1', title: 'Oakwood Residences', location: { city: 'London' }, pricing: { currentDynamicRate: 850000 }, bedrooms: 3, maxGuests: 0, averageRating: 4.9, totalReviews: 42, trustScore: 92, imageUrls: [] },
+      { id: 'm2', title: 'The Commercial Quarter', location: { city: 'New York' }, pricing: { currentDynamicRate: 1200000 }, bedrooms: 0, maxGuests: 0, averageRating: 4.7, totalReviews: 28, trustScore: 88, imageUrls: [] },
+      { id: 'm3', title: 'Riverside Business Park', location: { city: 'Sydney' }, pricing: { currentDynamicRate: 475000 }, bedrooms: 0, maxGuests: 0, averageRating: 4.8, totalReviews: 61, trustScore: 95, imageUrls: [] },
+      { id: 'm4', title: 'Harbour View Apartments', location: { city: 'Cape Town' }, pricing: { currentDynamicRate: 620000 }, bedrooms: 2, maxGuests: 0, averageRating: 4.6, totalReviews: 15, trustScore: 75, imageUrls: [] },
+      { id: 'm5', title: 'The Merchant Centre', location: { city: 'Dubai' }, pricing: { currentDynamicRate: 980000 }, bedrooms: 0, maxGuests: 0, averageRating: 4.5, totalReviews: 19, trustScore: 80, imageUrls: [] },
+      { id: 'm6', title: 'Estate at Millfield', location: { city: 'Singapore' }, pricing: { currentDynamicRate: 320000 }, bedrooms: 4, maxGuests: 0, averageRating: 4.4, totalReviews: 8, trustScore: 70, imageUrls: [] },
     ];
     return { content: mock, totalElements: mock.length, totalPages: 1, pageable: { pageNumber: 0 } };
   }

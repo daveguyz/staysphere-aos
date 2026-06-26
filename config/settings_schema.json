@@ -455,13 +455,13 @@
         "type": "text",
         "id": "default_currency",
         "label": "Default currency code",
-        "default": "NAD"
+        "default": "USD"
       },
       {
         "type": "text",
         "id": "default_currency_symbol",
         "label": "Currency symbol",
-        "default": "N$"
+        "default": "$"
       },
       {
         "type": "text",
@@ -599,7 +599,7 @@
       {
         "type": "checkbox",
         "id": "feature_host_dashboard",
-        "label": "Host dashboard enabled",
+        "label": "Agent dashboard enabled",
         "default": false
       },
       {

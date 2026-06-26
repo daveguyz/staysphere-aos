@@ -1,4 +1,4 @@
-{%- assign sym = settings.auction_currency_symbol | default: 'N$' -%}
+{%- assign sym = settings.auction_currency_symbol | default: '$' -%}
 
 <div class="account-page page-width section-padding"
      id="account-page"
@@ -127,7 +127,7 @@
       {%- endfor -%}
     </div>
     <div class="account-empty hidden" id="bookings-empty">
-      <p>No bookings yet. <a href="/collections/all">Browse properties →</a></p>
+      <p>No transactions yet. <a href="/collections/all">Browse listings →</a></p>
     </div>
   </div>
 

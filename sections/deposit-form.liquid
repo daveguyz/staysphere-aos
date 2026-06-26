@@ -1,7 +1,7 @@
 {%- assign lot_id     = request.query_string | split: 'lot=' | last | split: '&' | first -%}
 {%- assign return_to  = request.query_string | split: 'return_to=' | last | split: '&' | first | url_decode -%}
 {%- assign pk_key     = settings.stripe_kyc_publishable_key -%}
-{%- assign sym        = settings.auction_currency_symbol | default: 'N$' -%}
+{%- assign sym        = settings.auction_currency_symbol | default: '$' -%}
 
 <div class="deposit-page page-width section-padding"
      id="deposit-page"

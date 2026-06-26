@@ -1,5 +1,5 @@
 {%- assign lot_id = request.query_string | split: 'lot=' | last | split: '&' | first -%}
-{%- assign sym    = settings.auction_currency_symbol | default: 'N$' -%}
+{%- assign sym    = settings.auction_currency_symbol | default: '$' -%}
 
 <div class="auction-success-page page-width section-padding"
      id="auction-success-page"
@@ -54,9 +54,9 @@
         <li class="auction-success-card__step">
           <span class="auction-success-card__step-icon" aria-hidden="true">🏠</span>
           <div>
-            <p class="auction-success-card__step-title">Property access</p>
+            <p class="auction-success-card__step-title">Property handover</p>
             <p class="auction-success-card__step-body">
-              Once payment is complete you'll receive the property access details and welcome pack.
+              Once full payment is complete you'll receive the title transfer documents and handover details.
             </p>
           </div>
         </li>
@@ -65,7 +65,7 @@
 
     <div class="auction-success-card__actions">
       <a href="/account" class="btn btn--primary">View my account</a>
-      <a href="/pages/auctions" class="btn btn--ghost">Browse more auctions</a>
+      <a href="/pages/auctions" class="btn btn--ghost">Browse more listings</a>
     </div>
 
     <p class="auction-success-card__support">
@@ -82,7 +82,7 @@
       You weren't the winning bidder this time.
       Any deposit you placed will be released within 24 hours.
     </p>
-    <a href="/pages/auctions" class="btn btn--primary">Browse more auctions</a>
+    <a href="/pages/auctions" class="btn btn--primary">Browse more listings</a>
   </div>
 
 </div>

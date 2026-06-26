@@ -148,12 +148,12 @@
           </div>
         </div>
         <div class="form-field">
-          <label for="pc-check-in-time">Check-in time</label>
+          <label for="pc-check-in-time">Access from</label>
           <input type="time" id="pc-check-in-time" name="checkInTime"
                  class="checkout-input" value="14:00">
         </div>
         <div class="form-field">
-          <label for="pc-check-out-time">Check-out time</label>
+          <label for="pc-check-out-time">Access until</label>
           <input type="time" id="pc-check-out-time" name="checkOutTime"
                  class="checkout-input" value="10:00">
         </div>
@@ -180,10 +180,10 @@
       <h2 class="property-create-panel__title">Set your price</h2>
       <div class="property-create-panel__fields">
         <div class="form-field">
-          <label for="pc-base-rate">Nightly rate ({{ settings.default_currency | default: 'NAD' }}) *</label>
+          <label for="pc-base-rate">Listing price ({{ settings.default_currency | default: 'USD' }}) *</label>
           <div class="property-create-panel__currency-input">
             <span class="property-create-panel__currency-sym">
-              {{ settings.default_currency_symbol | default: 'N$' }}
+              {{ settings.default_currency_symbol | default: '$' }}
             </span>
             <input type="number" id="pc-base-rate" name="baseRate"
                    class="checkout-input" min="1" step="50" required
@@ -192,22 +192,22 @@
           <p class="form-field__hint">Set a competitive nightly or listing rate for your market</p>
         </div>
         <div class="form-field">
-          <label for="pc-cleaning-fee">Cleaning fee ({{ settings.default_currency | default: 'NAD' }})</label>
+          <label for="pc-cleaning-fee">Cleaning / admin fee ({{ settings.default_currency | default: 'USD' }})</label>
           <div class="property-create-panel__currency-input">
             <span class="property-create-panel__currency-sym">
-              {{ settings.default_currency_symbol | default: 'N$' }}
+              {{ settings.default_currency_symbol | default: '$' }}
             </span>
             <input type="number" id="pc-cleaning-fee" name="cleaningFee"
                    class="checkout-input" min="0" step="50" placeholder="0">
           </div>
         </div>
         <div class="form-field">
-          <label for="pc-min-nights">Minimum nights</label>
+          <label for="pc-min-nights">Minimum stay / notice period</label>
           <input type="number" id="pc-min-nights" name="minimumNights"
                  class="checkout-input" min="1" max="365" value="2">
         </div>
         <div class="form-field">
-          <label for="pc-max-nights">Maximum nights</label>
+          <label for="pc-max-nights">Maximum stay / contract length</label>
           <input type="number" id="pc-max-nights" name="maximumNights"
                  class="checkout-input" min="1" max="365" value="30">
         </div>

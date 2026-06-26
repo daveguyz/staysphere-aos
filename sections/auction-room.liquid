@@ -5,7 +5,7 @@
 {%- endcomment -%}
 
 {%- assign lot_id       = request.query_string | split: 'lot=' | last | split: '&' | first -%}
-{%- assign sym          = settings.auction_currency_symbol | default: 'N$' -%}
+{%- assign sym          = settings.auction_currency_symbol | default: '$' -%}
 {%- assign ws_url       = settings.auction_websocket_url -%}
 {%- assign feature_live = settings.feature_live_bidding -%}
 {%- assign anti_snipe_m = settings.auction_anti_snipe_minutes | default: 5 -%}

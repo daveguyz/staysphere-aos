@@ -8,7 +8,7 @@
 {%- assign check_in  = request.query_string | split: 'checkIn='    | last | split: '&' | first -%}
 {%- assign check_out = request.query_string | split: 'checkOut='   | last | split: '&' | first -%}
 {%- assign guests    = request.query_string | split: 'guests='     | last | split: '&' | first -%}
-{%- assign sym       = settings.default_currency_symbol | default: 'N$' -%}
+{%- assign sym       = settings.default_currency_symbol | default: '$' -%}
 
 <div class="checkout-page page-width section-padding"
      id="checkout-page"
@@ -20,7 +20,7 @@
      data-stripe-key="{{ settings.stripe_publishable_key }}"
      data-currency-symbol="{{ sym }}">
 
-  <h1 class="checkout-page__title">Confirm your booking</h1>
+  <h1 class="checkout-page__title">Confirm your transaction</h1>
 
   <div class="checkout-layout">
 
@@ -68,7 +68,7 @@
           <div class="form-field">
             <label for="checkout-requests">Special requests (optional)</label>
             <textarea id="checkout-requests" class="checkout-input checkout-textarea"
-                      rows="3" placeholder="Early check-in, dietary needs, pets…"></textarea>
+                      rows="3" placeholder="Any specific requirements or conditions…"></textarea>
           </div>
         </div>
       </div>
@@ -138,7 +138,7 @@
         {%- if settings.feature_payments -%}
           Secured by Stripe · You won't be charged until confirmed
         {%- else -%}
-          You won't be charged until the host confirms your booking
+          You won't be charged until the listing agent confirms your transaction
         {%- endif -%}
       </p>
 

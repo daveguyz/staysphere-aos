@@ -1,4 +1,4 @@
-{%- assign sym = settings.default_currency_symbol | default: 'N$' -%}
+{%- assign sym = settings.default_currency_symbol | default: '$' -%}
 
 <div class="host-dashboard page-width section-padding"
      id="host-dashboard"
@@ -8,7 +8,7 @@
   {%- comment -%} ── HEADER ── {%- endcomment -%}
   <div class="host-dashboard__header">
     <div>
-      <h1 class="host-dashboard__title">Host dashboard</h1>
+      <h1 class="host-dashboard__title">Agent dashboard</h1>
       <p class="host-dashboard__sub" id="host-welcome">
         <span class="skeleton-line skeleton-line--short" aria-hidden="true"></span>
       </p>
@@ -26,7 +26,7 @@
         <p class="host-stat-card__value skeleton-inline" aria-hidden="true"></p>
       </div>
     {%- else -%}
-      {%- assign stat_defs = "Revenue this month,Bookings this month,Active listings,Avg rating" | split: "," -%}
+      {%- assign stat_defs = "Revenue this month,Transactions this month,Active listings,Avg rating" | split: "," -%}
       {%- assign stat_ids  = "stat-revenue,stat-bookings,stat-listings,stat-rating"              | split: "," -%}
       {%- for label in stat_defs -%}
         <div class="host-stat-card host-stat-card--skeleton" id="{{ stat_ids[forloop.index0] }}">
@@ -83,7 +83,7 @@
     <div class="account-empty hidden" id="host-listings-empty">
       <p>No listings yet.</p>
       <a href="/pages/property-create" class="btn btn--primary" style="margin-top:12px;">
-        List your first property
+        Add your first listing
       </a>
     </div>
   </div>
@@ -118,7 +118,7 @@
     </div>
     <div class="host-revenue-table" id="host-revenue-table">
       <div class="host-revenue-table__header">
-        <span>Month</span><span>Bookings</span><span>Revenue</span><span>Payout</span>
+        <span>Month</span><span>Transactions</span><span>Revenue</span><span>Payout</span>
       </div>
       <div id="host-revenue-rows"></div>
     </div>
@@ -142,7 +142,7 @@
 
 {% schema %}
 {
-  "name": "Host dashboard",
+  "name": "Agent dashboard",
   "settings": []
 }
 {% endschema %}
