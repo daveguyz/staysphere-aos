@@ -36,7 +36,7 @@
           <label for="pc-title">Property name *</label>
           <input type="text" id="pc-title" name="title"
                  class="checkout-input" required
-                 placeholder="e.g. Desert Dune Lodge, Sossusvlei">
+                 placeholder="e.g. Sunset Villa, Commercial Tower, Industrial Park">
         </div>
         <div class="form-field">
           <label for="pc-type">Property type *</label>
@@ -92,29 +92,19 @@
             <label for="pc-city">City / Town *</label>
             <input type="text" id="pc-city" name="city"
                    class="checkout-input" required
-                   list="pc-city-suggestions" placeholder="Windhoek">
+                   list="pc-city-suggestions" placeholder="Cape Town, Johannesburg…">
             <datalist id="pc-city-suggestions">
-              <option value="Windhoek"><option value="Swakopmund">
-              <option value="Walvis Bay"><option value="Lüderitz">
-              <option value="Keetmanshoop"><option value="Otjiwarongo">
-              <option value="Etosha"><option value="Sossusvlei">
-              <option value="Damaraland"><option value="Caprivi Strip">
+              <option value="Cape Town"><option value="Johannesburg">
+              <option value="Durban"><option value="Pretoria">
+              <option value="Port Elizabeth"><option value="Bloemfontein">
+              <option value="Cape Town"><option value="Johannesburg">
+              <option value="Lusaka"><option value="Harare">
             </datalist>
           </div>
           <div class="form-field">
             <label for="pc-region">Region</label>
-            <select id="pc-region" name="region" class="sort-select">
-              <option value="">Select region</option>
-              <option value="Khomas">Khomas</option>
-              <option value="Erongo">Erongo</option>
-              <option value="Oshana">Oshana</option>
-              <option value="Kavango">Kavango</option>
-              <option value="Kunene">Kunene</option>
-              <option value="Karas">Karas</option>
-              <option value="Hardap">Hardap</option>
-              <option value="Otjozondjupa">Otjozondjupa</option>
-              <option value="Omaheke">Omaheke</option>
-            </select>
+            <input type="text" id="pc-region" name="region"
+                   class="checkout-input" placeholder="State / province / county">
           </div>
         </div>
         <div class="form-row">
@@ -199,7 +189,7 @@
                    class="checkout-input" min="1" step="50" required
                    placeholder="1500">
           </div>
-          <p class="form-field__hint">Average for Namibia: N$800–N$3,500/night</p>
+          <p class="form-field__hint">Set a competitive nightly or listing rate for your market</p>
         </div>
         <div class="form-field">
           <label for="pc-cleaning-fee">Cleaning fee ({{ settings.default_currency | default: 'NAD' }})</label>

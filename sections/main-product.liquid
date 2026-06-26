@@ -2,7 +2,7 @@
 {%- assign beds         = product.metafields.staysphere.bedrooms    | default: '' -%}
 {%- assign baths        = product.metafields.staysphere.bathrooms   | default: '' -%}
 {%- assign guests       = product.metafields.staysphere.max_guests  | default: '' -%}
-{%- assign city         = product.metafields.staysphere.city        | default: 'Namibia' -%}
+{%- assign city         = product.metafields.staysphere.city        | default: '' -%}
 {%- assign trust        = product.metafields.staysphere.trust_score | plus: 0 -%}
 {%- assign rating       = product.metafields.staysphere.average_rating | plus: 0 -%}
 {%- assign review_count = product.metafields.staysphere.review_count | default: 0 -%}

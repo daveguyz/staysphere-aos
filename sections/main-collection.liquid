@@ -133,20 +133,15 @@
           <div class="filter-city-wrap">
             <input type="text" id="filter-city" name="city"
                    value="{{ q_city }}"
-                   placeholder="Windhoek, Etosha…"
+                   placeholder="City, suburb, area…"
                    class="filter-city-input"
                    autocomplete="off" list="city-suggestions">
             <datalist id="city-suggestions">
-              <option value="Windhoek">
-              <option value="Swakopmund">
-              <option value="Etosha">
-              <option value="Sossusvlei">
-              <option value="Lüderitz">
-              <option value="Walvis Bay">
-              <option value="Damaraland">
-              <option value="Caprivi Strip">
-              <option value="Fish River Canyon">
-              <option value="Waterberg">
+              <option value="Residential">
+              <option value="Commercial">
+              <option value="Industrial">
+              <option value="Land">
+              <option value="Luxury">
             </datalist>
           </div>
         </div>
@@ -309,7 +304,7 @@
           <span class="collection-ai-bar__badge">✦ AI</span>
           <input type="text" id="collection-ai-input"
                  value="{{ q_ai }}"
-                 placeholder="Describe your ideal stay in Namibia…"
+                 placeholder="Describe the property you're looking for…"
                  class="collection-ai-bar__input"
                  aria-label="Natural language search">
           <button class="btn btn--primary btn--sm" id="collection-ai-btn">Search</button>

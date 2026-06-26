@@ -45,7 +45,7 @@
 
   <div class="property-card__body">
     <p class="property-card__location">
-      📍 {{ product.metafields.staysphere.city | default: 'Namibia' }}
+      📍 {{ product.metafields.staysphere.city | default: '' }}
     </p>
     <h3 class="property-card__title">
       <a href="{{ product.url }}">{{ product.title | truncate: 56 }}</a>

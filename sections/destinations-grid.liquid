@@ -6,7 +6,7 @@
     <div class="destinations-grid">
       {%- for block in section.blocks -%}
         {%- if block.type == 'destination' -%}
-          <a href="/collections/all?city={{ block.settings.city | url_encode }}"
+          <a href="/collections/all?propertyType={{ block.settings.city | url_encode }}"
              class="destination-card destination-card--{{ forloop.index }}"
              {{ block.shopify_attributes }}>
             {%- if block.settings.image != blank -%}
@@ -33,30 +33,30 @@
 
 {% schema %}
 {
-  "name": "Destinations grid",
+  "name": "Property types grid",
   "settings": [
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Explore Namibia" }
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Explore property types" }
   ],
   "blocks": [
     {
       "type": "destination",
-      "name": "Destination",
+      "name": "Property type",
       "limit": 6,
       "settings": [
         { "type": "image_picker", "id": "image", "label": "Image" },
-        { "type": "text", "id": "city", "label": "City / region name", "default": "Windhoek" },
+        { "type": "text", "id": "city", "label": "Category name", "default": "Residential" },
         { "type": "text", "id": "tagline", "label": "Tagline", "default": "Capital city" }
       ]
     }
   ],
   "presets": [
     {
-      "name": "Destinations grid",
+      "name": "Property types grid",
       "blocks": [
-        { "type": "destination", "settings": { "city": "Windhoek", "tagline": "Capital city" } },
-        { "type": "destination", "settings": { "city": "Swakopmund", "tagline": "Coastal adventure" } },
-        { "type": "destination", "settings": { "city": "Etosha", "tagline": "Wildlife haven" } },
-        { "type": "destination", "settings": { "city": "Sossusvlei", "tagline": "Dune country" } }
+        { "type": "destination", "settings": { "city": "Residential", "tagline": "Houses & apartments" } },
+        { "type": "destination", "settings": { "city": "Commercial", "tagline": "Offices & retail" } },
+        { "type": "destination", "settings": { "city": "Industrial", "tagline": "Warehouses & logistics" } },
+        { "type": "destination", "settings": { "city": "Land", "tagline": "Development opportunities" } }
       ]
     }
   ]

@@ -22,7 +22,7 @@
     {%- if section.settings.eyebrow != blank -%}
       <p class="hero__eyebrow">{{ section.settings.eyebrow }}</p>
     {%- endif -%}
-    <h1 class="hero__heading">{{ section.settings.heading | default: 'Find your perfect stay in Namibia' }}</h1>
+    <h1 class="hero__heading">{{ section.settings.heading | default: 'Sell. Auction. Manage. Every property transaction in one place.' }}</h1>
     {%- if section.settings.subheading != blank -%}
       <p class="hero__subheading">{{ section.settings.subheading }}</p>
     {%- endif -%}
@@ -33,7 +33,7 @@
         <div class="hero-search__field hero-search__field--destination">
           <label for="hero-destination" class="hero-search__label">Where</label>
           <input type="text" id="hero-destination" name="city"
-                 placeholder="{{ section.settings.destination_placeholder | default: 'Windhoek, Etosha, Swakopmund…' }}"
+                 placeholder="{{ section.settings.destination_placeholder | default: 'City, suburb, postcode…' }}"
                  class="hero-search__input" autocomplete="off" spellcheck="false">
           <div class="hero-search__autocomplete" id="hero-autocomplete" role="listbox" aria-label="Destination suggestions" hidden></div>
         </div>
@@ -68,7 +68,7 @@
         <div class="hero-search__ai-bar">
           <span class="hero-search__ai-badge" aria-label="AI powered">✦ AI</span>
           <input type="text" id="hero-ai-input" class="hero-search__ai-input"
-                 placeholder="Or just describe your perfect trip…"
+                 placeholder="Describe the property you’re looking for…"
                  aria-label="Natural language property search">
           <button class="hero-search__ai-btn btn btn--ghost btn--sm" id="hero-ai-btn" type="button">Ask Concierge</button>
         </div>
@@ -102,8 +102,8 @@
   "settings": [
     { "type": "image_picker", "id": "image", "label": "Background image" },
     { "type": "text", "id": "video_url", "label": "Background video URL (.mp4)" },
-    { "type": "text", "id": "eyebrow", "label": "Eyebrow text", "default": "Namibia & Southern Africa" },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Find your perfect stay in Namibia" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow text", "default": "Powered by StaySphere AOS" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Sell. Auction. Manage. Every property transaction in one place." },
     { "type": "textarea", "id": "subheading", "label": "Subheading" },
     { "type": "text", "id": "destination_placeholder", "label": "Destination placeholder" },
     { "type": "range", "id": "overlay_opacity", "min": 0, "max": 80, "step": 5, "unit": "%", "label": "Image overlay opacity", "default": 45 },
@@ -127,8 +127,8 @@
       "blocks": [
         { "type": "filter_pill", "settings": { "label": "Pet-friendly", "emoji": "🐾", "filter_type": "petFriendly", "filter_value": "true" } },
         { "type": "filter_pill", "settings": { "label": "Pool", "emoji": "🏊", "filter_type": "hasPool", "filter_value": "true" } },
-        { "type": "filter_pill", "settings": { "label": "Etosha", "emoji": "🦁", "filter_type": "city", "filter_value": "Etosha" } },
-        { "type": "filter_pill", "settings": { "label": "Swakopmund", "emoji": "🌊", "filter_type": "city", "filter_value": "Swakopmund" } }
+        { "type": "filter_pill", "settings": { "label": "For sale", "emoji": "🏠", "filter_type": "propertyType", "filter_value": "FOR_SALE" } },
+        { "type": "filter_pill", "settings": { "label": "Auction", "emoji": "🔨", "filter_type": "propertyType", "filter_value": "AUCTION" } }
       ]
     }
   ]

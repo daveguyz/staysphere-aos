@@ -82,12 +82,12 @@
         <div class="filter-group">
           <h3 class="filter-group__label">Destination</h3>
           <input type="text" name="city" id="auction-filter-city"
-                 class="filter-city-input" placeholder="Windhoek, Etosha…"
+                 class="filter-city-input" placeholder="City, suburb, area…"
                  autocomplete="off" list="auction-city-suggestions">
           <datalist id="auction-city-suggestions">
-            <option value="Windhoek"><option value="Swakopmund">
-            <option value="Etosha"><option value="Sossusvlei">
-            <option value="Lüderitz"><option value="Walvis Bay">
+            <option value="Residential"><option value="Commercial">
+            <option value="Industrial"><option value="Land">
+            <option value="Luxury">
           </datalist>
         </div>
         <div class="filter-group">
@@ -168,7 +168,7 @@
 {
   "name": "Auction listing",
   "settings": [
-    { "type": "text", "id": "heading", "label": "Page heading", "default": "Auction OS" },
+    { "type": "text", "id": "heading", "label": "Page heading", "default": "Property Auctions" },
     { "type": "range", "id": "lots_per_page", "min": 6, "max": 48, "step": 6, "label": "Lots per page", "default": 24 }
   ]
 }

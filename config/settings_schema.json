@@ -390,7 +390,7 @@
         "type": "text",
         "id": "concierge_greeting",
         "label": "Concierge greeting message",
-        "default": "Hi! I'm your StaySphere AI concierge. Where would you like to stay in Namibia?"
+        "default": "Hi! I'm your StaySphere AI concierge. Where would you like to stay in ?"
       },
       {
         "type": "color",
@@ -435,7 +435,7 @@
         "type": "text",
         "id": "search_placeholder",
         "label": "Search input placeholder",
-        "default": "Where to? Windhoek, Etosha, Swakopmund\u2026"
+        "default": "City, suburb, postcode\u2026"
       },
       {
         "type": "range",
@@ -467,7 +467,7 @@
         "type": "text",
         "id": "default_country",
         "label": "Default country",
-        "default": "Namibia"
+        "default": ""
       },
       {
         "type": "checkbox",
@@ -720,7 +720,7 @@
         "type": "text",
         "id": "auction_currency_symbol",
         "label": "Auction currency symbol",
-        "default": "N$"
+        "default": "$"
       },
       {
         "type": "header",
