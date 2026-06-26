@@ -1,0 +1,52 @@
+{
+  "general": {
+    "search": "Rechercher", "close": "Fermer", "loading": "Chargement…",
+    "error": "Une erreur est survenue", "save": "Enregistrer",
+    "cancel": "Annuler", "confirm": "Confirmer", "back": "Retour",
+    "next": "Suivant", "view_all": "Voir tout", "sign_in": "Connexion",
+    "sign_out": "Déconnexion", "create_account": "Créer un compte"
+  },
+  "hero": {
+    "search_where": "Où", "search_checkin": "Arrivée",
+    "search_checkout": "Départ", "search_guests": "Voyageurs",
+    "search_button": "Rechercher",
+    "ai_placeholder": "Décrivez le bien que vous recherchez…",
+    "ai_button": "Demander à l'IA"
+  },
+  "property": {
+    "nights": "nuit", "nights_plural": "nuits",
+    "guests": "voyageur", "guests_plural": "voyageurs",
+    "bedrooms": "chambre", "bedrooms_plural": "chambres",
+    "bathrooms": "salle de bain", "bathrooms_plural": "salles de bain",
+    "save_to_wishlist": "Sauvegarder", "remove_from_wishlist": "Retirer",
+    "book_now": "Réserver", "make_offer": "Faire une offre",
+    "check_availability": "Vérifier disponibilité",
+    "new_listing": "Nouvelle annonce", "per_night": "/ nuit",
+    "trusted_badge": "Certifié", "cleaning_fee": "Frais de ménage",
+    "service_fee": "Frais de service", "taxes": "Taxes", "total": "Total",
+    "not_yet_charged": "Vous ne serez pas débité maintenant"
+  },
+  "booking": {
+    "confirm": "Confirmer la réservation", "cancelled": "Réservation annulée",
+    "pending_payment": "Paiement en attente", "confirmed": "Confirmé",
+    "checked_in": "Arrivé", "checked_out": "Parti"
+  },
+  "auth": {
+    "login_heading": "Connexion", "register_heading": "Créer votre compte",
+    "email": "E-mail", "password": "Mot de passe",
+    "forgot_password": "Mot de passe oublié ?",
+    "no_account": "Nouveau ici ?", "have_account": "Déjà inscrit ?",
+    "submit_login": "Se connecter", "submit_register": "Créer un compte",
+    "terms_agreement": "J'accepte les Conditions d'utilisation et la Politique de confidentialité",
+    "become_host": "Je souhaite aussi lister mon bien en tant qu'hôte"
+  },
+  "errors": {
+    "api_offline": "Nos serveurs prennent un moment. Résultats en cache affichés.",
+    "no_results": "Aucun bien trouvé. Essayez de modifier votre recherche.",
+    "required_field": "Ce champ est obligatoire",
+    "invalid_email": "Veuillez entrer une adresse e-mail valide",
+    "password_too_short": "Le mot de passe doit comporter au moins 8 caractères",
+    "dates_required": "Veuillez sélectionner des dates d'arrivée et de départ",
+    "dates_invalid": "La date de départ doit être après l'arrivée"
+  }
+}

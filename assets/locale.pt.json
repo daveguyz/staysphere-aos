@@ -1,0 +1,52 @@
+{
+  "general": {
+    "search": "Pesquisar", "close": "Fechar", "loading": "Carregando…",
+    "error": "Algo deu errado", "save": "Salvar",
+    "cancel": "Cancelar", "confirm": "Confirmar", "back": "Voltar",
+    "next": "Próximo", "view_all": "Ver tudo", "sign_in": "Entrar",
+    "sign_out": "Sair", "create_account": "Criar conta"
+  },
+  "hero": {
+    "search_where": "Onde", "search_checkin": "Entrada",
+    "search_checkout": "Saída", "search_guests": "Hóspedes",
+    "search_button": "Pesquisar",
+    "ai_placeholder": "Descreva o imóvel que você procura…",
+    "ai_button": "Perguntar à IA"
+  },
+  "property": {
+    "nights": "noite", "nights_plural": "noites",
+    "guests": "hóspede", "guests_plural": "hóspedes",
+    "bedrooms": "quarto", "bedrooms_plural": "quartos",
+    "bathrooms": "banheiro", "bathrooms_plural": "banheiros",
+    "save_to_wishlist": "Salvar", "remove_from_wishlist": "Remover",
+    "book_now": "Reservar", "make_offer": "Fazer uma oferta",
+    "check_availability": "Verificar disponibilidade",
+    "new_listing": "Novo anúncio", "per_night": "/ noite",
+    "trusted_badge": "Verificado", "cleaning_fee": "Taxa de limpeza",
+    "service_fee": "Taxa de serviço", "taxes": "Impostos", "total": "Total",
+    "not_yet_charged": "Você não será cobrado ainda"
+  },
+  "booking": {
+    "confirm": "Confirmar reserva", "cancelled": "Reserva cancelada",
+    "pending_payment": "Pagamento pendente", "confirmed": "Confirmado",
+    "checked_in": "Check-in feito", "checked_out": "Check-out feito"
+  },
+  "auth": {
+    "login_heading": "Entrar", "register_heading": "Criar sua conta",
+    "email": "E-mail", "password": "Senha",
+    "forgot_password": "Esqueceu a senha?",
+    "no_account": "Novo aqui?", "have_account": "Já tem conta?",
+    "submit_login": "Entrar", "submit_register": "Criar conta",
+    "terms_agreement": "Concordo com os Termos de Serviço e Política de Privacidade",
+    "become_host": "Também quero listar meu imóvel como anfitrião"
+  },
+  "errors": {
+    "api_offline": "Nossos servidores estão demorando. Mostrando resultados em cache.",
+    "no_results": "Nenhum imóvel encontrado. Tente ajustar sua busca.",
+    "required_field": "Este campo é obrigatório",
+    "invalid_email": "Por favor, insira um endereço de e-mail válido",
+    "password_too_short": "A senha deve ter pelo menos 8 caracteres",
+    "dates_required": "Por favor, selecione as datas de entrada e saída",
+    "dates_invalid": "A data de saída deve ser após a entrada"
+  }
+}

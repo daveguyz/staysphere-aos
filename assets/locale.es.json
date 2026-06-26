@@ -1,0 +1,52 @@
+{
+  "general": {
+    "search": "Buscar", "close": "Cerrar", "loading": "Cargando…",
+    "error": "Algo salió mal", "save": "Guardar",
+    "cancel": "Cancelar", "confirm": "Confirmar", "back": "Volver",
+    "next": "Siguiente", "view_all": "Ver todo", "sign_in": "Iniciar sesión",
+    "sign_out": "Cerrar sesión", "create_account": "Crear cuenta"
+  },
+  "hero": {
+    "search_where": "Dónde", "search_checkin": "Llegada",
+    "search_checkout": "Salida", "search_guests": "Huéspedes",
+    "search_button": "Buscar",
+    "ai_placeholder": "Describe la propiedad que buscas…",
+    "ai_button": "Preguntar a la IA"
+  },
+  "property": {
+    "nights": "noche", "nights_plural": "noches",
+    "guests": "huésped", "guests_plural": "huéspedes",
+    "bedrooms": "habitación", "bedrooms_plural": "habitaciones",
+    "bathrooms": "baño", "bathrooms_plural": "baños",
+    "save_to_wishlist": "Guardar", "remove_from_wishlist": "Eliminar",
+    "book_now": "Reservar", "make_offer": "Hacer una oferta",
+    "check_availability": "Verificar disponibilidad",
+    "new_listing": "Nuevo anuncio", "per_night": "/ noche",
+    "trusted_badge": "Verificado", "cleaning_fee": "Gastos de limpieza",
+    "service_fee": "Gastos de servicio", "taxes": "Impuestos", "total": "Total",
+    "not_yet_charged": "No se te cobrará todavía"
+  },
+  "booking": {
+    "confirm": "Confirmar reserva", "cancelled": "Reserva cancelada",
+    "pending_payment": "Pago pendiente", "confirmed": "Confirmado",
+    "checked_in": "Llegado", "checked_out": "Salido"
+  },
+  "auth": {
+    "login_heading": "Iniciar sesión", "register_heading": "Crear tu cuenta",
+    "email": "Correo electrónico", "password": "Contraseña",
+    "forgot_password": "¿Olvidaste tu contraseña?",
+    "no_account": "¿Eres nuevo?", "have_account": "¿Ya tienes cuenta?",
+    "submit_login": "Iniciar sesión", "submit_register": "Crear cuenta",
+    "terms_agreement": "Acepto los Términos de servicio y la Política de privacidad",
+    "become_host": "También quiero listar mi propiedad como anfitrión"
+  },
+  "errors": {
+    "api_offline": "Nuestros servidores están tardando. Mostrando resultados en caché.",
+    "no_results": "No se encontraron propiedades. Intenta ajustar tu búsqueda.",
+    "required_field": "Este campo es obligatorio",
+    "invalid_email": "Por favor, introduce un correo electrónico válido",
+    "password_too_short": "La contraseña debe tener al menos 8 caracteres",
+    "dates_required": "Por favor, selecciona fechas de llegada y salida",
+    "dates_invalid": "La fecha de salida debe ser posterior a la llegada"
+  }
+}

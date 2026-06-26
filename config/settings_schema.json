@@ -455,13 +455,58 @@
         "type": "text",
         "id": "default_currency",
         "label": "Default currency code",
-        "default": "USD"
+        "default": "USD",
+        "info": "ISO 4217 code, e.g. USD, EUR, GBP. Auto-detected per visitor when not set."
       },
       {
         "type": "text",
         "id": "default_currency_symbol",
         "label": "Currency symbol",
         "default": "$"
+      },
+      {
+        "type": "select",
+        "id": "default_language",
+        "label": "Default language",
+        "default": "en",
+        "options": [
+          {
+            "value": "en",
+            "label": "English"
+          },
+          {
+            "value": "fr",
+            "label": "Fran\u00e7ais"
+          },
+          {
+            "value": "es",
+            "label": "Espa\u00f1ol"
+          },
+          {
+            "value": "pt",
+            "label": "Portugu\u00eas"
+          },
+          {
+            "value": "de",
+            "label": "Deutsch"
+          },
+          {
+            "value": "ar",
+            "label": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629"
+          },
+          {
+            "value": "zh",
+            "label": "\u4e2d\u6587"
+          }
+        ],
+        "info": "Language shown before geo-detection completes."
+      },
+      {
+        "type": "text",
+        "id": "default_timezone",
+        "label": "Default timezone",
+        "default": "UTC",
+        "info": "IANA timezone, e.g. Europe/London. Auto-detected per visitor."
       },
       {
         "type": "text",
@@ -472,8 +517,34 @@
       {
         "type": "checkbox",
         "id": "show_currency_selector",
-        "label": "Show currency selector",
-        "default": false
+        "label": "Show locale selector",
+        "default": true,
+        "info": "Floating pill in the header for language, currency and timezone."
+      },
+      {
+        "type": "checkbox",
+        "id": "locale_auto_detect",
+        "label": "Auto-detect visitor locale",
+        "default": true,
+        "info": "Uses visitor IP to set language, currency and timezone automatically."
+      },
+      {
+        "type": "checkbox",
+        "id": "locale_show_language",
+        "label": "Allow language switching",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "locale_show_currency",
+        "label": "Allow currency switching",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "locale_show_timezone",
+        "label": "Allow timezone switching",
+        "default": true
       }
     ]
   },

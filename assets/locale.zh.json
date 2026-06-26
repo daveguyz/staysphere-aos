@@ -1,0 +1,52 @@
+{
+  "general": {
+    "search": "搜索", "close": "关闭", "loading": "加载中…",
+    "error": "出现错误", "save": "保存",
+    "cancel": "取消", "confirm": "确认", "back": "返回",
+    "next": "下一步", "view_all": "查看全部", "sign_in": "登录",
+    "sign_out": "退出", "create_account": "创建账户"
+  },
+  "hero": {
+    "search_where": "目的地", "search_checkin": "入住",
+    "search_checkout": "退房", "search_guests": "房客",
+    "search_button": "搜索",
+    "ai_placeholder": "描述您正在寻找的房产…",
+    "ai_button": "询问AI"
+  },
+  "property": {
+    "nights": "晚", "nights_plural": "晚",
+    "guests": "位房客", "guests_plural": "位房客",
+    "bedrooms": "间卧室", "bedrooms_plural": "间卧室",
+    "bathrooms": "间浴室", "bathrooms_plural": "间浴室",
+    "save_to_wishlist": "收藏", "remove_from_wishlist": "取消收藏",
+    "book_now": "立即预订", "make_offer": "出价",
+    "check_availability": "查看可用性",
+    "new_listing": "新房源", "per_night": "每晚",
+    "trusted_badge": "认证", "cleaning_fee": "清洁费",
+    "service_fee": "服务费", "taxes": "税费", "total": "总计",
+    "not_yet_charged": "现在不会收取费用"
+  },
+  "booking": {
+    "confirm": "确认预订", "cancelled": "预订已取消",
+    "pending_payment": "等待付款", "confirmed": "已确认",
+    "checked_in": "已入住", "checked_out": "已退房"
+  },
+  "auth": {
+    "login_heading": "登录", "register_heading": "创建您的账户",
+    "email": "电子邮箱", "password": "密码",
+    "forgot_password": "忘记密码？",
+    "no_account": "新用户？", "have_account": "已有账户？",
+    "submit_login": "登录", "submit_register": "创建账户",
+    "terms_agreement": "我同意服务条款和隐私政策",
+    "become_host": "我也想作为房东列出我的房产"
+  },
+  "errors": {
+    "api_offline": "我们的服务器正在响应中，显示缓存结果。",
+    "no_results": "未找到房产，请尝试调整搜索条件。",
+    "required_field": "此字段为必填项",
+    "invalid_email": "请输入有效的电子邮箱地址",
+    "password_too_short": "密码至少需要8个字符",
+    "dates_required": "请选择入住和退房日期",
+    "dates_invalid": "退房日期必须在入住日期之后"
+  }
+}

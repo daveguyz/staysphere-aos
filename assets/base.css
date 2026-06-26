@@ -1457,3 +1457,156 @@ details[open] .proxy-bid-summary__caret { transform: rotate(90deg); }
   .app-setup-banner__inner { flex-direction: column; align-items: flex-start; }
   .app-setup-banner__cta { width: 100%; text-align: center; }
 }
+
+/* ================================================================
+   I18N / LOCALE SELECTOR — Phase E
+   ================================================================ */
+
+/* ── Toggle pill ─────────────────────────────────────────────── */
+.locale-toggle {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: 20px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg); color: var(--color-text);
+  font-size: .8125rem; font-weight: 600; cursor: pointer;
+  transition: border-color .15s, background .15s;
+  white-space: nowrap; z-index: 200;
+}
+.locale-toggle:hover { border-color: var(--color-primary); background: var(--color-surface); }
+.locale-toggle__flag     { font-size: 1rem; line-height: 1; }
+.locale-toggle__currency { font-weight: 700; }
+.locale-toggle__tz       { color: var(--color-text-muted); font-size: .75rem; }
+.locale-toggle__chevron  {
+  color: var(--color-text-muted); transition: transform .2s; flex-shrink: 0;
+}
+.locale-toggle[aria-expanded="true"] .locale-toggle__chevron { transform: rotate(180deg); }
+
+/* ── Panel ───────────────────────────────────────────────────── */
+.locale-panel {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: min(480px, calc(100vw - 32px));
+  max-height: min(600px, calc(100vh - 48px));
+  background: var(--color-bg); border: 1.5px solid var(--color-border);
+  border-radius: calc(var(--radius)*2);
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  z-index: 9999; display: flex; flex-direction: column;
+  overflow: hidden;
+  animation: panel-in .18s ease;
+}
+@keyframes panel-in {
+  from { opacity: 0; transform: translate(-50%, -48%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+@media (max-width: 520px) {
+  .locale-panel {
+    top: auto; bottom: 0; left: 0; right: 0;
+    transform: none; width: 100%; border-radius: var(--radius) var(--radius) 0 0;
+    animation: panel-slide-up .22s ease;
+  }
+  @keyframes panel-slide-up {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+}
+
+.locale-panel__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.locale-panel__title { font-size: 1rem; font-weight: 700; margin: 0; }
+.locale-panel__close {
+  background: none; border: none; cursor: pointer; font-size: 1rem;
+  color: var(--color-text-muted); padding: 4px 8px; border-radius: var(--radius);
+  line-height: 1;
+}
+.locale-panel__close:hover { color: var(--color-text); background: var(--color-surface); }
+
+/* ── Tabs ────────────────────────────────────────────────────── */
+.locale-panel__tabs {
+  display: flex; gap: 4px; padding: 12px 16px 0; flex-shrink: 0;
+  border-bottom: 1.5px solid var(--color-border);
+}
+.locale-tab {
+  padding: 8px 14px; border: none; background: none;
+  font-size: .875rem; font-weight: 600; cursor: pointer;
+  color: var(--color-text-muted); border-bottom: 2.5px solid transparent;
+  margin-bottom: -1.5px; transition: color .15s, border-color .15s;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.locale-tab:hover { color: var(--color-text); }
+.locale-tab--active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+
+/* ── Tab panels ─────────────────────────────────────────────── */
+.locale-tab-panel {
+  flex: 1; overflow-y: auto; scrollbar-width: thin;
+  display: flex; flex-direction: column;
+  min-height: 0;
+}
+
+/* ── Search ──────────────────────────────────────────────────── */
+.locale-search-wrap {
+  padding: 12px 16px 8px; flex-shrink: 0;
+  position: sticky; top: 0; background: var(--color-bg); z-index: 1;
+  border-bottom: 1px solid var(--color-border);
+}
+.locale-search {
+  width: 100%; padding: 9px 14px;
+  border: 1.5px solid var(--color-border); border-radius: var(--radius);
+  font-size: .9rem; font-family: inherit; background: var(--color-bg);
+  color: var(--color-text);
+}
+.locale-search:focus { outline: none; border-color: var(--color-primary); }
+
+/* ── Option grid ─────────────────────────────────────────────── */
+.locale-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px; padding: 8px 12px 16px;
+  overflow-y: auto; flex: 1;
+}
+@media (max-width: 400px) { .locale-options-grid { grid-template-columns: 1fr; } }
+
+/* ── Single option button ────────────────────────────────────── */
+.locale-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--radius);
+  border: 1.5px solid transparent;
+  background: none; cursor: pointer; text-align: left;
+  font-size: .875rem; color: var(--color-text);
+  transition: background .12s, border-color .12s;
+  min-width: 0;
+}
+.locale-option:hover {
+  background: var(--color-surface); border-color: var(--color-border);
+}
+.locale-option--active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-bg));
+}
+.locale-option--tz { grid-column: 1 / -1; } /* timezones full width */
+
+.locale-option__icon  { font-size: 1.25rem; flex-shrink: 0; }
+.locale-option__symbol {
+  width: 28px; text-align: center; font-weight: 800;
+  color: var(--color-primary); flex-shrink: 0;
+}
+.locale-option__text  { flex: 1; min-width: 0; }
+.locale-option__label { display: block; font-weight: 600; font-size: .875rem; }
+.locale-option__sub   {
+  display: block; font-size: .75rem; color: var(--color-text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.locale-option__sub--live {
+  font-variant-numeric: tabular-nums; color: var(--color-primary);
+}
+.locale-option__check {
+  margin-left: auto; color: var(--color-primary);
+  font-size: .875rem; font-weight: 700; flex-shrink: 0;
+}
+
+/* ── RTL support ──────────────────────────────────────────────── */
+[dir="rtl"] .locale-toggle { flex-direction: row-reverse; }
+[dir="rtl"] .locale-option { flex-direction: row-reverse; text-align: right; }
+[dir="rtl"] .locale-option__check { margin-left: 0; margin-right: auto; }

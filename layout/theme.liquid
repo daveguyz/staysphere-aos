@@ -2,6 +2,10 @@
 <html lang="{{ request.locale.iso_code }}" data-theme-version="1.0.0">
 <head>
   <meta charset="utf-8">
+  {%- comment -%} Inline English locale catalog for zero-latency i18n {%- endcomment -%}
+  <script>
+    window.ssLocaleEn = {{ 'en.default' | t: scope: '' | json }};
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="{{ settings.color_nav_bg }}">
 
@@ -92,6 +96,10 @@
 <body class="template-{{ template.name }}{% if customer %} customer-logged-in{% endif %}"
       data-api="{{ settings.api_gateway_url | default: '' }}"
       data-currency="{{ settings.default_currency }}"
+      data-locale-auto-detect="{{ settings.locale_auto_detect | default: true }}"
+      data-default-language="{{ settings.default_language | default: 'en' }}"
+      data-default-timezone="{{ settings.default_timezone | default: 'UTC' }}"
+      data-cdn-host="{{ 'x' | asset_url | remove: '/assets/x' }}"
       data-currency-symbol="{{ settings.default_currency_symbol }}"
       data-mock="{{ settings.api_mock_mode }}"
       data-feature-bookings="{{ settings.feature_bookings }}"
@@ -165,6 +173,9 @@
 
   {% comment %} Page-specific plugins {% endcomment %}
   {% if template.name == 'collection' %}
+    {%- if settings.show_currency_selector != false -%}
+      {{ 'plugin-i18n.js' | asset_url | script_tag }}
+    {%- endif -%}
     {{ 'plugin-search.js' | asset_url | script_tag }}
   {% endif %}
   {% if template.name == 'product' %}
@@ -195,5 +206,8 @@
   {% endif %}
 
   {{ 'theme.js' | asset_url | script_tag }}
+  {%- if settings.show_currency_selector != false -%}
+    {{ 'plugin-locale-selector.js' | asset_url | script_tag }}
+  {%- endif -%}
 </body>
 </html>
