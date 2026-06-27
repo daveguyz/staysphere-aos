@@ -1,6 +1,7 @@
 package com.staysphere.auctionservice.model;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Transient;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
@@ -42,4 +43,12 @@ public class BidderDeposit {
     private String releaseReason;  // "LOST", "CANCELLED", "EXPIRED"
 
     @CreationTimestamp private LocalDateTime createdAt;
+
+    /**
+     * Transient field — set after credential issuance, never persisted.
+     * Carries the plaintext token back to the HTTP response once.
+     * The frontend must store this in sessionStorage immediately.
+     */
+    @Transient
+    private String issuedCredentialToken;
 }

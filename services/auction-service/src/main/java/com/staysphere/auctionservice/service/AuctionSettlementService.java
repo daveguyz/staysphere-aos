@@ -31,6 +31,7 @@ public class AuctionSettlementService {
     private final AuctionLotRepository lotRepository;
     private final BidRepository bidRepository;
     private final DepositService depositService;
+    private final BiddingCredentialService credentialService;
     private final SealedBidRevealService sealedBidRevealService;
     private final ReverseBidService reverseBidService;
     private final AuctionBroadcastService broadcastService;

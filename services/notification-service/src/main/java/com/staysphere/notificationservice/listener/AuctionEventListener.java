@@ -210,6 +210,59 @@ public class AuctionEventListener {
         }
     }
 
+    // ─── Credential events ────────────────────────────────────────────────
+
+    @KafkaListener(topics = BiddingCredentialIssuedEvent.TOPIC,
+                   groupId = "notification-service-group")
+    public void onCredentialIssued(BiddingCredentialIssuedEvent event) {
+        try {
+            if (event.getBidderEmail() == null || event.getBidderEmail().isBlank()) return;
+            String auctionRoomUrl = baseUrl + "/pages/auction-room?lot=" + event.getLotId();
+            emailService.sendTemplatedEmail(
+                    event.getBidderEmail(),
+                    "You're cleared to bid on " + event.getLotTitle(),
+                    "credential-issued",
+                    java.util.Map.of(
+                            "lotTitle",        event.getLotTitle(),
+                            "auctionStartsAt", event.getAuctionStartsAt(),
+                            "issuedAt",        event.getIssuedAt().toString(),
+                            "expiresAt",       event.getExpiresAt().toString(),
+                            "auctionRoomUrl",  auctionRoomUrl
+                    )
+            );
+            log.info("[Notification] credential-issued sent to {} for lot {}",
+                    event.getBidderEmail(), event.getLotId());
+        } catch (Exception e) {
+            log.error("[Notification] Failed to send credential-issued for {}: {}",
+                    event.getCredentialId(), e.getMessage());
+        }
+    }
+
+    @KafkaListener(topics = BiddingCredentialRevokedEvent.TOPIC,
+                   groupId = "notification-service-group")
+    public void onCredentialRevoked(BiddingCredentialRevokedEvent event) {
+        try {
+            if (event.getBidderEmail() == null || event.getBidderEmail().isBlank()) return;
+            String messagesUrl = baseUrl + "/pages/messages";
+            emailService.sendTemplatedEmail(
+                    event.getBidderEmail(),
+                    "Your bidding credential has been revoked",
+                    "credential-revoked",
+                    java.util.Map.of(
+                            "lotId",       event.getLotId(),
+                            "lotTitle",    "Lot " + event.getLotId(),
+                            "reason",      event.getRevokeReason() != null ? event.getRevokeReason() : "",
+                            "messagesUrl", messagesUrl
+                    )
+            );
+            log.info("[Notification] credential-revoked sent to {} for lot {}",
+                    event.getBidderEmail(), event.getLotId());
+        } catch (Exception e) {
+            log.error("[Notification] Failed to send credential-revoked for {}: {}",
+                    event.getCredentialId(), e.getMessage());
+        }
+    }
+
     /**
      * Resolve a user's email from their user ID.
      * Placeholder — replace with Feign call to auth-service in production.

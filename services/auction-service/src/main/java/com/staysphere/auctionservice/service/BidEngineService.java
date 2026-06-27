@@ -1,6 +1,7 @@
 package com.staysphere.auctionservice.service;
 
 import com.staysphere.auctionservice.model.*;
+import com.staysphere.auctionservice.model.BiddingCredential;
 import com.staysphere.auctionservice.repository.*;
 import com.staysphere.auctionservice.websocket.AuctionBroadcastService;
 import com.staysphere.shared.events.AuctionBidPlacedEvent;
@@ -29,6 +30,7 @@ public class BidEngineService {
     private final KycService kycService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final StringRedisTemplate redis;
+    private final BiddingCredentialService credentialService;
 
     // Redis key pattern for bid locks — prevents race conditions on concurrent bids
     private static final String BID_LOCK_KEY  = "auction:lock:lot:%s";
@@ -49,7 +51,8 @@ public class BidEngineService {
     @Transactional
     public Bid placeBid(String lotId, String bidderId, String bidderEmail,
                         BigDecimal amount, BigDecimal proxyCeiling,
-                        String ipAddress, String deviceFingerprint, String userAgent) {
+                        String ipAddress, String deviceFingerprint, String userAgent,
+                        String credentialToken) {
 
         AuctionLot lot = lotRepository.findById(lotId)
                 .orElseThrow(() -> new IllegalArgumentException("Auction lot not found: " + lotId));
@@ -70,6 +73,22 @@ public class BidEngineService {
                     lotId, bidderId, DepositStatus.HELD);
             if (!depositHeld) {
                 throw new IllegalStateException("Deposit required before bidding on lot " + lotId);
+            }
+        }
+
+        // 3.2. Credential gate — validate the bidding credential token
+        // Only enforced when a credential token is provided or required.
+        // During the transition period (before all bidders have credentials),
+        // token validation is optional if deposit gate passed.
+        if (credentialToken != null && !credentialToken.isBlank()) {
+            try {
+                BiddingCredential cred = credentialService
+                        .validateAndConsume(lotId, bidderId, credentialToken);
+                log.debug("[BidEngine] Credential {} validated for bidder {} bid #{} on lot {}",
+                        cred.getId(), bidderId, cred.getBidCountUsed(), lotId);
+            } catch (BiddingCredentialService.CredentialInvalidException e) {
+                throw new IllegalStateException(
+                        "CREDENTIAL_INVALID:" + e.getCode() + ":" + e.getMessage());
             }
         }
 

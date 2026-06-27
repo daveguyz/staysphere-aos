@@ -48,7 +48,9 @@ public class AuctionWebSocketController {
             bidEngineService.placeBid(
                     lotId, bidderId, msg.getBidderEmail(),
                     msg.getAmount(), msg.getProxyCeiling(),
-                    ip, msg.getDeviceFingerprint(), headerAccessor.getFirstNativeHeader("User-Agent")
+                    ip, msg.getDeviceFingerprint(),
+                    headerAccessor.getFirstNativeHeader("User-Agent"),
+                    msg.getCredentialToken()  // Phase 5 credential gate
             );
         } catch (Exception e) {
             log.warn("[WS] Bid rejected on lot {} by {}: {}", lotId, bidderId, e.getMessage());
@@ -212,5 +214,7 @@ public class AuctionWebSocketController {
         private BigDecimal proxyCeiling;
         private String bidderEmail;
         private String deviceFingerprint;
+        /** Plaintext credential token from sessionStorage — validated server-side */
+        private String credentialToken;
     }
 }

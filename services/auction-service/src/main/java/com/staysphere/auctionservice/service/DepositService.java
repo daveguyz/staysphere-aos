@@ -21,6 +21,7 @@ public class DepositService {
 
     private final BidderDepositRepository depositRepository;
     private final AuctionLotRepository lotRepository;
+    private final BiddingCredentialService credentialService;
 
     @Value("${stripe.secret-key}") private String stripeSecretKey;
 
@@ -72,6 +73,22 @@ public class DepositService {
 
             BidderDeposit saved = depositRepository.save(deposit);
             log.info("[Deposit] Hold created for bidder {} on lot {} PI={}", bidderId, lotId, intent.getId());
+
+            // Issue bidding credential — deposit confirmation is the gate
+            try {
+                BiddingCredentialService.IssuedCredential issued =
+                        credentialService.issueCredential(
+                                lotId, bidderId, bidderEmail,
+                                saved.getId(), "UNKNOWN" /* ipAddress added in Phase 6 */);
+                log.info("[Deposit] Credential {} issued for bidder {} on lot {}",
+                        issued.credentialId(), bidderId, lotId);
+                // Token is delivered to the client via the HTTP response below
+                saved.setIssuedCredentialToken(issued.plaintextToken());
+            } catch (Exception e) {
+                log.error("[Deposit] Credential issuance failed for deposit {}: {}",
+                        saved.getId(), e.getMessage());
+            }
+
             return saved;
 
         } catch (Exception e) {
