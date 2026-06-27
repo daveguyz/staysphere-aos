@@ -215,6 +215,9 @@
   {% if page.handle == 'admin' %}
     {{ 'plugin-admin.js' | asset_url | script_tag }}
   {% endif %}
+  {% if page.handle == 'auctioneer-dashboard' %}
+    {{ 'plugin-auctioneer.js' | asset_url | script_tag }}
+  {% endif %}
 
   {{ 'theme.js' | asset_url | script_tag }}
   {%- if settings.show_currency_selector != false -%}

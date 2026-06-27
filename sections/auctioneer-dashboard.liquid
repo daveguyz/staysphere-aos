@@ -1,0 +1,467 @@
+{%- comment -%}
+  Auctioneer dashboard — Phase 3
+  Renders in two states:
+    State A: ?lot= absent (or auctioneer has multiple lots) — lot selector card grid
+    State B: ?lot={lotId} — single-lot management view with 7 tabs
+
+  Access guard (Liquid): enforced here + in plugin-auctioneer.js (JS layer)
+  Data: all dynamic content loaded by plugin-auctioneer.js via REST + WebSocket
+{%- endcomment -%}
+
+{%- assign lot_id = request.query_string | split: 'lot=' | last | split: '&' | first -%}
+{%- assign sym    = settings.auction_currency_symbol | default: '$' -%}
+
+{%- unless customer and customer.tags contains 'auctioneer' -%}
+  <div class="page-width" style="padding:80px 0;text-align:center;">
+    <h1>Access restricted</h1>
+    <p>This page requires an auctioneer account.
+       <a href="/account/login?return_to=/pages/auctioneer-dashboard">Sign in</a></p>
+  </div>
+{%- else -%}
+
+<div class="auctioneer-dashboard page-width section-padding"
+     id="auctioneer-dashboard"
+     data-lot-id="{{ lot_id }}"
+     data-api="{{ settings.api_gateway_url }}/api/v1"
+     data-ws-url="{{ settings.auction_websocket_url }}"
+     data-currency="{{ settings.default_currency }}"
+     data-currency-symbol="{{ sym }}"
+     data-anti-snipe-minutes="{{ settings.auction_anti_snipe_minutes | default: 5 }}">
+
+  {%- comment -%} ── HEADER ── {%- endcomment -%}
+  <div class="auctioneer-dashboard__header">
+    <div class="auctioneer-dashboard__breadcrumb" id="ad-breadcrumb">
+      {%- if lot_id != blank -%}
+        <a href="/pages/auctioneer-dashboard" class="ad-breadcrumb__back">
+          ← My auctions
+        </a>
+        <span class="ad-breadcrumb__sep" aria-hidden="true">/</span>
+        <span class="ad-breadcrumb__lot" id="ad-lot-title">Loading…</span>
+      {%- else -%}
+        <h1 class="auctioneer-dashboard__title">My auctions</h1>
+      {%- endif -%}
+    </div>
+    <div class="auctioneer-dashboard__header-actions" id="ad-header-actions">
+      {%- if lot_id != blank -%}
+        <a href="/pages/auction-room?lot={{ lot_id }}"
+           class="btn btn--primary btn--sm" id="ad-enter-room-btn">
+          Enter live room →
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- comment -%} ══════════════════════════════════════════════════
+      STATE A — lot selector (shown when lot_id is blank)
+  ══════════════════════════════════════════════════ {%- endcomment -%}
+  {%- if lot_id == blank -%}
+
+  <div id="ad-lot-grid" aria-label="My assigned auctions" aria-live="polite">
+    {%- comment -%} Skeleton cards while JS loads {%- endcomment -%}
+    {%- for i in (1..3) -%}
+    <div class="ad-lot-card ad-lot-card--skeleton" aria-hidden="true">
+      <div class="ad-lot-card__status-bar">
+        <span class="skeleton-line skeleton-line--short"></span>
+      </div>
+      <div class="ad-lot-card__body">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="ad-lot-card__stats">
+          {%- for j in (1..3) -%}
+          <div class="ad-lot-card__stat">
+            <span class="skeleton-line skeleton-line--short"></span>
+          </div>
+          {%- endfor -%}
+        </div>
+      </div>
+      <div class="ad-lot-card__footer">
+        <span class="skeleton-line skeleton-line--short"></span>
+      </div>
+    </div>
+    {%- endfor -%}
+  </div>
+
+  <div class="account-empty hidden" id="ad-lot-grid-empty">
+    <p>You have no auctions assigned to you yet.</p>
+    <p style="font-size:.875rem;color:var(--color-text-muted);margin-top:6px;">
+      Ask a seller or platform admin to assign you to an auction lot.
+    </p>
+  </div>
+
+  {%- comment -%} ══════════════════════════════════════════════════
+      STATE B — single lot management view
+  ══════════════════════════════════════════════════ {%- endcomment -%}
+  {%- else -%}
+
+  {%- comment -%} ── OVERVIEW STATS BAR ── {%- endcomment -%}
+  <div class="ad-stats-bar" id="ad-stats-bar" aria-label="Lot statistics">
+    <div class="ad-stat" id="ad-stat-bid">
+      <span class="ad-stat__label">Current bid</span>
+      <span class="ad-stat__value" id="ad-current-bid">–</span>
+    </div>
+    <div class="ad-stat" id="ad-stat-bidders">
+      <span class="ad-stat__label">Approved bidders</span>
+      <span class="ad-stat__value" id="ad-bidder-count">–</span>
+    </div>
+    <div class="ad-stat" id="ad-stat-bids">
+      <span class="ad-stat__label">Total bids</span>
+      <span class="ad-stat__value" id="ad-bid-count">–</span>
+    </div>
+    <div class="ad-stat" id="ad-stat-timer">
+      <span class="ad-stat__label">Time remaining</span>
+      <span class="ad-stat__value ad-stat__value--timer" id="ad-countdown">–</span>
+    </div>
+    <div class="ad-stat" id="ad-stat-status">
+      <span class="ad-stat__label">Status</span>
+      <span class="ad-stat__value" id="ad-status-badge">–</span>
+    </div>
+  </div>
+
+  {%- comment -%} ── TABS ── {%- endcomment -%}
+  <div class="account-tabs auctioneer-tabs" role="tablist"
+       aria-label="Auction management sections">
+
+    <button class="account-tab account-tab--active" role="tab"
+            data-panel="adp-overview" id="adtab-overview"
+            aria-selected="true" aria-controls="adp-overview">
+      Overview
+    </button>
+
+    <button class="account-tab" role="tab"
+            data-panel="adp-requests" id="adtab-requests"
+            aria-selected="false" aria-controls="adp-requests">
+      Bid Requests
+      <span class="ad-tab-badge hidden" id="adtab-requests-badge"
+            aria-label="pending bid requests"></span>
+    </button>
+
+    <button class="account-tab" role="tab"
+            data-panel="adp-bidders" id="adtab-bidders"
+            aria-selected="false" aria-controls="adp-bidders">
+      Bidders
+    </button>
+
+    <button class="account-tab" role="tab"
+            data-panel="adp-questions" id="adtab-questions"
+            aria-selected="false" aria-controls="adp-questions">
+      Questions
+      <span class="ad-tab-badge hidden" id="adtab-questions-badge"
+            aria-label="pending questions"></span>
+    </button>
+
+    <button class="account-tab" role="tab"
+            data-panel="adp-feed" id="adtab-feed"
+            aria-selected="false" aria-controls="adp-feed">
+      Live feed
+    </button>
+
+    <button class="account-tab" role="tab"
+            data-panel="adp-controls" id="adtab-controls"
+            aria-selected="false" aria-controls="adp-controls">
+      Controls
+    </button>
+
+    <button class="account-tab" role="tab"
+            data-panel="adp-agreement" id="adtab-agreement"
+            aria-selected="false" aria-controls="adp-agreement">
+      Agreement
+    </button>
+
+  </div>
+
+  {%- comment -%} ── PANEL: OVERVIEW ── {%- endcomment -%}
+  <div class="account-panel" id="adp-overview"
+       role="tabpanel" aria-labelledby="adtab-overview">
+
+    <div class="ad-overview-grid">
+      <div class="ad-overview-card">
+        <h2 class="ad-overview-card__title">Lot details</h2>
+        <div class="ad-lot-detail" id="ad-lot-detail">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line skeleton-line--short"></div>
+          <div class="skeleton-line skeleton-line--short"></div>
+        </div>
+      </div>
+
+      <div class="ad-overview-card">
+        <h2 class="ad-overview-card__title">Countdown</h2>
+        <div id="ad-countdown-full">
+          {%- render 'countdown-timer',
+              ends_at: '',
+              lot_id: lot_id,
+              status: 'SCHEDULED' -%}
+        </div>
+      </div>
+
+      <div class="ad-overview-card">
+        <h2 class="ad-overview-card__title">Livestream</h2>
+        <div class="ad-livestream-status" id="ad-livestream-status">
+          <span class="ad-livestream-status__dot ad-livestream-status__dot--offline"
+                id="ad-stream-dot"></span>
+          <span id="ad-stream-label">Offline</span>
+        </div>
+        <a id="ad-stream-link" href="#" class="btn btn--ghost btn--sm hidden"
+           target="_blank" rel="noopener">Open stream →</a>
+      </div>
+
+      <div class="ad-overview-card">
+        <h2 class="ad-overview-card__title">Quick actions</h2>
+        <div class="ad-quick-actions">
+          <a href="/pages/auction-room?lot={{ lot_id }}"
+             class="btn btn--primary btn--sm">Enter live room →</a>
+          <button class="btn btn--ghost btn--sm" id="ad-refresh-btn"
+                  aria-label="Refresh lot data">↻ Refresh</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {%- comment -%} ── PANEL: BID REQUESTS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="adp-requests"
+       role="tabpanel" aria-labelledby="adtab-requests">
+
+    <div class="ad-panel-toolbar">
+      <div class="ad-filter-chips" role="group" aria-label="Filter bid requests">
+        <button class="ad-chip ad-chip--active" data-filter="PENDING">Pending</button>
+        <button class="ad-chip" data-filter="APPROVED">Approved</button>
+        <button class="ad-chip" data-filter="DECLINED">Declined</button>
+        <button class="ad-chip" data-filter="ALL">All</button>
+      </div>
+    </div>
+
+    <div id="ad-requests-list" aria-live="polite" aria-label="Bid access requests">
+      {%- for i in (1..3) -%}
+      <div class="ad-request-card ad-request-card--skeleton" aria-hidden="true">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line skeleton-line--short"></div>
+      </div>
+      {%- endfor -%}
+    </div>
+    <div class="account-empty hidden" id="ad-requests-empty">
+      <p>No bid requests for this lot yet.</p>
+    </div>
+
+  </div>
+
+  {%- comment -%} ── PANEL: BIDDERS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="adp-bidders"
+       role="tabpanel" aria-labelledby="adtab-bidders">
+
+    <div id="ad-bidders-table-wrap">
+      <table class="ad-table" id="ad-bidders-table" aria-label="Approved bidders">
+        <thead>
+          <tr>
+            <th>Bidder</th>
+            <th>Credential</th>
+            <th>Bids placed</th>
+            <th>Fraud flag</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="ad-bidders-rows">
+          {%- for i in (1..3) -%}
+          <tr class="ad-table__row--skeleton" aria-hidden="true">
+            {%- for j in (1..5) -%}<td><div class="skeleton-line"></div></td>{%- endfor -%}
+          </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+    <div class="account-empty hidden" id="ad-bidders-empty">
+      <p>No approved bidders yet.</p>
+    </div>
+
+  </div>
+
+  {%- comment -%} ── PANEL: QUESTIONS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="adp-questions"
+       role="tabpanel" aria-labelledby="adtab-questions">
+
+    <div class="ad-questions-layout">
+
+      {%- comment -%} Left: filter + queue {%- endcomment -%}
+      <div class="ad-questions-queue">
+        <div class="ad-panel-toolbar">
+          <div class="ad-filter-chips" role="group" aria-label="Filter questions">
+            <button class="ad-chip ad-chip--active" data-filter="PENDING">Pending</button>
+            <button class="ad-chip" data-filter="ANSWERED">Answered</button>
+            <button class="ad-chip" data-filter="DISMISSED">Dismissed</button>
+            <button class="ad-chip" data-filter="ALL">All</button>
+          </div>
+          <select class="sort-select sort-select--sm" id="ad-q-priority-sort"
+                  aria-label="Sort questions">
+            <option value="newest">Newest first</option>
+            <option value="urgent">Urgent first</option>
+          </select>
+        </div>
+
+        <div id="ad-questions-list" aria-live="polite" aria-label="Question queue">
+          {%- for i in (1..3) -%}
+          <div class="ad-question-card ad-question-card--skeleton" aria-hidden="true">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line skeleton-line--short"></div>
+          </div>
+          {%- endfor -%}
+        </div>
+        <div class="account-empty hidden" id="ad-questions-empty">
+          <p>No questions for this lot yet.</p>
+        </div>
+      </div>
+
+      {%- comment -%} Right: answer panel (slides open when a question is selected) {%- endcomment -%}
+      <div class="ad-answer-panel hidden" id="ad-answer-panel"
+           aria-label="Answer question" role="complementary">
+        <div class="ad-answer-panel__header">
+          <h3 class="ad-answer-panel__title">Answer question</h3>
+          <button class="ad-answer-panel__close" id="ad-answer-close"
+                  aria-label="Close answer panel">✕</button>
+        </div>
+        <div class="ad-answer-panel__question" id="ad-answer-question-text"></div>
+        <div class="form-field" style="margin-top:12px;">
+          <label for="ad-answer-input">Your response</label>
+          <textarea id="ad-answer-input" class="checkout-input" rows="4"
+                    maxlength="1000" placeholder="Type your answer…"></textarea>
+        </div>
+        <div class="ad-answer-panel__visibility">
+          <label class="ad-visibility-toggle">
+            <input type="checkbox" id="ad-answer-public" role="switch">
+            <span class="ad-visibility-toggle__track"></span>
+            <span class="ad-visibility-toggle__label">
+              Broadcast to all bidders in the room
+              <small>If on, this answer will be visible to everyone</small>
+            </span>
+          </label>
+        </div>
+        <div class="ad-answer-panel__actions">
+          <button class="btn btn--primary" id="ad-answer-submit-btn">
+            <span class="btn-label">Send answer</span>
+            <span class="btn-spinner hidden" aria-hidden="true"></span>
+          </button>
+          <button class="btn btn--ghost" id="ad-dismiss-btn">Dismiss</button>
+          <button class="btn btn--ghost ad-escalate-btn" id="ad-escalate-btn">Escalate</button>
+        </div>
+        <input type="hidden" id="ad-answer-question-id">
+      </div>
+
+    </div>
+  </div>
+
+  {%- comment -%} ── PANEL: LIVE FEED ── {%- endcomment -%}
+  <div class="account-panel hidden" id="adp-feed"
+       role="tabpanel" aria-labelledby="adtab-feed">
+
+    <div class="ad-feed-header">
+      <span class="ad-feed-header__label">Live event stream</span>
+      <span class="ad-feed-ws-indicator" id="ad-feed-ws-dot"
+            title="WebSocket connection status">●</span>
+    </div>
+
+    <div class="ad-feed" id="ad-live-feed" aria-live="polite"
+         aria-label="Live auction events" aria-atomic="false">
+      <p class="ad-feed__empty">Connecting to live feed…</p>
+    </div>
+
+  </div>
+
+  {%- comment -%} ── PANEL: CONTROLS ── {%- endcomment -%}
+  <div class="account-panel hidden" id="adp-controls"
+       role="tabpanel" aria-labelledby="adtab-controls">
+
+    <div class="ad-controls-grid">
+
+      <div class="ad-control-card">
+        <h3 class="ad-control-card__title">Auction timer</h3>
+        <p class="ad-control-card__desc">
+          Manually extend the auction or close it early.
+        </p>
+        <div class="ad-control-card__actions">
+          <div class="ad-extend-row">
+            <select id="ad-extend-minutes" class="sort-select" aria-label="Extension minutes">
+              <option value="5">+ 5 min</option>
+              <option value="10">+ 10 min</option>
+              <option value="15">+ 15 min</option>
+              <option value="30">+ 30 min</option>
+            </select>
+            <button class="btn btn--primary btn--sm" id="ad-extend-btn">Extend</button>
+          </div>
+          <button class="btn btn--ghost btn--sm ad-danger-btn" id="ad-close-now-btn">
+            Close auction now
+          </button>
+        </div>
+      </div>
+
+      <div class="ad-control-card">
+        <h3 class="ad-control-card__title">Auction state</h3>
+        <p class="ad-control-card__desc">
+          Pause the auction in the event of technical issues (Rule 11.2).
+        </p>
+        <div class="ad-control-card__actions">
+          <button class="btn btn--primary btn--sm" id="ad-pause-btn">Pause auction</button>
+          <button class="btn btn--ghost btn--sm hidden" id="ad-resume-btn">Resume auction</button>
+        </div>
+        <div class="ad-paused-banner hidden" id="ad-paused-banner" role="alert">
+          <span class="ad-paused-banner__dot" aria-hidden="true">●</span>
+          AUCTION PAUSED
+        </div>
+      </div>
+
+      <div class="ad-control-card">
+        <h3 class="ad-control-card__title">Revoke bidder credential</h3>
+        <p class="ad-control-card__desc">
+          Remove a bidder's access mid-auction (Rule 11.3).
+        </p>
+        <div class="ad-control-card__actions">
+          <select id="ad-revoke-bidder-select" class="sort-select"
+                  aria-label="Select bidder to revoke">
+            <option value="">Select bidder…</option>
+          </select>
+          <input type="text" id="ad-revoke-reason" class="checkout-input"
+                 placeholder="Reason for revocation (required)">
+          <button class="btn btn--ghost btn--sm ad-danger-btn" id="ad-revoke-btn">
+            Revoke credential
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {%- comment -%} ── PANEL: AGREEMENT ── {%- endcomment -%}
+  <div class="account-panel hidden" id="adp-agreement"
+       role="tabpanel" aria-labelledby="adtab-agreement">
+
+    <div id="ad-agreement-content">
+      <div class="ad-agreement-empty" id="ad-agreement-pending">
+        <p>The purchase agreement will appear here once the auction closes
+           and a winner is determined.</p>
+      </div>
+      <div class="ad-agreement-detail hidden" id="ad-agreement-detail">
+        <div class="ad-table-wrap">
+          <table class="ad-table" aria-label="Agreement details">
+            <tbody id="ad-agreement-rows"></tbody>
+          </table>
+        </div>
+        <div class="ad-agreement-actions" id="ad-agreement-actions">
+          <button class="btn btn--ghost btn--sm ad-danger-btn hidden"
+                  id="ad-offer-next-btn">
+            Offer to next bidder
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {%- endif -%}{%- comment -%} end State B {%- endcomment -%}
+
+</div>
+
+{%- endunless -%}
+
+{% schema %}
+{
+  "name": "Auctioneer dashboard",
+  "settings": []
+}
+{% endschema %}
