@@ -85,6 +85,9 @@
             {% if settings.feature_host_dashboard and customer.tags contains 'host' %}
               <a href="/pages/host-dashboard" class="nav-dropdown__link" data-i18n="nav.agent_dashboard">Agent dashboard</a>
             {% endif %}
+            {% if settings.feature_auctioneer_dashboard and customer.tags contains 'auctioneer' %}
+              <a href="/pages/auctioneer-dashboard" class="nav-dropdown__link nav-dropdown__link--auctioneer" data-i18n="nav.auctioneer_panel">Auctioneer panel</a>
+            {% endif %}
             {% if customer.tags contains 'admin' or customer.tags contains 'superadmin' %}
               <a href="/pages/admin" class="nav-dropdown__link nav-dropdown__link--admin" data-i18n="nav.admin_panel">Admin panel</a>
             {% endif %}
@@ -132,6 +135,9 @@
         <a href="/pages/messages" class="mobile-menu__link">Messages</a>
         {% if settings.feature_host_dashboard and customer.tags contains 'host' %}
           <a href="/pages/host-dashboard" class="mobile-menu__link">Agent dashboard</a>
+        {% endif %}
+        {% if settings.feature_auctioneer_dashboard and customer.tags contains 'auctioneer' %}
+          <a href="/pages/auctioneer-dashboard" class="mobile-menu__link mobile-menu__link--auctioneer">Auctioneer panel</a>
         {% endif %}
         <a href="/account/logout" class="mobile-menu__link">Sign out</a>
       {%- else -%}

@@ -90,7 +90,8 @@
     "messages": "Nachrichten",
     "profile": "Profil & Einstellungen",
     "agent_dashboard": "Agenten-Dashboard",
-    "admin_panel": "Admin-Panel"
+    "admin_panel": "Admin-Panel",
+    "auctioneer_panel": "Auktionator-Panel"
   },
   "how_it_works": {
     "heading": "Die vollständige Immobilienplattform",

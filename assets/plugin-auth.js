@@ -52,9 +52,106 @@
   // ══════════════════════════════════════════════════════════
   // AUTH FORMS (login / register / forgot / reset)
   // ══════════════════════════════════════════════════════════
+  // ── JWT role decoder ────────────────────────────────────────────────────
+  // Decodes the roles claim from the JWT payload (base64 middle segment).
+  // No signature verification — the server already verified it.
+  // Returns an array of role strings, e.g. ['GUEST', 'auctioneer'].
+  function decodeTokenRoles(token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const roles = payload.roles || payload.authorities || [];
+      return Array.isArray(roles) ? roles.map(r => String(r).toLowerCase()) : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // ── Post-login redirect ──────────────────────────────────────────────────
+  // Priority order (first match wins):
+  //   1. return_to param — honours mid-session redirects (e.g. room → login → back)
+  //   2. intent=auctioneer + has auctioneer role → /pages/auctioneer-dashboard
+  //   3. intent=auctioneer + NO auctioneer role  → stay, show inline error
+  //   4. has admin / superadmin                  → /pages/admin
+  //   5. has host                                → /pages/host-dashboard
+  //   6. default                                 → /account
+  function resolvePostLoginRedirect(token) {
+    const roles   = decodeTokenRoles(token);
+    const params  = new URLSearchParams(window.location.search);
+    const returnTo = params.get('return_to');
+    const intent  = sessionStorage.getItem('ss_login_intent') || 'bidder';
+
+    // Rule 1 — explicit return_to (safe-origin check)
+    if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')) {
+      return { redirect: returnTo };
+    }
+
+    // Rule 2 / 3 — auctioneer intent
+    if (intent === 'auctioneer') {
+      if (roles.includes('auctioneer')) {
+        return { redirect: '/pages/auctioneer-dashboard' };
+      } else {
+        return {
+          redirect: null,
+          error: 'This account does not have auctioneer access. '
+               + 'Contact your platform administrator to request access.',
+        };
+      }
+    }
+
+    // Rule 4 — admin
+    if (roles.includes('admin') || roles.includes('superadmin')) {
+      return { redirect: '/pages/admin' };
+    }
+
+    // Rule 5 — host / agent
+    if (roles.includes('host')) {
+      return { redirect: '/pages/host-dashboard' };
+    }
+
+    // Rule 6 — default
+    return { redirect: '/account' };
+  }
+
   function initLogin() {
     const form = $('login-form');
     if (!form) return;
+
+    // ── Intent selector ────────────────────────────────────────────────────
+    const intentGroup = $('login-intent-group');
+    if (intentGroup) {
+      // Restore last intent from sessionStorage
+      const saved = sessionStorage.getItem('ss_login_intent') || 'bidder';
+      setIntent(saved);
+
+      intentGroup.querySelectorAll('.login-intent__btn').forEach(btn => {
+        btn.addEventListener('click', () => setIntent(btn.dataset.intent));
+      });
+
+      // Keyboard: arrow keys cycle between Bidder and Auctioneer
+      intentGroup.addEventListener('keydown', e => {
+        const btns = [...intentGroup.querySelectorAll('.login-intent__btn')];
+        const idx  = btns.indexOf(document.activeElement);
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          btns[(idx + 1) % btns.length].focus();
+          setIntent(btns[(idx + 1) % btns.length].dataset.intent);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          btns[(idx - 1 + btns.length) % btns.length].focus();
+          setIntent(btns[(idx - 1 + btns.length) % btns.length].dataset.intent);
+        }
+      });
+    }
+
+    function setIntent(intent) {
+      sessionStorage.setItem('ss_login_intent', intent);
+      if (!intentGroup) return;
+      intentGroup.querySelectorAll('.login-intent__btn').forEach(btn => {
+        const active = btn.dataset.intent === intent;
+        btn.classList.toggle('login-intent__btn--active', active);
+        btn.setAttribute('aria-checked', String(active));
+      });
+    }
 
     // Pre-fill email from URL param (e.g. after registration)
     const urlEmail = new URLSearchParams(window.location.search).get('email');
@@ -63,6 +160,7 @@
       if (emailEl) emailEl.value = urlEmail;
     }
 
+    // ── Form submit ────────────────────────────────────────────────────────
     form.addEventListener('submit', async e => {
       e.preventDefault();
       setLoading('login-btn', true);
@@ -71,15 +169,27 @@
         const res = await api('/api/v1/auth/login', {
           method: 'POST',
           body: JSON.stringify({
-            email: form.querySelector('#login-email').value.trim(),
+            email:    form.querySelector('#login-email').value.trim(),
             password: form.querySelector('#login-password').value,
           }),
         });
         if (res.success) {
           window.StaySphere.auth.setToken(res.data.accessToken);
           window.StaySphere.auth.setRefresh(res.data.refreshToken);
-          const returnTo = new URLSearchParams(window.location.search).get('return_to') || '/account';
-          window.location.href = returnTo;
+
+          const result = resolvePostLoginRedirect(res.data.accessToken);
+
+          if (result.error) {
+            // Intent mismatch — show error and stay on the page
+            showError('auth-error', result.error);
+            // Reset intent to bidder so the user isn't stuck
+            setIntent('bidder');
+            return;
+          }
+
+          // Clear intent after a successful redirect so next login starts fresh
+          sessionStorage.removeItem('ss_login_intent');
+          window.location.href = result.redirect;
         } else {
           showError('auth-error', res.message || 'Invalid email or password');
         }

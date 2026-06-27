@@ -4,6 +4,30 @@
     <h1 class="auth-page__title">Sign in</h1>
     <p class="auth-page__sub">New here? <a href="/account/register">Create an account</a></p>
 
+    {% comment %} Role intent selector — routing hint only, not a security gate {% endcomment %}
+    <div class="login-intent" role="radiogroup" aria-label="Sign in as" id="login-intent-group">
+      <button type="button"
+              class="login-intent__btn login-intent__btn--active"
+              id="intent-bidder"
+              role="radio"
+              aria-checked="true"
+              data-intent="bidder">
+        <span class="login-intent__icon" aria-hidden="true">🏠</span>
+        <span class="login-intent__label">Bidder</span>
+        <span class="login-intent__sub">Browse &amp; bid on properties</span>
+      </button>
+      <button type="button"
+              class="login-intent__btn"
+              id="intent-auctioneer"
+              role="radio"
+              aria-checked="false"
+              data-intent="auctioneer">
+        <span class="login-intent__icon" aria-hidden="true">🔨</span>
+        <span class="login-intent__label">Auctioneer</span>
+        <span class="login-intent__sub">Manage your auctions</span>
+      </button>
+    </div>
+
     <div id="auth-error" class="auth-page__error hidden" role="alert"></div>
 
     <form class="auth-form" id="login-form" novalidate>

@@ -90,7 +90,8 @@
     "messages": "Mensagens",
     "profile": "Perfil e configurações",
     "agent_dashboard": "Painel do agente",
-    "admin_panel": "Painel admin"
+    "admin_panel": "Painel admin",
+    "auctioneer_panel": "Painel do leiloeiro"
   },
   "how_it_works": {
     "heading": "A plataforma imobiliária completa",

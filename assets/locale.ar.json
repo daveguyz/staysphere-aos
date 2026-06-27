@@ -90,7 +90,8 @@
     "messages": "الرسائل",
     "profile": "الملف الشخصي",
     "agent_dashboard": "لوحة الوكيل",
-    "admin_panel": "لوحة الإدارة"
+    "admin_panel": "لوحة الإدارة",
+    "auctioneer_panel": "لوحة المزاد"
   },
   "how_it_works": {
     "heading": "المنصة العقارية المتكاملة",

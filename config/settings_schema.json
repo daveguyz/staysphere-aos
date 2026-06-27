@@ -675,6 +675,13 @@
       },
       {
         "type": "checkbox",
+        "id": "feature_auctioneer_dashboard",
+        "label": "Auctioneer dashboard enabled",
+        "default": true,
+        "info": "Shows the Auctioneer panel nav link and /pages/auctioneer-dashboard for tagged users"
+      },
+      {
+        "type": "checkbox",
         "id": "feature_ai_concierge",
         "label": "AI concierge enabled",
         "default": false,

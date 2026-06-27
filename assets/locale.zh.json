@@ -90,7 +90,8 @@
     "messages": "消息",
     "profile": "个人资料",
     "agent_dashboard": "经纪人仪表板",
-    "admin_panel": "管理面板"
+    "admin_panel": "管理面板",
+    "auctioneer_panel": "拍卖师面板"
   },
   "how_it_works": {
     "heading": "完整的房地产平台",

@@ -1655,3 +1655,54 @@ details[open] .proxy-bid-summary__caret { transform: rotate(90deg); }
 [dir="rtl"] .locale-panel__header { flex-direction: row-reverse; }
 [dir="rtl"] .locale-option { flex-direction: row-reverse; text-align: right; }
 [dir="rtl"] .locale-option__check { margin-left: 0; margin-right: auto; }
+
+/* ================================================================
+   PHASE 2 — Login intent selector + auctioneer nav
+   ================================================================ */
+
+/* ── Intent selector (login page) ──────────────────────────────── */
+.login-intent {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-bottom: 24px;
+}
+.login-intent__btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 14px 12px; border-radius: var(--radius);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface); cursor: pointer;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+  text-align: center;
+}
+.login-intent__btn:hover {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-bg));
+}
+.login-intent__btn:focus-visible {
+  outline: 2px solid var(--color-primary); outline-offset: 2px;
+}
+.login-intent__btn--active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-bg));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+.login-intent__icon  { font-size: 1.5rem; line-height: 1; }
+.login-intent__label {
+  font-size: .9375rem; font-weight: 700; color: var(--color-text);
+}
+.login-intent__sub   { font-size: .75rem; color: var(--color-text-muted); }
+@media (max-width: 380px) {
+  .login-intent { grid-template-columns: 1fr; }
+  .login-intent__btn { flex-direction: row; text-align: left; gap: 10px; }
+}
+
+/* ── Auctioneer nav link (distinct amber colour) ────────────────── */
+.nav-dropdown__link--auctioneer {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.nav-dropdown__link--auctioneer::before {
+  content: '🔨 ';
+}
+.mobile-menu__link--auctioneer {
+  color: var(--color-primary); font-weight: 600;
+}

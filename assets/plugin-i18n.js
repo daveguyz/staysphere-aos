@@ -684,7 +684,7 @@
           about:'About', contact:'Contact', sign_in:'Sign in',
           get_started:'Get started', my_bookings:'My bookings',
           messages:'Messages', profile:'Profile & settings',
-          agent_dashboard:'Agent dashboard', admin_panel:'Admin panel',
+          agent_dashboard:'Agent dashboard', admin_panel:'Admin panel', auctioneer_panel:'Auctioneer panel',
         },
         hero: {
           search_where:'Where', search_checkin:'Check-in',

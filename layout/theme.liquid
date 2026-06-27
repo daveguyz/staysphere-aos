@@ -117,6 +117,8 @@
       data-feature-messaging="{{ settings.messaging_enabled }}"
       data-feature-reviews="{{ settings.feature_reviews }}"
       data-feature-host-dashboard="{{ settings.feature_host_dashboard }}"
+      data-feature-auctioneer-dashboard="{{ settings.feature_auctioneer_dashboard | default: true }}"
+      data-customer-tags="{{ customer.tags | join: ',' | default: '' }}"
       data-feature-pricing="{{ settings.feature_dynamic_pricing }}"
       data-feature-trip-builder="{{ settings.feature_trip_builder }}"
       data-feature-auctions="{{ settings.feature_auctions }}"
