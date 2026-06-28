@@ -1985,3 +1985,35 @@ details[open] .proxy-bid-summary__caret { transform: rotate(90deg); }
 .sort-select--sm { padding: 4px 10px; font-size: .8125rem; }
 .ad-error { color: #ef4444; font-size: .875rem; }
 .ad-inline-error { color: #ef4444; font-size: .8125rem; margin: 6px 0 0; }
+
+/* ================================================================
+   PHASE 6 — Credential bid-panel states + expiry warning
+   ================================================================ */
+
+/* Credential pending — spinning gear */
+.bid-panel-state--credential-pending .bid-panel-state__spinner {
+  width: 32px; height: 32px; margin: 16px auto 0;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: cred-spin .8s linear infinite;
+}
+@keyframes cred-spin { to { transform: rotate(360deg); } }
+
+/* Credential revoked — danger tint */
+.bid-panel-state--credential-revoked {
+  border: 1.5px solid color-mix(in srgb,#ef4444 30%,transparent);
+  background: color-mix(in srgb,#ef4444 4%,var(--color-bg));
+}
+.bid-panel-state--credential-revoked .bid-panel-state__title {
+  color: #b91c1c;
+}
+
+/* Expiry warning banner */
+.credential-expiry-warning {
+  padding: 8px 12px; margin-bottom: 10px; border-radius: var(--radius);
+  background: color-mix(in srgb,#f59e0b 12%,var(--color-bg));
+  border: 1.5px solid #f59e0b;
+  font-size: .8125rem; color: #92400e; text-align: center;
+}
+.credential-expiry-warning strong { font-variant-numeric: tabular-nums; }

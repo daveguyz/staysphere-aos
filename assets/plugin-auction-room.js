@@ -19,6 +19,19 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
+
+  // ── Credential token helpers ──────────────────────────────────────────
+  const CRED_KEY = lotId => `ss_bid_cred_${lotId}`;
+
+  function getCredentialToken(lotId) {
+    return sessionStorage.getItem(CRED_KEY(lotId));
+  }
+  function setCredentialToken(lotId, token) {
+    if (token) sessionStorage.setItem(CRED_KEY(lotId), token);
+  }
+  function clearCredentialToken(lotId) {
+    sessionStorage.removeItem(CRED_KEY(lotId));
+  }
   const room = () => $('auction-room');
   const d = (attr) => room()?.dataset[attr] || '';
 
@@ -469,6 +482,24 @@
             window.StaySphere?.toast(msg.message || 'Bid error', 'error');
           });
 
+          // Phase 4: private Q&A answers
+          const userId = window.StaySphere?.auth?.getUserId?.() || '';
+          if (userId) {
+            stompClient.subscribe(`/user/queue/qa-answer-${userId}`,
+              frame => handleServerMessage(JSON.parse(frame.body)));
+            stompClient.subscribe(`/user/queue/auction-${lotId}-qa`,
+              frame => handleServerMessage(JSON.parse(frame.body)));
+          }
+
+          // Phase 6: credential revocation + expiry push
+          if (userId) {
+            stompClient.subscribe(`/user/queue/credential-${userId}`,
+              frame => handleServerMessage(JSON.parse(frame.body)));
+          }
+
+          // Expose STOMP client for auctioneer dashboard (Phase 7)
+          window._ssStompClient = stompClient;
+
           // Send join — get room state snapshot back
           stompClient.send(`/ws/auction/${lotId}/join`, headers, '{}');
 
@@ -487,6 +518,89 @@
   }
 
   // ─── 6. Handle incoming WebSocket messages ──────────────────────────────────
+  // ── Phase 6: Credential status check + expiry warning ─────────────────
+
+  /**
+   * Poll GET /api/v1/auctions/{lotId}/credential/status
+   * Determines which bid panel state to show and starts the expiry countdown.
+   * Polled every 3s when status is null/pending; once on first load otherwise.
+   */
+  async function checkCredentialStatus(lotId) {
+    try {
+      const res = await window.StaySphere.api(
+          `/api/v1/auctions/${lotId}/credential/status`);
+      const status = res?.data?.status;
+      const expiresAt = res?.data?.expiresAt;
+
+      if (status === 'ACTIVE') {
+        // Credential active — show normal bid form (renderBidPanel handles this)
+        // Store token is already in sessionStorage from deposit response
+        startExpiryCountdown(expiresAt, lotId);
+        return;
+      }
+
+      if (status === 'REVOKED') {
+        showPanel('bid-state-credential-revoked');
+        clearCredentialToken(lotId);
+        return;
+      }
+
+      if (status === 'EXPIRED') {
+        clearCredentialToken(lotId);
+        // Fall through to renderBidPanel — will show deposit state if needed
+        return;
+      }
+
+      // status null — credential not yet issued (deposit processing)
+      if (status == null && !getCredentialToken(lotId)) {
+        // If deposit was paid, show pending state and poll
+        const hasCred = res?.data?.credentialId != null;
+        if (!hasCred) {
+          // Could be pending — show spinner and retry in 3s
+          showPanel('bid-state-credential-pending');
+          setTimeout(() => checkCredentialStatus(lotId), 3000);
+        }
+      }
+    } catch(_) {
+      // API unavailable — don't block the UI
+    }
+  }
+
+  /**
+   * Show an expiry warning banner above the bid form when < 15 min remain.
+   * Updates every second. Clears credential and reverts to deposit state on expiry.
+   */
+  let _expiryInterval = null;
+  function startExpiryCountdown(expiresAtIso, lotId) {
+    if (_expiryInterval) clearInterval(_expiryInterval);
+    if (!expiresAtIso) return;
+
+    const WARNING_MS = 15 * 60 * 1000; // 15 minutes
+    _expiryInterval = setInterval(() => {
+      const msLeft = new Date(expiresAtIso) - Date.now();
+      const warning = $('credential-expiry-warning');
+      const countEl = $('credential-expiry-countdown');
+
+      if (msLeft <= 0) {
+        clearInterval(_expiryInterval);
+        clearCredentialToken(lotId);
+        if (warning) warning.classList.add('hidden');
+        window.StaySphere?.toast?.(
+          'Your bidding credential has expired. Please contact the auctioneer.', 'error');
+        return;
+      }
+
+      if (msLeft < WARNING_MS) {
+        if (warning) warning.classList.remove('hidden');
+        if (countEl) {
+          const m = Math.floor(msLeft / 60000);
+          const s = Math.floor((msLeft % 60000) / 1000);
+          countEl.textContent = `${m}m ${String(s).padStart(2,'0')}s`;
+        }
+      }
+    }, 1000);
+  }
+
   function handleServerMessage(msg) {
     const type = msg.type;
 
@@ -548,6 +662,26 @@
       setText('bid-closed-title', '🔨 Sold!');
       setText('bid-closed-sub', `Winning bid: ${fmt(msg.amount)}`);
       updateStatusBadge('CLOSED');
+      return;
+    }
+
+    if (type === 'CREDENTIAL_REVOKED') {
+      // Server pushed credential revocation to this bidder's private queue
+      const reason = msg.revokeReason || '';
+      const reasonEl = $('credential-revoked-reason');
+      if (reasonEl && reason) {
+        reasonEl.textContent = `Your bidding credential has been revoked: ${reason}`;
+      }
+      const { lotId } = cfg();
+      clearCredentialToken(lotId);
+      showPanel('bid-state-credential-revoked');
+      window.StaySphere?.toast?.('Your bidding access has been removed.', 'error');
+      return;
+    }
+
+    if (type === 'CREDENTIAL_EXPIRING_SOON') {
+      // Server push 15 min before expiry (optional — frontend also tracks locally)
+      startExpiryCountdown(msg.expiresAt, cfg().lotId);
       return;
     }
 
@@ -689,11 +823,13 @@
     const { lotId } = cfg();
     setLoading(btn?.id, true);
     try {
+      const { lotId: _pLotId } = cfg();
       const payload = {
         amount,
         proxyCeiling: proxyCeiling || null,
         deviceFingerprint: navigator.userAgent.slice(0, 100),
         userAgent: navigator.userAgent,
+        credentialToken: getCredentialToken(_pLotId) || null,  // Phase 5/6
       };
 
       // Prefer WebSocket for English/Reverse (lower latency); use REST for sealed
@@ -724,6 +860,23 @@
         showPanel('bid-state-kyc');
       } else if (msg.includes('Deposit required')) {
         showPanel('bid-state-deposit');
+      } else if (msg.includes('CREDENTIAL_INVALID')) {
+        // Parse code from 'CREDENTIAL_INVALID:{code}:{message}'
+        const parts = msg.split(':');
+        const code = parts[1] || 'CREDENTIAL_INVALID';
+        const detail = parts.slice(2).join(':') || msg;
+        if (code === 'CREDENTIAL_REVOKED') {
+          const reasonEl = $('credential-revoked-reason');
+          if (reasonEl) reasonEl.textContent = detail;
+          showPanel('bid-state-credential-revoked');
+        } else if (code === 'CREDENTIAL_EXPIRED') {
+          clearCredentialToken(cfg().lotId);
+          window.StaySphere?.toast?.('Credential expired — contact auctioneer', 'error');
+        } else {
+          window.StaySphere?.toast?.(detail, 'error');
+        }
+      } else if (msg.includes('MAX_BIDDERS_REACHED')) {
+        window.StaySphere?.toast?.('This auction has reached its bidder limit.', 'error');
       } else {
         window.StaySphere?.toast(msg, 'error');
       }

@@ -152,6 +152,37 @@
         </div>
 
         {%- comment -%} State: NOT LOGGED IN {%- endcomment -%}
+        {%- comment -%} State: credential pending {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--credential-pending hidden"
+             id="bid-state-credential-pending">
+          <div class="bid-panel-state__icon" aria-hidden="true">⚙️</div>
+          <p class="bid-panel-state__title">Generating your bidding credential…</p>
+          <p class="bid-panel-state__sub">
+            Your deposit has been confirmed. Your secure bidding access is being prepared.
+            This usually takes under a minute.
+          </p>
+          <div class="bid-panel-state__spinner" aria-hidden="true"></div>
+        </div>
+
+        {%- comment -%} State: credential revoked {%- endcomment -%}
+        <div class="bid-panel-state bid-panel-state--credential-revoked hidden"
+             id="bid-state-credential-revoked">
+          <div class="bid-panel-state__icon" aria-hidden="true">🚫</div>
+          <p class="bid-panel-state__title">Bidding access removed</p>
+          <p class="bid-panel-state__sub" id="credential-revoked-reason">
+            Your bidding credential for this auction has been revoked by the auctioneer.
+          </p>
+          <a href="/pages/messages" class="btn btn--ghost btn--sm"
+             style="margin-top:12px;">Contact support →</a>
+        </div>
+
+        {%- comment -%} Credential expiry warning — shown above bid form by JS {%- endcomment -%}
+        <div class="credential-expiry-warning hidden" id="credential-expiry-warning"
+             role="alert" aria-live="polite">
+          ⏱ Your bidding credential expires in
+          <strong id="credential-expiry-countdown"></strong>
+        </div>
+
         <div class="bid-panel-state bid-panel-state--auth hidden" id="bid-state-auth">
           <div class="bid-panel-state__icon" aria-hidden="true">🔐</div>
           <p class="bid-panel-state__title">Sign in to place bids</p>
