@@ -1,0 +1,126 @@
+{%- comment -%}
+  Purchase agreement e-signature page.
+  URL: /pages/purchase-agreement?role=buyer&token={plaintextToken}
+       /pages/purchase-agreement?role=seller&token={plaintextToken}
+
+  The token is validated server-side on POST.
+  plugin-auction-room.js loads the agreement details and submits the signature.
+{%- endcomment -%}
+{%- assign role  = request.query_string | split: 'role=' | last | split: '&' | first -%}
+{%- assign token = request.query_string | split: 'token=' | last | split: '&' | first -%}
+
+<div class="purchase-agreement-page page-width section-padding"
+     id="purchase-agreement-page"
+     data-role="{{ role }}"
+     data-token="{{ token }}"
+     data-api="{{ settings.api_gateway_url }}">
+
+  {%- comment -%} Loading state {%- endcomment -%}
+  <div class="pa-card" id="pa-loading">
+    <div class="skeleton-line" aria-hidden="true"></div>
+    <div class="skeleton-line skeleton-line--short" aria-hidden="true"></div>
+    <div class="skeleton-line" aria-hidden="true"></div>
+  </div>
+
+  {%- comment -%} Error state (invalid / expired token) {%- endcomment -%}
+  <div class="pa-card pa-card--error hidden" id="pa-error">
+    <span class="pa-error-icon" aria-hidden="true">⚠️</span>
+    <h2 class="pa-title">Invalid or expired signing link</h2>
+    <p class="pa-sub">
+      This signing link may have expired (links are valid for 72 hours)
+      or has already been used. Please check your email for a fresh link
+      or <a href="/pages/contact">contact support</a>.
+    </p>
+  </div>
+
+  {%- comment -%} Already signed state {%- endcomment -%}
+  <div class="pa-card pa-card--signed hidden" id="pa-already-signed">
+    <span class="pa-signed-icon" aria-hidden="true">✅</span>
+    <h2 class="pa-title">You have already signed this agreement</h2>
+    <p class="pa-sub">Your signature was recorded. We'll notify you once the other party signs.</p>
+    <a href="/account" class="btn btn--primary">View my account</a>
+  </div>
+
+  {%- comment -%} Main signing form {%- endcomment -%}
+  <div class="pa-card hidden" id="pa-form-card">
+    <div class="pa-header">
+      <h1 class="pa-title">Purchase Agreement</h1>
+      <span class="pa-role-badge" id="pa-role-badge">
+        {%- if role == 'buyer' -%}Buyer{%- else -%}Seller{%- endif -%}
+      </span>
+    </div>
+
+    {%- comment -%} Agreement summary table — filled by JS {%- endcomment -%}
+    <div class="pa-summary" id="pa-summary"></div>
+
+    {%- comment -%} Legal text {%- endcomment -%}
+    <div class="pa-legal" id="pa-legal">
+      <h2 class="pa-legal__title">Terms</h2>
+      <p class="pa-legal__text">
+        By signing below, {%- if role == 'buyer' -%}you as the Buyer{%- else -%}you as the Seller{%- endif -%}
+        agree to be bound by the full terms of this purchase agreement,
+        the StaySphere Auction Rules, and the applicable property laws
+        of the relevant jurisdiction. This electronic signature has the
+        same legal effect as a handwritten signature where permitted by law
+        (Auction Rule 13.2).
+      </p>
+      <div class="pa-deadline-notice" id="pa-deadline-notice">
+        Payment deadline: <strong id="pa-deadline-value">–</strong>
+      </div>
+    </div>
+
+    {%- comment -%} Signature canvas {%- endcomment -%}
+    <div class="pa-signature-section">
+      <label class="pa-sig-label">
+        Draw your signature below or type your full legal name
+      </label>
+      <div class="pa-sig-options">
+        <button class="pa-sig-tab pa-sig-tab--active" id="pa-tab-draw" data-mode="draw">Draw</button>
+        <button class="pa-sig-tab" id="pa-tab-type" data-mode="type">Type</button>
+      </div>
+
+      {%- comment -%} Draw mode {%- endcomment -%}
+      <div id="pa-draw-mode">
+        <canvas id="pa-sig-canvas" class="pa-sig-canvas"
+                aria-label="Signature drawing area" tabindex="0"
+                width="520" height="140"></canvas>
+        <button class="pa-sig-clear" id="pa-sig-clear" type="button">Clear</button>
+      </div>
+
+      {%- comment -%} Type mode {%- endcomment -%}
+      <div id="pa-type-mode" class="hidden">
+        <input type="text" id="pa-sig-text" class="checkout-input pa-sig-text-input"
+               placeholder="Type your full legal name"
+               autocomplete="name" maxlength="120">
+        <p class="pa-sig-text-preview" id="pa-sig-text-preview" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <div class="pa-actions">
+      <button class="btn btn--primary" id="pa-submit-btn">
+        <span class="btn-label">
+          {%- if role == 'buyer' -%}Sign as Buyer{%- else -%}Sign as Seller{%- endif -%}
+        </span>
+        <span class="btn-spinner hidden" aria-hidden="true"></span>
+      </button>
+      <p class="pa-legal-note">
+        By clicking 'Sign', you confirm you have read and agree to the agreement terms above.
+      </p>
+    </div>
+
+    <div class="pa-error-msg hidden" id="pa-submit-error" role="alert"></div>
+  </div>
+
+  {%- comment -%} Success state after signing {%- endcomment -%}
+  <div class="pa-card pa-card--success hidden" id="pa-success">
+    <span class="pa-success-icon" aria-hidden="true">✅</span>
+    <h2 class="pa-title" id="pa-success-title">Signature recorded</h2>
+    <p class="pa-sub" id="pa-success-msg">Your signature has been recorded successfully.</p>
+    <a href="/account" class="btn btn--primary">View my account →</a>
+  </div>
+
+</div>
+
+{% schema %}
+{ "name": "Purchase agreement", "settings": [] }
+{% endschema %}

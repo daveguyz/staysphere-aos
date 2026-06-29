@@ -1113,4 +1113,63 @@
     init();
   }
 
+  // ── Phase 7: auction-success agreement state machine ──────────────────
+  (function initSuccessPage() {
+    const page = document.getElementById('auction-success-page');
+    if (!page) return;
+    const lotId = page.dataset.lotId;
+    if (!lotId || !window.StaySphere?.auth?.getToken()) return;
+
+    async function loadAgreementState() {
+      try {
+        const res = await window.StaySphere.api(`/api/v1/agreements?lotId=${lotId}`);
+        const agr  = res?.data;
+        const i18n = window.StaySphere?.i18n;
+        const tz   = i18n?.time?.timezone || 'UTC';
+
+        // Hide all states then show current one
+        ['agr-state-pending','agr-state-sent','agr-state-buyer-signed',
+         'agr-state-executed','agr-state-defaulted']
+          .forEach(id => document.getElementById(id)?.classList.add('hidden'));
+
+        if (!agr) {
+          document.getElementById('agr-state-pending')?.classList.remove('hidden');
+          return;
+        }
+
+        const status = agr.status;
+        const fmtDt = iso => iso ? new Intl.DateTimeFormat('en-US', {
+          timeZone: tz, day:'numeric', month:'long', year:'numeric'
+        }).format(new Date(iso)) : '–';
+
+        if (status === 'SENT') {
+          document.getElementById('agr-state-sent')?.classList.remove('hidden');
+          const deadlineEl = document.getElementById('agr-deadline');
+          if (deadlineEl) deadlineEl.textContent = fmtDt(agr.paymentDeadline);
+          const signBtn = document.getElementById('agr-sign-btn');
+          if (signBtn) signBtn.href = `/pages/purchase-agreement?role=buyer&lot=${lotId}`;
+
+        } else if (status === 'BUYER_SIGNED') {
+          document.getElementById('agr-state-buyer-signed')?.classList.remove('hidden');
+
+        } else if (status === 'FULLY_EXECUTED') {
+          document.getElementById('agr-state-executed')?.classList.remove('hidden');
+          const refEl = document.getElementById('agr-conv-ref');
+          if (refEl) refEl.textContent = agr.conveyancerRef || '–';
+          // Hide the steps list — conveyancing already initiated
+          document.getElementById('success-next-steps')?.classList.add('hidden');
+
+        } else if (status === 'DEFAULTED') {
+          document.getElementById('agr-state-defaulted')?.classList.remove('hidden');
+        } else {
+          document.getElementById('agr-state-pending')?.classList.remove('hidden');
+        }
+      } catch (_) {
+        document.getElementById('agr-state-pending')?.classList.remove('hidden');
+      }
+    }
+
+    loadAgreementState();
+  })();
+
 })();

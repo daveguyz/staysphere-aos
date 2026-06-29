@@ -6,7 +6,7 @@
      data-lot-id="{{ lot_id }}"
      data-api="{{ settings.api_gateway_url }}">
 
-  {%- comment -%} ── Win state (default) ── {%- endcomment -%}
+  {%- comment -%} ── WIN STATE ── {%- endcomment -%}
   <div class="auction-success-card" id="auction-success-card">
 
     <div class="auction-success-card__confetti" aria-hidden="true">🎊</div>
@@ -24,39 +24,97 @@
       </span>
     </div>
 
-    {%- comment -%} Deposit status (JS fills based on lot configuration) ── {%- endcomment -%}
-    <div class="auction-success-card__deposit-status" id="success-deposit-status"
-         aria-live="polite"></div>
+    {%- comment -%} Agreement state machine — powered by plugin-auction-room.js {%- endcomment -%}
+    <div class="success-agreement" id="success-agreement" aria-live="polite">
+      <h2 class="success-agreement__title">Purchase agreement</h2>
 
-    {%- comment -%} Next steps ── {%- endcomment -%}
-    <div class="auction-success-card__next-steps">
+      {%- comment -%} PENDING — agreement not generated yet {%- endcomment -%}
+      <div class="success-agreement__state success-agreement__state--pending" id="agr-state-pending">
+        <span class="success-agreement__dot success-agreement__dot--pending"></span>
+        <span>Generating your purchase agreement…</span>
+      </div>
+
+      {%- comment -%} SENT — awaiting signatures {%- endcomment -%}
+      <div class="success-agreement__state success-agreement__state--sent hidden" id="agr-state-sent">
+        <span class="success-agreement__dot success-agreement__dot--waiting"></span>
+        <div>
+          <p class="success-agreement__state-label">Awaiting signatures</p>
+          <p class="success-agreement__state-sub">
+            Check your email for a link to sign the purchase agreement.
+          </p>
+          <p class="success-agreement__deadline">
+            Payment deadline: <strong id="agr-deadline">–</strong>
+          </p>
+        </div>
+        <a id="agr-sign-btn" href="/pages/purchase-agreement" class="btn btn--primary btn--sm">
+          Sign agreement →
+        </a>
+      </div>
+
+      {%- comment -%} BUYER_SIGNED — waiting for seller {%- endcomment -%}
+      <div class="success-agreement__state success-agreement__state--waiting hidden" id="agr-state-buyer-signed">
+        <span class="success-agreement__dot success-agreement__dot--waiting"></span>
+        <div>
+          <p class="success-agreement__state-label">You've signed — waiting for seller</p>
+          <p class="success-agreement__state-sub">
+            We've notified the seller. You'll receive an email once they sign.
+          </p>
+        </div>
+      </div>
+
+      {%- comment -%} FULLY_EXECUTED — conveyancing underway {%- endcomment -%}
+      <div class="success-agreement__state success-agreement__state--executed hidden" id="agr-state-executed">
+        <span class="success-agreement__dot success-agreement__dot--done"></span>
+        <div>
+          <p class="success-agreement__state-label">Agreement fully signed ✓</p>
+          <p class="success-agreement__state-sub">
+            Conveyancing has been initiated.
+            Reference: <strong id="agr-conv-ref">–</strong>
+          </p>
+        </div>
+      </div>
+
+      {%- comment -%} DEFAULTED — payment missed {%- endcomment -%}
+      <div class="success-agreement__state success-agreement__state--defaulted hidden" id="agr-state-defaulted">
+        <span class="success-agreement__dot success-agreement__dot--danger"></span>
+        <div>
+          <p class="success-agreement__state-label" style="color:#b91c1c">Payment deadline missed</p>
+          <p class="success-agreement__state-sub">
+            Your deposit has been forfeited and the lot may be offered to another buyer.
+            <a href="/pages/contact">Contact support</a> if you believe this is in error.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Next steps (shown until agreement is executed) {%- endcomment -%}
+    <div class="auction-success-card__next-steps" id="success-next-steps">
       <h2 class="auction-success-card__next-title" data-i18n="general.whats_next">What happens next</h2>
       <ol class="auction-success-card__steps-list">
-        <li class="auction-success-card__step" id="step-deposit">
-          <span class="auction-success-card__step-icon" aria-hidden="true">💳</span>
+        <li class="auction-success-card__step" id="step-sign">
+          <span class="auction-success-card__step-icon" aria-hidden="true">✍️</span>
           <div>
-            <p class="auction-success-card__step-title">Payment</p>
-            <p class="auction-success-card__step-body" id="step-deposit-body">
-              Your deposit has been applied. Our team will contact you to arrange
-              the remaining balance.
+            <p class="auction-success-card__step-title">Sign the purchase agreement</p>
+            <p class="auction-success-card__step-body">
+              Check your email for a signing link. Both you and the seller must sign before conveyancing begins.
             </p>
           </div>
         </li>
         <li class="auction-success-card__step">
-          <span class="auction-success-card__step-icon" aria-hidden="true">📞</span>
+          <span class="auction-success-card__step-icon" aria-hidden="true">💳</span>
           <div>
-            <p class="auction-success-card__step-title">Seller contact</p>
-            <p class="auction-success-card__step-body">
-              The seller will reach out within 24 hours to confirm handover details.
+            <p class="auction-success-card__step-title">Pay the balance</p>
+            <p class="auction-success-card__step-body" id="step-deposit-body">
+              Your deposit has been applied. Arrange the remaining balance before the payment deadline.
             </p>
           </div>
         </li>
         <li class="auction-success-card__step">
           <span class="auction-success-card__step-icon" aria-hidden="true">🏠</span>
           <div>
-            <p class="auction-success-card__step-title">Property handover</p>
+            <p class="auction-success-card__step-title">Conveyancing &amp; handover</p>
             <p class="auction-success-card__step-body">
-              Once full payment is complete you'll receive the title transfer documents and handover details.
+              Once fully signed and paid, the conveyancer will coordinate title transfer and property handover.
             </p>
           </div>
         </li>
@@ -65,16 +123,15 @@
 
     <div class="auction-success-card__actions">
       <a href="/account" class="btn btn--primary">View my account</a>
-      <a href="/pages/auctions" class="btn btn--ghost">Browse more listings</a>
+      <a href="/pages/auctions" class="btn btn--ghost" data-i18n="general.view_all">Browse more listings</a>
     </div>
 
     <p class="auction-success-card__support">
       Questions? <a href="/pages/contact">Contact support</a> — we're here to help.
     </p>
-
   </div>
 
-  {%- comment -%} ── Loss / no-reserve fallback (shown by JS if status is LOST) ── {%- endcomment -%}
+  {%- comment -%} ── LOSS / NO-RESERVE FALLBACK ── {%- endcomment -%}
   <div class="auction-loss-card hidden" id="auction-loss-card">
     <div class="auction-loss-card__icon" aria-hidden="true">😔</div>
     <h1 class="auction-loss-card__title">Better luck next time</h1>
@@ -88,8 +145,5 @@
 </div>
 
 {% schema %}
-{
-  "name": "Auction success",
-  "settings": []
-}
+{ "name": "Auction success", "settings": [] }
 {% endschema %}

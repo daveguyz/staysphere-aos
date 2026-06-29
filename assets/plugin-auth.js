@@ -793,12 +793,33 @@
           <div class="account-win-card">
             <p class="account-win-card__title">${esc(l.title)}</p>
             <p class="account-win-card__amount">${fmt(l.winningAmount)}</p>
+            <span class="account-win-card__agr-badge" id="agr-badge-${l.id}"
+                  data-lot-id="${l.id}">Loading…</span>
             <a href="/pages/auction-success?lot=${l.id}" class="btn btn--ghost btn--sm">View</a>
           </div>`).join('');
       }
     } catch (_) {
       if (emptyEl) emptyEl.classList.remove('hidden');
     }
+
+    // Load agreement status badges for each won lot
+    document.querySelectorAll('[data-lot-id]').forEach(async badge => {
+      const lotId = badge.dataset.lotId;
+      if (!lotId) return;
+      try {
+        const res = await api(`/api/v1/agreements?lotId=${lotId}`);
+        const status = res?.data?.status;
+        const labelMap = {
+          SENT: '✍️ Awaiting signature',
+          BUYER_SIGNED: '⏳ Awaiting seller',
+          FULLY_EXECUTED: '✅ Executed',
+          DEFAULTED: '❌ Defaulted',
+          DRAFT: '📄 Pending',
+        };
+        badge.textContent = labelMap[status] || (status ? status : '–');
+        badge.dataset.status = status || '';
+      } catch (_) { badge.textContent = '–'; }
+    });
   }
 
   async function loadMyDeposits() {

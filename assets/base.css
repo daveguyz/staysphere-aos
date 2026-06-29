@@ -2017,3 +2017,101 @@ details[open] .proxy-bid-summary__caret { transform: rotate(90deg); }
   font-size: .8125rem; color: #92400e; text-align: center;
 }
 .credential-expiry-warning strong { font-variant-numeric: tabular-nums; }
+
+/* ================================================================
+   PHASE 7 — Purchase agreement state machine + signature page
+   ================================================================ */
+
+/* ── auction-success agreement widget ───────────────────────────── */
+.success-agreement {
+  background: var(--color-surface); border: 1.5px solid var(--color-border);
+  border-radius: calc(var(--radius)*1.5); padding: 20px 24px; margin: 24px 0;
+}
+.success-agreement__title {
+  font-size: .875rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .4px; color: var(--color-text-muted); margin: 0 0 14px;
+}
+.success-agreement__state {
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.success-agreement__dot {
+  width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 3px;
+}
+.success-agreement__dot--pending  { background:#9ca3af; animation:ad-pulse 2s infinite; }
+.success-agreement__dot--waiting  { background:#f59e0b; animation:ad-pulse 1.5s infinite; }
+.success-agreement__dot--done     { background:#22c55e; }
+.success-agreement__dot--danger   { background:#ef4444; }
+.success-agreement__state-label   { font-weight: 700; margin: 0 0 2px; }
+.success-agreement__state-sub     { font-size: .875rem; color: var(--color-text-muted); margin: 0; }
+.success-agreement__deadline      { font-size: .8125rem; color: var(--color-text-muted); margin: 6px 0 0; }
+.success-agreement__state--sent   { flex-wrap: wrap; gap: 10px; }
+
+/* ── Account wins tab — agreement badge ─────────────────────────── */
+.account-win-card__agr-badge {
+  display: inline-block; font-size: .75rem; padding: 2px 8px;
+  border-radius: 20px; background: var(--color-surface);
+  border: 1px solid var(--color-border); color: var(--color-text-muted);
+}
+.account-win-card__agr-badge[data-status="FULLY_EXECUTED"] {
+  background: #dcfce7; color: #15803d; border-color: #86efac;
+}
+.account-win-card__agr-badge[data-status="DEFAULTED"] {
+  background: #fee2e2; color: #b91c1c; border-color: #fca5a5;
+}
+.account-win-card__agr-badge[data-status="SENT"] {
+  background: #fef3c7; color: #92400e; border-color: #fde68a;
+}
+
+/* ── Purchase agreement signature page ──────────────────────────── */
+.purchase-agreement-page { max-width: 680px; margin: 0 auto; }
+.pa-card {
+  background: var(--color-bg); border: 1.5px solid var(--color-border);
+  border-radius: calc(var(--radius)*1.5); padding: 32px; margin-top: 32px;
+}
+.pa-card--error  { border-color: #fca5a5; background: #fff5f5; text-align: center; padding: 48px; }
+.pa-card--signed { text-align: center; padding: 48px; }
+.pa-card--success{ text-align: center; padding: 48px; border-color: #86efac; background: #f0fdf4; }
+.pa-error-icon, .pa-signed-icon, .pa-success-icon { font-size: 3rem; display: block; margin: 0 0 12px; }
+.pa-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.pa-title  { font-size: 1.375rem; font-weight: 800; margin: 0; }
+.pa-sub    { color: var(--color-text-muted); margin: 8px 0 0; }
+.pa-role-badge {
+  padding: 4px 12px; border-radius: 20px; font-size: .8125rem; font-weight: 700;
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
+  color: var(--color-primary);
+}
+.pa-summary-table { width: 100%; border-collapse: collapse; font-size: .9rem; margin-bottom: 20px; }
+.pa-summary-table th { text-align: left; padding: 6px 12px 6px 0; color: var(--color-text-muted); font-weight: 600; width: 40%; }
+.pa-summary-table td { padding: 6px 0; font-weight: 600; }
+.pa-legal { background: var(--color-surface); border-radius: var(--radius); padding: 16px; margin: 20px 0; }
+.pa-legal__title { font-size: .875rem; font-weight: 700; margin: 0 0 8px; }
+.pa-legal__text  { font-size: .8125rem; color: var(--color-text-muted); line-height: 1.6; margin: 0; }
+.pa-deadline-notice { margin-top: 10px; font-size: .8125rem; font-weight: 600; color: var(--color-text-muted); }
+.pa-signature-section { margin: 24px 0; }
+.pa-sig-label { display: block; font-weight: 600; margin-bottom: 10px; }
+.pa-sig-options { display: flex; gap: 4px; margin-bottom: 10px; }
+.pa-sig-tab {
+  padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--color-border);
+  background: none; cursor: pointer; font-size: .875rem; font-weight: 600;
+}
+.pa-sig-tab--active { border-color: var(--color-primary); background: color-mix(in srgb,var(--color-primary) 8%,var(--color-bg)); color: var(--color-primary); }
+.pa-sig-canvas {
+  display: block; width: 100%; max-width: 520px; height: 140px;
+  border: 2px solid var(--color-border); border-radius: var(--radius);
+  cursor: crosshair; touch-action: none; background: #fff;
+}
+.pa-sig-clear {
+  margin-top: 6px; background: none; border: none; cursor: pointer;
+  font-size: .8125rem; color: var(--color-text-muted); text-decoration: underline;
+}
+.pa-sig-text-input { margin-top: 4px; font-size: 1.5rem; }
+.pa-sig-text-preview {
+  font-family: 'Brush Script MT', cursive; font-size: 2rem;
+  color: #111; min-height: 48px; margin-top: 8px; padding: 4px 0;
+  border-bottom: 2px solid var(--color-border);
+}
+.pa-legal-note { font-size: .75rem; color: var(--color-text-muted); margin-top: 8px; }
+.pa-error-msg {
+  background: #fee2e2; border: 1px solid #fca5a5; border-radius: var(--radius);
+  padding: 10px 14px; font-size: .875rem; color: #b91c1c; margin-top: 12px;
+}
