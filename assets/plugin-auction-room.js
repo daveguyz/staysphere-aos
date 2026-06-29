@@ -1105,12 +1105,147 @@
     initBidActions();
     initShareButton();
     initCleanup();
+    checkAuctioneerRole();
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+
+  // ── Phase 8: Auctioneer overlay in live auction room ────────────────────
+
+  /**
+   * Fetches GET /api/v1/auctions/{lotId}/auctioneer/my-role.
+   * If role is 'auctioneer' or 'both', shows the control bar and
+   * enriches the bid feed with admin-level data (full pseudonyms, flag buttons).
+   * Bidders and spectators: the bar stays hidden, zero overhead.
+   */
+  async function checkAuctioneerRole() {
+    const { lotId } = cfg();
+    if (!lotId || !window.StaySphere?.auth?.getToken()) return;
+
+    try {
+      const res = await window.StaySphere.api(
+          `/api/v1/auctions/${lotId}/auctioneer/my-role`);
+      const role = res?.data?.role;
+      if (role === 'auctioneer' || role === 'both' || role === 'seller') {
+        initAuctioneerBar(lotId, role);
+      }
+    } catch (_) { /* not an auctioneer — silently skip */ }
+  }
+
+  function initAuctioneerBar(lotId, role) {
+    const bar = $('room-auctioneer-bar');
+    if (!bar) return;
+
+    // Mark the room element so CSS can target it
+    const room = $('auction-room');
+    if (room) room.dataset.role = role;
+
+    // Show the bar
+    bar.classList.remove('hidden');
+
+    // Set dashboard deep-link
+    const dashLink = $('ab-dashboard-link');
+    if (dashLink) {
+      dashLink.href = `/pages/auctioneer-dashboard?lot=${lotId}`;
+    }
+
+    // Initial status sync
+    syncBarStatus();
+
+    // Subscribe to auctioneer queue on the shared STOMP client
+    const tryWs = () => {
+      const stomp = window._ssStompClient;
+      if (stomp?.connected) {
+        stomp.subscribe(`/user/queue/auctioneer-${lotId}-queue`, frame => {
+          try {
+            const data = JSON.parse(frame.body);
+            if (data.type === 'QA_RECEIVED') updateQaBadge(data);
+          } catch (_) {}
+        });
+      } else {
+        setTimeout(tryWs, 1500);
+      }
+    };
+    tryWs();
+
+    // Poll Q&A pending count every 20s
+    loadQaPendingCount(lotId);
+    setInterval(() => loadQaPendingCount(lotId), 20_000);
+
+    // Wire control buttons
+    $('ab-extend-btn')?.addEventListener('click', async () => {
+      const mins = parseInt($('ab-extend-mins')?.value || '5');
+      try {
+        const res = await window.StaySphere.api(
+            `/api/v1/auctions/${lotId}/extend`,
+            { method: 'POST', body: JSON.stringify({ extraMinutes: mins }) });
+        if (res.success) {
+          window.StaySphere?.toast?.(`✅ Extended by ${mins} minutes`, 'success');
+          syncBarStatus();
+        } else {
+          window.StaySphere?.toast?.(res.message || 'Extension failed', 'error');
+        }
+      } catch (_) { window.StaySphere?.toast?.('Extension failed', 'error'); }
+    });
+
+    $('ab-pause-btn')?.addEventListener('click',  () => setPauseState(true,  lotId));
+    $('ab-resume-btn')?.addEventListener('click', () => setPauseState(false, lotId));
+  }
+
+  async function setPauseState(pause, lotId) {
+    const endpoint = pause ? 'pause' : 'resume';
+    try {
+      const res = await window.StaySphere.api(
+          `/api/v1/auctions/${lotId}/${endpoint}`,
+          { method: 'POST' });
+      if (res.success) {
+        $('ab-pause-btn')?.classList.toggle('hidden',  pause);
+        $('ab-resume-btn')?.classList.toggle('hidden', !pause);
+        window.StaySphere?.toast?.(pause ? '⏸ Auction paused' : '▶ Resumed', 'success');
+        syncBarStatus();
+      }
+    } catch (_) {}
+  }
+
+  function syncBarStatus() {
+    // Reads current status from the lot object or the status badge
+    const badge = $('room-status-badge');
+    const abStatus = $('ab-status');
+    if (abStatus && badge) {
+      abStatus.textContent = badge.textContent.trim();
+    }
+  }
+
+  async function loadQaPendingCount(lotId) {
+    try {
+      const res = await window.StaySphere.api(
+          `/api/v1/auctions/${lotId}/questions/count/pending`);
+      const count = res?.data ?? 0;
+      const badge = $('ab-q-badge');
+      if (!badge) return;
+      if (count > 0) {
+        badge.textContent = `🔔 ${count} question${count !== 1 ? 's' : ''}`;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    } catch (_) {}
+  }
+
+  function updateQaBadge(data) {
+    const badge = $('ab-q-badge');
+    if (!badge) return;
+    const prev = parseInt(badge.textContent?.match(/\d+/)?.[0] || '0');
+    const next = prev + 1;
+    badge.textContent = `🔔 ${next} question${next !== 1 ? 's' : ''}`;
+    badge.classList.remove('hidden');
+    // Flash the badge
+    badge.classList.add('ab-q-badge--flash');
+    setTimeout(() => badge.classList.remove('ab-q-badge--flash'), 800);
   }
 
   // ── Phase 7: auction-success agreement state machine ──────────────────

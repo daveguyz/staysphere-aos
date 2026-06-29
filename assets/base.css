@@ -2115,3 +2115,48 @@ details[open] .proxy-bid-summary__caret { transform: rotate(90deg); }
   background: #fee2e2; border: 1px solid #fca5a5; border-radius: var(--radius);
   padding: 10px 14px; font-size: .875rem; color: #b91c1c; margin-top: 12px;
 }
+
+/* ================================================================
+   PHASE 8 — Auctioneer overlay in live auction room
+   ================================================================ */
+
+/* Control bar — sticky amber strip at top */
+.auction-room__auctioneer-bar {
+  background: color-mix(in srgb, #f59e0b 12%, var(--color-bg));
+  border-bottom: 2px solid #f59e0b;
+  position: sticky; top: 0; z-index: 200;
+}
+.auctioneer-bar__inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 8px 0; flex-wrap: wrap;
+}
+.auctioneer-bar__left  { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.auctioneer-bar__badge {
+  font-size: .8125rem; font-weight: 800; padding: 3px 10px;
+  background: #f59e0b; color: #fff; border-radius: 20px;
+}
+.auctioneer-bar__status { font-size: .8125rem; font-weight: 600; color: #92400e; }
+.auctioneer-bar__q-badge {
+  font-size: .8125rem; font-weight: 700; padding: 3px 10px;
+  background: color-mix(in srgb,var(--color-primary) 12%,var(--color-bg));
+  color: var(--color-primary); border-radius: 20px; cursor: pointer;
+}
+.ab-q-badge--flash { animation: ab-flash .4s ease; }
+@keyframes ab-flash { 0%,100%{opacity:1} 50%{opacity:.4} }
+.auctioneer-bar__controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.auctioneer-bar__extend  { display: flex; gap: 4px; align-items: center; }
+
+/* Bid feed — auctioneer sees full pseudonym + flag button */
+.auction-room[data-role="auctioneer"] .bid-feed-item__flag,
+.auction-room[data-role="both"]       .bid-feed-item__flag,
+.auction-room[data-role="seller"]     .bid-feed-item__flag {
+  display: inline-flex;
+}
+.bid-feed-item__flag {
+  display: none; /* hidden for bidders */
+  background: none; border: none; cursor: pointer;
+  font-size: .75rem; color: var(--color-text-muted);
+  padding: 2px 6px; border-radius: var(--radius);
+  margin-left: auto;
+}
+.bid-feed-item__flag:hover { color: #ef4444; background: #fee2e2; }

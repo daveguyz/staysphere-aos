@@ -32,6 +32,33 @@
      data-show-viewers="{{ settings.auction_show_viewer_count }}"
      data-show-bid-history="{{ settings.auction_show_bid_history_realtime }}">
 
+  {%- comment -%} ── AUCTIONEER CONTROL BAR (Phase 8 — hidden for bidders, shown by JS) ── {%- endcomment -%}
+  <div class="auction-room__auctioneer-bar hidden" id="room-auctioneer-bar"
+       role="toolbar" aria-label="Auctioneer controls">
+    <div class="page-width auctioneer-bar__inner">
+      <div class="auctioneer-bar__left">
+        <span class="auctioneer-bar__badge">🔨 Auctioneer</span>
+        <span class="auctioneer-bar__status" id="ab-status">–</span>
+        <span class="auctioneer-bar__q-badge hidden" id="ab-q-badge" aria-live="polite"></span>
+      </div>
+      <div class="auctioneer-bar__controls">
+        <div class="auctioneer-bar__extend">
+          <select id="ab-extend-mins" class="sort-select sort-select--sm"
+                  aria-label="Extension duration">
+            <option value="5">+5 min</option>
+            <option value="10">+10 min</option>
+            <option value="15">+15 min</option>
+          </select>
+          <button class="btn btn--ghost btn--sm" id="ab-extend-btn">Extend</button>
+        </div>
+        <button class="btn btn--ghost btn--sm" id="ab-pause-btn">Pause</button>
+        <button class="btn btn--ghost btn--sm hidden" id="ab-resume-btn">Resume</button>
+        <a id="ab-dashboard-link" href="/pages/auctioneer-dashboard"
+           class="btn btn--ghost btn--sm">Dashboard →</a>
+      </div>
+    </div>
+  </div>
+
   {%- comment -%} ── ROOM HEADER (breadcrumb + status bar) ── {%- endcomment -%}
   <div class="auction-room__topbar page-width">
     <nav class="breadcrumb" aria-label="Breadcrumb">
