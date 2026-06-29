@@ -53,6 +53,8 @@
         </div>
         <button class="btn btn--ghost btn--sm" id="ab-pause-btn">Pause</button>
         <button class="btn btn--ghost btn--sm hidden" id="ab-resume-btn">Resume</button>
+        <button class="btn btn--ghost btn--sm ad-danger-btn" id="ab-close-now-btn"
+                style="display:none">Close now</button>
         <a id="ab-dashboard-link" href="/pages/auctioneer-dashboard"
            class="btn btn--ghost btn--sm">Dashboard →</a>
       </div>
@@ -118,6 +120,60 @@
       {%- comment -%} Bid history feed ── {%- endcomment -%}
       {%- if settings.auction_show_bid_history_realtime -%}
         {% render 'bid-history', lot_id: lot_id, auction_type: '' %}
+
+      {%- comment -%} ── Q&A / comments panel (Phase 9) ── {%- endcomment -%}
+      <div class="auction-room__qa" id="room-qa"
+           aria-label="Questions and answers" hidden>
+        <div class="qa-panel-header">
+          <h3 class="qa-panel-header__title">Questions &amp; Comments</h3>
+          <span class="qa-panel-header__badge hidden" id="qa-pending-badge"
+                aria-live="polite"></span>
+          <button class="qa-panel-toggle" id="qa-toggle"
+                  aria-expanded="true" aria-controls="qa-body">▼</button>
+        </div>
+        <div class="qa-body" id="qa-body">
+          {%- comment -%} Public answers — all room attendees see these {%- endcomment -%}
+          <div class="qa-public-feed" id="qa-public-feed"
+               aria-live="polite" aria-label="Public answers"></div>
+
+          {%- comment -%} My questions — logged-in bidder only {%- endcomment -%}
+          <div class="qa-mine hidden" id="qa-mine"
+               aria-label="My questions"></div>
+
+          {%- comment -%} Submit form — bidders only; auctioneers see manage link {%- endcomment -%}
+          <div class="qa-submit" id="qa-submit" hidden>
+            <div class="form-field">
+              <label for="qa-input">Ask a question or post a comment</label>
+              <textarea id="qa-input" class="checkout-input" rows="2"
+                        maxlength="500" placeholder="Type your question…"
+                        data-i18n-placeholder="hero.ai_placeholder"></textarea>
+              <span class="qa-char-count">
+                <span id="qa-chars">0</span>/500
+              </span>
+            </div>
+            <div class="qa-submit__footer">
+              <select id="qa-category" class="sort-select" aria-label="Question category">
+                <option value="GENERAL">General</option>
+                <option value="PROPERTY_INFO">Property info</option>
+                <option value="BIDDING_RULES">Bidding rules</option>
+                <option value="TECHNICAL">Technical issue</option>
+              </select>
+              <button class="btn btn--primary btn--sm" id="qa-send-btn">
+                <span class="btn-label">Ask</span>
+                <span class="btn-spinner hidden" aria-hidden="true"></span>
+              </button>
+            </div>
+          </div>
+
+          {%- comment -%} Auctioneer view — manage link instead of form {%- endcomment -%}
+          <div class="qa-auctioneer-notice hidden" id="qa-auctioneer-notice">
+            <p>You are the auctioneer for this lot.</p>
+            <a id="qa-manage-link" href="/pages/auctioneer-dashboard"
+               class="btn btn--ghost btn--sm">Manage questions in dashboard →</a>
+          </div>
+        </div>
+      </div>
+
       {%- endif -%}
 
     </div>

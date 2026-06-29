@@ -2160,3 +2160,101 @@ details[open] .proxy-bid-summary__caret { transform: rotate(90deg); }
   margin-left: auto;
 }
 .bid-feed-item__flag:hover { color: #ef4444; background: #fee2e2; }
+
+/* ================================================================
+   PHASE 9 — Q&A panel in auction room + enriched bid feed
+   ================================================================ */
+
+/* ── Q&A panel ───────────────────────────────────────────────────── */
+.auction-room__qa {
+  margin-top: 20px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.qa-panel-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.qa-panel-header__title {
+  font-size: .875rem; font-weight: 700; margin: 0; flex: 1;
+}
+.qa-panel-header__badge {
+  font-size: .75rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+  background: var(--color-primary); color: var(--color-primary-text);
+}
+.qa-panel-toggle {
+  background: none; border: none; cursor: pointer; font-size: .75rem;
+  color: var(--color-text-muted); padding: 4px 8px;
+}
+
+/* ── Q&A body ────────────────────────────────────────────────────── */
+.qa-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.qa-public-feed { display: flex; flex-direction: column; gap: 8px; }
+.qa-empty { font-size: .875rem; color: var(--color-text-muted); margin: 0; }
+.qa-mine__label {
+  font-size: .6875rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--color-text-muted); margin: 0 0 6px;
+}
+
+/* ── Q&A cards ───────────────────────────────────────────────────── */
+.qa-card {
+  border: 1.5px solid var(--color-border); border-radius: var(--radius);
+  padding: 10px 12px;
+  transition: border-color .15s;
+}
+.qa-card--mine  { border-left: 3px solid var(--color-primary); }
+.qa-card--new   { animation: qa-flash .8s ease; }
+@keyframes qa-flash {
+  from { background: color-mix(in srgb, var(--color-primary) 15%, transparent); }
+  to   { background: transparent; }
+}
+.qa-card__header {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;
+}
+.qa-card__who  { font-weight: 700; font-size: .875rem; }
+.qa-card__time { font-size: .6875rem; color: var(--color-text-muted); margin-left: auto; }
+.qa-card__content { margin: 0 0 6px; font-size: .875rem; }
+.qa-category-badge {
+  font-size: .6875rem; font-weight: 600; padding: 1px 7px;
+  border-radius: 20px; background: var(--color-surface); color: var(--color-text-muted);
+}
+.qa-category-badge--complaint { background: #fee2e2; color: #b91c1c; }
+.qa-category-badge--property_info { background: #dbeafe; color: #1e40af; }
+.qa-answer {
+  background: var(--color-surface); border-radius: var(--radius);
+  padding: 8px 10px; font-size: .8125rem; margin-top: 4px;
+}
+.qa-public-badge {
+  font-size: .6875rem; background: #dcfce7; color: #15803d;
+  border-radius: 20px; padding: 1px 7px; font-weight: 700;
+}
+.qa-pending-label { font-size: .75rem; color: var(--color-text-muted); margin: 4px 0 0; font-style: italic; }
+
+/* ── Submit form ─────────────────────────────────────────────────── */
+.qa-submit__footer { display: flex; gap: 8px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+.qa-char-count { font-size: .75rem; color: var(--color-text-muted); text-align: right; margin-top: 2px; }
+.qa-auctioneer-notice {
+  font-size: .875rem; color: var(--color-text-muted);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+
+/* ── Enriched bid feed ───────────────────────────────────────────── */
+.bid-history__item {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.bid-history__bidder {
+  font-size: .75rem; color: var(--color-text-muted); font-weight: 600;
+}
+.bid-history__fraud-badge {
+  font-size: .75rem; color: #f59e0b;
+  padding: 1px 5px; border-radius: 20px;
+  background: color-mix(in srgb, #f59e0b 15%, transparent);
+}
+.bid-history__item--flagged {
+  background: color-mix(in srgb, #ef4444 6%, transparent);
+  border-left: 3px solid #ef4444;
+}

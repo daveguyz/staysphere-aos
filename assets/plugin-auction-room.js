@@ -636,7 +636,10 @@
       updateBidDisplay(msg.amount, msg.totalBids, msg.uniqueBidders);
       updateCountdownEndTime(msg.antiSnipeExtended ? msg.newEndTime : null);
       if (msg.activeViewers !== undefined) updateViewerCount(msg.activeViewers);
-      prependBidFeedItem(msg.amount, msg.currency, msg.timestamp);
+      prependBidFeedItem(
+        msg.amount, msg.currency, msg.timestamp,
+        msg.bidId, msg.bidderDisplayName, msg.aiFraudScore
+      );
       if (msg.bidId) highlightNewBid(msg.bidId);
 
       // Update English panel minimum
@@ -682,6 +685,27 @@
     if (type === 'CREDENTIAL_EXPIRING_SOON') {
       // Server push 15 min before expiry (optional — frontend also tracks locally)
       startExpiryCountdown(msg.expiresAt, cfg().lotId);
+      return;
+    }
+
+    if (type === 'QA_PUBLIC_ANSWER') {
+      // Public answer broadcast to all room attendees
+      renderPublicAnswer(msg);
+      return;
+    }
+
+    if (type === 'QA_RECEIVED') {
+      // Private receipt confirmation — my question was accepted
+      window.StaySphere?.toast?.('Question submitted', 'success');
+      return;
+    }
+
+    if (type === 'QA_ANSWER') {
+      // Private answer delivered to my session
+      // Reload my questions to show the answer
+      const { lotId } = cfg();
+      if (lotId) loadMyQuestions(lotId);
+      window.StaySphere?.toast?.('Your question has been answered', 'success');
       return;
     }
 
@@ -933,7 +957,7 @@
     } catch (_) {}
   }
 
-  function prependBidFeedItem(amount, currency, timestamp) {
+  function prependBidFeedItem(amount, currency, timestamp, bidId, bidderDisplay, fraudScore) {
     const { lotId } = cfg();
     const list = $(`bid-list-${lotId}`);
     if (!list) return;
@@ -943,8 +967,14 @@
 
     const item = document.createElement('div');
     item.className = 'bid-history__item bid-history__item--new';
-    item.innerHTML = buildBidItem(amount, currency, timestamp);
+    if (bidId) item.dataset.bidId = bidId;
+    item.innerHTML = buildBidItem(amount, currency, timestamp, bidId, bidderDisplay, fraudScore);
     list.prepend(item);
+
+    // Wire flag button for auctioneers
+    item.querySelector('.bid-feed-item__flag')?.addEventListener('click', function() {
+      flagBid(bidId, lotId);
+    });
     // Remove "new" flash after animation
     setTimeout(() => item.classList.remove('bid-history__item--new'), 800);
 
@@ -955,13 +985,70 @@
     updateBidCount(items.length);
   }
 
-  function buildBidItem(amount, currency, timestamp) {
-    const { sym } = cfg();
-    const time = timestamp ? new Date(timestamp).toLocaleTimeString('en-NA', { hour:'2-digit', minute:'2-digit', second:'2-digit' }) : '';
-    return `<div class="bid-history__item">
-      <span class="bid-history__amount">${sym}${Number(amount).toLocaleString()}</span>
-      <span class="bid-history__time">${time}</span>
-    </div>`;
+  function buildBidItem(amount, currency, timestamp, bidId, bidderDisplay, fraudScore) {
+    const i18n = window.StaySphere?.i18n;
+    const tz   = i18n?.time?.timezone || 'UTC';
+    const room = document.getElementById('auction-room');
+    const isAuctioneer = room && ['auctioneer','seller','both'].includes(room.dataset.role);
+
+    let timeStr = '';
+    if (timestamp) {
+      try {
+        timeStr = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        }).format(new Date(timestamp));
+      } catch(_) {
+        timeStr = new Date(timestamp).toLocaleTimeString();
+      }
+    }
+
+    const amtStr = fmt(amount);
+
+    // Bidder label — auctioneer sees the display name, bidders see generic "New bid"
+    const label = isAuctioneer && bidderDisplay
+      ? `<span class="bid-history__bidder">${esc(bidderDisplay)}</span>`
+      : '';
+
+    // Fraud flag — only rendered for auctioneers; CSS shows/hides via data-role
+    const fraudBadge = isAuctioneer && fraudScore && fraudScore > 0.6
+      ? `<span class="bid-history__fraud-badge" title="Fraud score: ${fraudScore.toFixed(2)}">⚠</span>`
+      : '';
+
+    const flagBtn = bidId
+      ? `<button class="bid-feed-item__flag" data-bid-id="${esc(bidId)}"
+               aria-label="Flag bid for review" title="Flag for fraud review">🚩</button>`
+      : '';
+
+    return `
+      <span class="bid-history__amount">${amtStr}</span>
+      ${label}
+      <span class="bid-history__time">${timeStr}</span>
+      ${fraudBadge}
+      ${flagBtn}`;
+  }
+
+  /**
+   * Flag a bid for on-demand AI fraud re-assessment.
+   * Auctioneer only — button is CSS-hidden for bidders via data-role.
+   */
+  async function flagBid(bidId, lotId) {
+    if (!bidId || !lotId) return;
+    try {
+      const res = await window.StaySphere.api(
+          `/api/v1/auctions/${lotId}/bids/${bidId}/flag`,
+          { method: 'POST' });
+      if (res.success) {
+        window.StaySphere?.toast?.('Bid flagged for review', 'success');
+        // Visually mark the feed item
+        const item = document.querySelector(`[data-bid-id="${bidId}"]`);
+        if (item) {
+          item.classList.add('bid-history__item--flagged');
+          item.querySelector('.bid-feed-item__flag')?.remove();
+        }
+      } else {
+        window.StaySphere?.toast?.(res.message || 'Flag failed', 'error');
+      }
+    } catch(_) { window.StaySphere?.toast?.('Flag failed', 'error'); }
   }
 
   function updateBidCount(n) {
@@ -1100,6 +1187,9 @@
 
     loadLot().then(() => {
       connectWebSocket();
+      // Phase 9: Q&A panel — init after lot is loaded (we need lot.status)
+      const { lotId } = cfg();
+      if (lotId) initQaPanel(lotId);
     });
 
     initBidActions();
@@ -1112,6 +1202,187 @@
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+
+  // ── Phase 9: Q&A panel (auction room) ─────────────────────────────────────
+
+  /**
+   * Initialise the Q&A panel in the auction room.
+   * Bidders see: public answers feed + their own questions + submit form.
+   * Auctioneers see: public answers feed + "manage in dashboard →" link.
+   * Spectators / logged-out: public answers feed only.
+   */
+  async function initQaPanel(lotId) {
+    const panel = document.getElementById('room-qa');
+    if (!panel) return;
+
+    const room = document.getElementById('auction-room');
+    const isAuctioneer = room && ['auctioneer','seller','both'].includes(room.dataset.role);
+    const isLoggedIn   = !!window.StaySphere?.auth?.getToken();
+
+    // Show the panel
+    panel.removeAttribute('hidden');
+
+    // Collapse / expand toggle
+    const toggleBtn = document.getElementById('qa-toggle');
+    const body      = document.getElementById('qa-body');
+    toggleBtn?.addEventListener('click', () => {
+      const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+      toggleBtn.setAttribute('aria-expanded', String(!expanded));
+      toggleBtn.textContent = expanded ? '▶' : '▼';
+      body?.classList.toggle('hidden', expanded);
+    });
+
+    // Load initial data
+    await loadPublicAnswers(lotId);
+    if (isLoggedIn && !isAuctioneer) {
+      await loadMyQuestions(lotId);
+    }
+
+    // Show correct footer
+    if (isAuctioneer) {
+      const notice = document.getElementById('qa-auctioneer-notice');
+      if (notice) {
+        notice.classList.remove('hidden');
+        const link = document.getElementById('qa-manage-link');
+        if (link) link.href = `/pages/auctioneer-dashboard?lot=${lotId}#adtab-questions`;
+      }
+    } else if (isLoggedIn && lot?.status && ['OPEN','EXTENDED'].includes(lot.status)) {
+      const submitDiv = document.getElementById('qa-submit');
+      if (submitDiv) submitDiv.removeAttribute('hidden');
+      wireQaSubmit(lotId);
+    }
+
+    // Wire QA_PUBLIC_ANSWER WS handler (already subscribed in connectWebSocket)
+    // It calls renderPublicAnswer() below via handleServerMessage dispatch
+  }
+
+  async function loadPublicAnswers(lotId) {
+    try {
+      const res = await window.StaySphere.api(
+          `/api/v1/auctions/${lotId}/questions/public`);
+      const answers = res?.data || [];
+      const feed = document.getElementById('qa-public-feed');
+      if (!feed) return;
+      if (!answers.length) {
+        feed.innerHTML = '<p class="qa-empty">No public answers yet.</p>';
+        return;
+      }
+      feed.innerHTML = answers.map(q => buildQaCard(q, false)).join('');
+    } catch(_) {}
+  }
+
+  async function loadMyQuestions(lotId) {
+    try {
+      const res = await window.StaySphere.api(
+          `/api/v1/auctions/${lotId}/questions/mine`);
+      const mine = res?.data?.myQuestions || [];
+      const mineEl = document.getElementById('qa-mine');
+      if (!mineEl) return;
+      if (!mine.length) { mineEl.classList.add('hidden'); return; }
+      mineEl.innerHTML = '<p class="qa-mine__label">My questions</p>' +
+          mine.map(q => buildQaCard(q, true)).join('');
+      mineEl.classList.remove('hidden');
+    } catch(_) {}
+  }
+
+  function buildQaCard(q, isMine) {
+    const publicBadge = q.answeredPublicly
+      ? ' <span class="qa-public-badge">PUBLIC</span>'
+      : '';
+    const answerHtml = q.response
+      ? `<div class="qa-answer">
+           <strong>Answer${publicBadge}:</strong>
+           ${esc(q.response)}
+         </div>`
+      : (isMine ? '<p class="qa-pending-label">Awaiting answer…</p>' : '');
+
+    return `
+      <div class="qa-card${isMine ? ' qa-card--mine' : ''}">
+        <div class="qa-card__header">
+          <span class="qa-card__who">${esc(q.bidderDisplayName || 'You')}</span>
+          <span class="qa-category-badge qa-category-badge--${(q.category||'general').toLowerCase()}">${esc(q.category || 'GENERAL')}</span>
+          <span class="qa-card__time">${q.submittedAt ? fmtDate(q.submittedAt) : ''}</span>
+        </div>
+        <p class="qa-card__content">${esc(q.content)}</p>
+        ${answerHtml}
+      </div>`;
+  }
+
+  function wireQaSubmit(lotId) {
+    const input   = document.getElementById('qa-input');
+    const sendBtn = document.getElementById('qa-send-btn');
+    const charEl  = document.getElementById('qa-chars');
+
+    input?.addEventListener('input', function() {
+      if (charEl) charEl.textContent = this.value.length;
+    });
+
+    sendBtn?.addEventListener('click', async () => {
+      const content  = input?.value?.trim();
+      const category = document.getElementById('qa-category')?.value || 'GENERAL';
+      if (!content) return;
+
+      sendBtn.disabled = true;
+      sendBtn.querySelector('.btn-label')?.classList.add('hidden');
+      sendBtn.querySelector('.btn-spinner')?.classList.remove('hidden');
+      try {
+        const res = await window.StaySphere.api(
+            `/api/v1/auctions/${lotId}/questions`,
+            { method: 'POST', body: JSON.stringify({ content, category }) });
+        if (res.success) {
+          if (input) input.value = '';
+          if (charEl) charEl.textContent = '0';
+          window.StaySphere?.toast?.("Question submitted — you'll be notified when answered", 'success');
+          await loadMyQuestions(lotId);
+        } else {
+          window.StaySphere?.toast?.(res.message || 'Could not submit', 'error');
+        }
+      } catch(_) { window.StaySphere?.toast?.('Submit failed', 'error'); }
+      finally {
+        sendBtn.disabled = false;
+        sendBtn.querySelector('.btn-label')?.classList.remove('hidden');
+        sendBtn.querySelector('.btn-spinner')?.classList.add('hidden');
+      }
+    });
+  }
+
+  /** Called when QA_PUBLIC_ANSWER arrives via WebSocket */
+  function renderPublicAnswer(q) {
+    const feed = document.getElementById('qa-public-feed');
+    if (!feed) return;
+    const empty = feed.querySelector('.qa-empty');
+    if (empty) empty.remove();
+
+    const card = document.createElement('div');
+    card.innerHTML = buildQaCard(q, false);
+    const el = card.firstElementChild;
+    if (el) {
+      el.classList.add('qa-card--new');
+      feed.appendChild(el);
+      setTimeout(() => el.classList.remove('qa-card--new'), 1000);
+    }
+
+    // Update pending badge count
+    const badge = document.getElementById('qa-pending-badge');
+    if (badge) {
+      const cur = parseInt(badge.textContent || '0') || 0;
+      badge.textContent = cur + 1;
+      badge.classList.remove('hidden');
+    }
+  }
+
+  /** fmtDate for Q&A timestamps */
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const i18n = window.StaySphere?.i18n;
+    const tz   = i18n?.time?.timezone || 'UTC';
+    try {
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, day: 'numeric', month: 'short',
+        hour: '2-digit', minute: '2-digit'
+      }).format(new Date(iso));
+    } catch(_) { return new Date(iso).toLocaleString(); }
   }
 
   // ── Phase 8: Auctioneer overlay in live auction room ────────────────────
@@ -1194,6 +1465,21 @@
 
     $('ab-pause-btn')?.addEventListener('click',  () => setPauseState(true,  lotId));
     $('ab-resume-btn')?.addEventListener('click', () => setPauseState(false, lotId));
+
+    // Close now
+    const closeBtn = $('ab-close-now-btn');
+    if (closeBtn) {
+      closeBtn.style.display = '';
+      closeBtn.addEventListener('click', async () => {
+        if (!confirm('Close this auction now? This cannot be undone.')) return;
+        try {
+          const res = await window.StaySphere.api(
+              `/api/v1/auctions/${lotId}/close`, { method: 'POST' });
+          if (res.success) window.StaySphere?.toast?.('Auction closed', 'success');
+          else window.StaySphere?.toast?.(res.message || 'Failed', 'error');
+        } catch(_) { window.StaySphere?.toast?.('Failed', 'error'); }
+      });
+    }
   }
 
   async function setPauseState(pause, lotId) {
